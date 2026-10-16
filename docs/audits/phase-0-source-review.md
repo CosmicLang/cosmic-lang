@@ -288,5 +288,42 @@ cargo test --workspace --all-targets
 RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 ```
 
-All four pass. Results, counts and the final commit SHA are recorded in the
-review report's section D.
+All four exit `0`.
+
+| Command | Result |
+|---|---|
+| `cargo fmt --all -- --check` | clean, no diff |
+| `cargo clippy --workspace --all-targets -- -D warnings` | clean, no warnings |
+| `cargo test --workspace --all-targets` | **58 passed, 0 failed, 1 ignored** |
+| `cargo test --workspace --doc` | **2 passed, 0 failed** |
+| `RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps` | 4 crates documented, no warnings |
+
+**Test-count delta.** The pre-review revision `a522aee…` reported **55 passed,
+0 failed** (`cargo test --workspace --all-targets`, measured by building that
+revision out of tree) plus 2 doc-tests. This review adds **3 passing tests**
+(`declared_length_limit_is_checked_before_reading`,
+`line_terminator_columns_agree_across_lf_crlf_and_lone_cr`,
+`every_offset_maps_inside_its_printed_line`) and **1 ignored test**
+(`load_rejects_oversized_files_from_metadata_without_reading`, a manual 5 GiB
+fixture). The directive's "55 reported passing tests" is therefore confirmed
+exactly, and the count is now 58 + 1 ignored + 2 doc-tests = 61.
+
+**Continuous integration.** The branch tip that carries these fixes and the
+audit documents was validated by two GitHub Actions runs, both **success**:
+
+| Event | Run | Result |
+|---|---|---|
+| `push` (`phase/0-foundation`) | `38926681567` | success — Format, Lint, Test, Doc all green with the newly SHA-pinned actions |
+| `pull_request` (#1) | `38926688309` | success |
+
+The subsequent documentation commit that records this table is the branch tip
+at the time of writing; its runs are visible in PR #1. No force-push was used
+at any point, and published history was not rewritten.
+
+**Reproducibility note.** No release artefacts exist in Phase 0, so no
+reproducible-build claim is made (`docs/development/toolchain-policy.md` §5).
+What is verifiable and verified: the pinned toolchain, the committed
+`Cargo.lock`, zero external dependencies, and CI that re-runs the same four
+commands on a different operating system (Linux) from the one used locally
+(macOS).
+
