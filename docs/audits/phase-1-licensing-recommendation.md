@@ -22,7 +22,7 @@ possible without deciding anything:
 
 | # | New evidence | Source |
 |---|---|---|
-| N1 | **The specification work is now complete and is entirely original.** `docs/spec/language-spec.md`, `grammar.ebnf`, `typing-contracts.md`, the 18 decision records and the ADRs were written from **observed behaviour and source facts**, with no legacy artefact reproduced. The "independent implementation" claim in option B is therefore no longer hypothetical for the *documentation* half of the project | This phase |
+| N1 | **The proposed specification was independently authored after legacy inspection; provenance still requires review.** `docs/spec/language-spec.md`, `grammar.ebnf`, `typing-contracts.md`, the 18 decision records and the ADRs were written from **observed behaviour and source facts**, with no legacy artefact reproduced. The "independent implementation" claim in option B is therefore no longer hypothetical for the *documentation* half of the project | This phase |
 | N2 | **The differential test strategy deliberately does not vendor legacy fixtures.** The harness is designed to use the legacy compiler as a **black box** on newly authored inputs, with the legacy toolchain as an optional external dependency that skips with a stated reason when absent | `docs/development/test-strategy.md` §3 L4, §5 |
 | N3 | **A legal question about executing the legacy compiler was identified and is now explicit**, rather than being discovered later during Phase 2 | `docs/development/test-strategy.md` §5 |
 
@@ -48,7 +48,7 @@ states what changes if they do.
 | **Compatibility is achievable behaviourally.** The contract is the language's observable behaviour, verified through the legacy corpus used as an oracle. Nothing in that method requires copying | N2 |
 | **The design report's own strategy is behavioural.** "The main asset to preserve is the language's demonstrable semantics" (page 20). Option B is the licensing expression of that strategy; option A would be the expression of a *code-reuse* strategy the report does not propose | Design report page 20, and its directive principle 2 ("do not port Java source mechanically to Rust") |
 | **It maximises adopter reach.** A compiler for a new language benefits more from tooling, IDE and embedding adoption than from copyleft reach. Permissive licensing is what makes an editor extension, a language server, or an embedder viable without a licence audit | Engineering judgement (E2), stated as such |
-| **It keeps the door open on compatibility scope.** S3 (PortuKof) and S4 (KofScript) are **BLOCKED-ON-OWNER** precisely because they might require legacy-derived vocabulary tables. Under option B, deriving those tables from *observed behaviour* remains the only route — which is a constraint the owner should know about before choosing | S3 §Evidence, S4 §Evidence |
+| **It keeps the door open on compatibility scope.** S3 (PortuKof) and S4 (KofScript) are **OPEN (owner scope choice)** precisely because they might require legacy-derived vocabulary tables. Under option B, deriving those tables from *observed behaviour* remains the only route — which is a constraint the owner should know about before choosing | S3 §Evidence, S4 §Evidence |
 
 ### 2.2 The specific licence is the owner's choice
 
@@ -85,11 +85,11 @@ in this document.
 |---|---|
 | Legacy **facts** used in this repository (module lists, counts, file extensions, version strings, code families) | Facts are not protectable. They are already cited by path and SHA throughout `docs/audits/` and `docs/spec/`. **Keep citing them** — it is the project's evidence discipline, not a legal requirement |
 | Legacy **observed behaviour** (corpus results) | Cited by case name and SHA. Recorded as evidence, never vendored |
-| Legacy **code, documentation prose, fixtures** | **Not used, not attributed, not permitted.** Under option B, importing them would be the only way to create an obligation, and §2.3 forbids it |
+| Legacy **code, documentation prose, fixtures** | **Not used, not attributed, not permitted.** Importing them would add legal obligations, but a legal determination of existing obligations is still pending, and §2.3 forbids it |
 | Third-party **Rust dependencies** | Not applicable today (zero dependencies). When the first dependency is added, its licence must be recorded — the toolchain policy §3 already requires a licence note per dependency |
 | The **project's own** name and identity | Naming is ADR-0001/ADR-0003's concern, and trademark is a separate legal question (see §5) |
 
-**No attribution notice is required by the current state of the repository**,
+**Whether attribution notices are legally required needs qualified review; the repository currently contains no vendored legacy code**,
 because nothing from the legacy project is present in it. This is worth stating
 explicitly: the absence of an attribution file is not an omission.
 
@@ -99,7 +99,7 @@ explicitly: the absence of an attribution file is not an omission.
 
 | If the owner chooses… | Then… |
 |---|---|
-| **Option A (GPL-3.0)** | Legacy code, prose and fixtures **become legally reusable**, which would make S3 (PortuKof) and S4 (KofScript) substantially cheaper — their vocabulary tables and wrapping semantics could be derived directly instead of reverse-engineered. The specification work already done remains valid; nothing would need to be redone. **But** the project would then be copyleft, and the permissive-adoption argument in §2.1 is lost |
+| **Option A (GPL-3.0)** | Certain legacy materials **may become reusable if legal rights and GPL conditions permit**, which would make S3 (PortuKof) and S4 (KofScript) substantially cheaper — their vocabulary tables and wrapping semantics could be derived directly instead of reverse-engineered. The specification work already done remains valid; nothing would need to be redone. **But** the project would then be copyleft, and the permissive-adoption argument in §2.1 is lost |
 | **Option C (another copyleft)** | The same reuse becomes possible only if the chosen licence is GPL-3.0-compatible. MPL-2.0 and LGPL-3.0 are compatible in one direction but impose different file-level or library-level obligations. **This option requires legal advice before it can be evaluated**, because the compatibility direction matters |
 | **Option D (stay unlicensed)** | The repository cannot be published, distributed, or contributed to in any normal sense, and the "all rights reserved" statement must stay prominent. **Phase 2 can still proceed** (it is internal work), but Phase 5 cannot, and no external contributor can be accepted |
 
@@ -139,3 +139,13 @@ They require **qualified legal review**, and engineering must not answer them.
 
 **G1d remains PENDING OWNER ACTION.** The engineering obligation is met; the
 owner's decision is not made, and this document does not make it.
+
+---
+
+## Directive 002-R1 provenance correction
+
+Earlier references to an "independent" or "clean-room" implementation
+do **not** certify a formally isolated clean-room process. Legacy source was
+inspected directly. The engineering controls and unresolved legal dependencies
+are defined in `docs/audits/phase-1-provenance-controls.md`; qualified review
+is required before making derivative-work or distribution claims.
