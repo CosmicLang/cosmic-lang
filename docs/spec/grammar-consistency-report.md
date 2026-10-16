@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | **Machine-checked.** Produced by `tools/spec-consistency.py`. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 · 002-R2 (post-merge) §3 |
 | **Subject** | `docs/spec/grammar.ebnf` (117 productions) and the specification document set |
 | **Checked** | 2026-10-16 |
 | **Result** | **Proposed and machine-checkable** — run the checker for the current result; see §3 for its latest captured output |
@@ -49,6 +49,7 @@ productions, and one production body corrupted by mixed terminal quoting
 | **G10** | Every internal markdown link resolves | No broken navigation |
 | **G11** | Every repository path referenced in backticks resolves | No reference to a file that does not exist (legacy paths must be prefixed `cosmcc:`) |
 | **G12** | The six normative statuses are defined in the specification | The status vocabulary exists and is authoritative |
+| **G13** | The production evidence map covers all 117 productions | Per-production traceability: one well-formed entry per production, in grammar definition order, with resolvable decision references (`docs/spec/grammar-evidence-map.md`) |
 
 ---
 
@@ -58,19 +59,21 @@ productions, and one production body corrupted by mixed terminal quoting
 G-grammar: 117 productions parsed from docs/spec/grammar.ebnf
 G1 undefined nonterminals: none
 G2 unreachable productions: none (3 reference-only tables excluded: delimiter, operator, separator)
-G4 evidence: 10 production blocks, all carry a marker; 0/117 productions carry their own inline marker
+G4 evidence: 10 production blocks, all carry a marker; inline per-production markers: 0/117 (per-production traceability: docs/spec/grammar-evidence-map.md, G13)
 G5 open productions reference 5 records, all present: S1, S13, S2, S5, S9
 
 G7 decision records: 18 of 18 (S1..S18)
 G7 register rows: 18
 G8 status vocabulary checked on 18 records
 
-G6 decision-record references: 702 occurrences, all resolve
+G6 decision-record references: 798 occurrences, all resolve
 G9 gate ids: 15 defined across 2 documents, 15 referenced, all known
 G10 internal links: 18 checked, 0 broken
-G11 repository paths: 356 checked, 0 unresolved, 2 legacy-context
+G11 repository paths: 377 checked, 0 unresolved, 2 legacy-context
 
 G12 normative vocabulary: 6 terms defined
+
+G13 evidence map: 117/117 productions mapped, rows in grammar definition order, cells well-formed
 
 OK — all specification consistency checks passed
 ```
@@ -142,15 +145,17 @@ noise.
 
 So the checkable requirement was made **block-scoped**: every block that defines
 productions must carry at least one evidence or status marker. **10 of 10
-blocks do.** The per-production statistic is reported for transparency:
-**0 of 117 productions carry their own inline marker**, which is the honest
-number — every production is covered by a block-level citation, none is covered
-by a citation that names only it.
+blocks do.** The inline per-production statistic is still reported for
+transparency: **0 of 117 productions carry their own inline marker** — every
+production is covered by a block-level citation, none by a citation that names
+only it.
 
-This is a **deliberate weakening of one check relative to the original
-directive's wording** ("every production requires traceable evidence"). The
-traceability is real and per-block; it is not per-line. Recorded so the owner can
-require per-production markers if that is preferred.
+**This gap is closed by the evidence map.** `docs/spec/grammar-evidence-map.md`
+projects the block-level evidence onto every single production, and check
+**G13** fails if any production is missing, unknown, out of order or
+malformed. The earlier "deliberate weakening" recorded here is therefore
+retired: block markers remain the in-grammar convention, and per-production
+traceability is enforced where it belongs — in the map.
 
 ---
 
@@ -180,10 +185,13 @@ a precise PARSE refusal until the owner approves a recognition contract.
 | `type-ref` `?` | Conversions beyond `T → T?` | **Yes** | No | Probes per conversion direction | S2 |
 | `parameter` type optionality | Not evidenced | **Yes** | No | A probe omitting a parameter type | S1 |
 | `return-type` default | Not evidenced | **Yes** | No | A probe omitting a return type | S1 |
-| `for-stmt` three-clause form | Parser-evidenced, corpus-unevidenced | **Yes** | No | A probe using the three-clause form | S5 |
+| `parameter` order and `= default` | **Grammar gap found (002-R2, F4)** — the executed corpus uses `Type name [= default]`; the production models `name : Type` only | **Yes** | No — both orders are recognition-evidenced; semantics open | A grammar correction authorized by the owner | S1 |
+| `for-stmt` three-clause form | **Corrected (002-R2)** — already exercised by the executed case `loops-control` | **Yes** | No | — evidence found | S5 |
 | `switch-arm` exhaustiveness | Not evidenced | **Yes** | No — gate the *exhaustiveness check*, not `switch` | A probe with a non-exhaustive switch | S5 |
 | `switch-arm` fallthrough | Not evidenced | **Yes** | No | A probe with two adjacent arms | S5 |
 | labelled `break`/`continue` | Not evidenced | **Yes** | **Yes** — labels are syntax that may not exist | A probe using `break label` | S5 |
+| `break`/`continue` statements | **Grammar gap found (002-R2, F1)** — no production derives them although they are source- and corpus-evidenced | **Yes** | No — the syntax is evidenced; the grammar must be corrected | A grammar correction authorized by the owner | S5 |
+| `switch-stmt` colon arms | **Grammar gap found (002-R2, F2)** — statement arms are `case X :`; the grammar models `->` for both switch forms | **Yes** | No — the colon form is evidenced by executed cases | A grammar correction authorized by the owner | S5 |
 | `if-expr` | Parser-evidenced, corpus-unevidenced | **Yes** | No | A probe using `if` in expression position | S5 |
 | `array-literal` | Not evidenced at all | **Yes** | **Yes** — the surface form is a guess and must not be implemented | A corpus or source example | S9 |
 | Identifier class beyond letters/`_`/`$` | Combining marks, other categories | **Yes** | No | Probes with combining marks and digit-leading names | S13 |
@@ -295,7 +303,10 @@ still S8's responsibility. Grammar consistency alone is not approval.
   evidence-cited, every open question traceable.
 * **It does not claim the grammar is correct.** A production can be
   self-consistent and still mis-describe the language. Correctness is established
-  by the differential harness (Phase 2), not by a consistency checker.
+  by the differential harness (Phase 2), not by a consistency checker. The R2
+  production mapping (`docs/spec/grammar-evidence-map.md` §3) has already found
+  three recognition gaps (F1, F2, F4) and one corrected annotation (F3); they are
+  recorded there and are not repaired by this report.
 * **It does not resolve any semantic question.** The provisional productions are
   classified, not decided.
 * **It does not claim the grammar is LL(1).** §5.3 identifies a position where it

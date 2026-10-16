@@ -6,6 +6,7 @@
 | **Phase** | 1 (formal specification) |
 | **Directive** | ENGINEERING DIRECTIVE 002, deliverable D1 |
 | **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
+| **Source extension** | `.cmic` — selected by the project owner (2026-10-16, recorded in `docs/adr/0002-source-extension.md`). The MIME type and editor tooling remain separate, undecided matters; the parser is extension-independent (`docs/spec/compatibility-policy.md` §3) |
 | **Evidence basis** | Legacy source inspection at the frozen SHA (read-only) and the executed golden corpus recorded in `docs/audits/phase-0-baseline.md` §5 |
 | **Companion documents** | `docs/spec/grammar.ebnf` (D2), `docs/spec/typing-contracts.md` (D3), `docs/spec/decisions/` (D4), `docs/spec/compatibility-policy.md` (D5), `docs/spec/diagnostic-codes.md` (D9) |
 | **Provenance rule** | No legacy implementation code, documentation prose or test fixture is reproduced here. Behaviour and facts are cited by file path and SHA; every example is written for this document. See `docs/audits/phase-0-licensing-matrix.md` §4. |
@@ -21,8 +22,6 @@
 
 Every claim carries two orthogonal tags: an **evidence** tag (how we know) and a
 **status** tag (what the claim is worth as a rule).
-
-### 0.1 Evidence tags
 
 | Tag | Meaning |
 |---|---|
@@ -409,12 +408,17 @@ The verified keyword set (E1) is:
 * **[VERIFIED LEGACY BEHAVIOR]** `catch` binds a typed variable: `catch (String e)`. Evidence:
   corpus case `exceptions`; `throw "boom"` throws a **string**, so throwables
   are not restricted to a class hierarchy.
-* **[VERIFIED LEGACY BEHAVIOR]** `switch` supports both statement and expression forms with
-  `case <pattern-or-value> -> <result>` arms, and arms may carry guards.
-  Evidence: `StatementParser.parseSwitchCasePatternOrValue`,
+* **[VERIFIED LEGACY BEHAVIOR]** `switch` supports both statement and expression forms:
+  statement switches use `case <pattern-or-value> :` arms with statement bodies
+  and `default :`; expression switches use `case <pattern-or-value> -> <result>`
+  arms. Arms may carry guards. (The merged grammar models only `->` arms for
+  both forms; the colon form of statement switches is a recorded grammar gap —
+  see `docs/spec/grammar-evidence-map.md` F2.)
+  Evidence: `StatementParser.parseSwitchStatement`,
+  `StatementParser.parseSwitchCasePatternOrValue`,
   `parseGuardIfPresent`, `ExpressionParser.parseSwitchExpression`; corpus cases
   `enum-switch-expr`, `switch-expr`, `switch-break-in-loop`,
-  `switch-defaults`, `sealed-switch`.
+  `string-switch-defaults`, `sealed-switch`.
 * **[OPEN]** Exhaustiveness requirements for `switch` over sealed types
   (record S5).
 * **[OPEN]** Whether `break`/`continue` may carry labels (record S5).

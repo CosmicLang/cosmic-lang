@@ -358,9 +358,9 @@ inference inside an enclosing generic call **drops a nested type argument**
                          , expression , ")" , statement ;
           for-init     = ( "var" | "val" ) , identifier , [ ":" , type-ref ] , "=" , expression
                        | expression ;
-                                                           (* E1:case interfaces — "for (var a in animals)".
-                                                              The three-clause form is E1 from the parser but is
-                                                              NOT exercised by the corpus: [OPEN:S5] *)
+                                                           (* E1:cases interfaces — "for (var a in animals)" —
+                                                              and loops-control — the executed three-clause
+                                                              form `for (var i = 0; i < 10; i = i + 1)`. *)
 
           try-stmt     = "try" , block , { catch-clause } , [ finally-clause ] ;
           catch-clause = "catch" , "(" , type-ref , identifier , ")" , block ;
@@ -527,8 +527,11 @@ parser to guess.
 | `type-ref` with nested arguments | **Verified defect**, not a missing rule | Yes | S1 | **OPEN** (gated) |
 | `type-ref` `?` semantics | Conversion rules beyond `T → T?` | Yes | S2 | **OPEN** (gated) |
 | `parameter` type optionality, default return type | Not evidenced | Yes | S1 | **OPEN** |
-| `for-stmt` three-clause form | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
+| ~~`for-stmt` three-clause form~~ | **Annotation corrected (002-R2)** — exercised by the executed case `loops-control` | Yes | S5 | **CLOSED** |
 | `switch-arm` exhaustiveness, fallthrough, labelled `break`/`continue` | Not evidenced | Yes | S5 | **OPEN** (gated) |
+| `break`/`continue` statements (**no productions**) | **Grammar gap found (002-R2, F1)** — evidenced by source and executed cases; no production derives them | Yes | S5 | **OPEN** |
+| `switch-stmt` colon arms | **Grammar gap found (002-R2, F2)** — statement arms are `case X :`; the grammar models `->` for both switch forms | Yes | S5 | **OPEN** |
+| `parameter` order and `= default` | **Grammar gap found (002-R2, F4)** — the executed corpus uses `Type name [= default]`; the production models `name : Type` only | Yes | S1 | **OPEN** |
 | `if-expr` | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
 | `array-literal`, array indexing details | Not exercised by the corpus | Yes | S9 | **OPEN** |
 | Identifier class set, normalisation, confusables | Combining marks; normalisation policy | Yes | S13 | **PARTLY CLOSED** — letters, `_`, `$` verified by probe |
