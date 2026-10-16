@@ -41,7 +41,7 @@ jobs:
         # Documentation-only check; no Rust toolchain is required, so it runs
         # first and fails fast. Verifies the Phase 1 specification documents:
         # grammar consistency, the decision register, cross-references and the
-        # 117-production evidence map. See docs/spec/grammar-consistency-report.md
+        # 122-production evidence map. See docs/spec/grammar-consistency-report.md
         # and docs/spec/grammar-evidence-map.md.
         run: python3 tools/spec-consistency.py
 

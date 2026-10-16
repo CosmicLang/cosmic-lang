@@ -1,10 +1,10 @@
-# Grammar Production Evidence Map (119/119)
+# Grammar Production Evidence Map (122/122)
 
 | | |
 |---|---|
 | **Status** | **Machine-checked.** Verified by `tools/spec-consistency.py` (check G13). |
-| **Directive** | ENGINEERING DIRECTIVE 002-R2 (post-merge) §3 · 002-R3 §6 |
-| **Subject** | every production of `docs/spec/grammar.ebnf` — 119 of 119 mapped |
+| **Directive** | ENGINEERING DIRECTIVE 002-R2 (post-merge) §3 · 002-R3 §6 · 002-R5 §3–§4 |
+| **Subject** | every production of `docs/spec/grammar.ebnf` — 122 of 122 mapped |
 | **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
 | **Related** | `docs/spec/grammar-consistency-report.md`, `docs/audits/phase-1-legacy-probes.md`, `docs/spec/implementation-gates.md`, `docs/spec/decisions/` |
 
@@ -17,7 +17,7 @@
 ## 1. How to read this map
 
 The grammar states evidence **per production block**; this document makes that
-traceability **per production**. Every one of the 119 productions has exactly
+traceability **per production**. Every one of the 122 productions has exactly
 one row. The checker fails if a production is missing, unknown, out of order,
 or carries an empty or malformed cell — so the table cannot silently drift from
 the grammar.
@@ -153,29 +153,32 @@ those documents, the cell says exactly that rather than guessing.
 | 94 | `finally-clause` | cases `finally-control-flow`, `finally-return` | E1-case | — | RECOGNISED | — |
 | 95 | `switch-stmt` | `cosmcc:parser/StatementParser.java` parseSwitchStatement; cases `switch-expr`, `switch-break-in-loop`, `string-switch-defaults` | E1-source+E1-case | S5 | RECOGNISED | F2 corrected (002-R3): colon arms (`case X :`, `default :`) with statement lists. Exhaustiveness and fallthrough remain open (S5). |
 | 96 | `switch-stmt-arm` | `cosmcc:parser/StatementParser.java` parseSwitchStatement (COLON, PARSE073/PARSE074) | E1-source+E1-case | S5 | RECOGNISED | Added by F2 (002-R3). Statement-list body; guards are recognised on `case` arms only. |
-| 97 | `switch-label` | `cosmcc:parser/StatementParser.java` parseSwitchCasePatternOrValue; cases `switch-expr`, `enum-switch-expr` | E1-source+E1-case | S5 | RECOGNISED | Pattern-versus-value disambiguation is semantic (S5); `default` is its own arm form since 002-R3. |
-| 98 | `guard` | `cosmcc:parser/StatementParser.java` parseGuardIfPresent | E1-source | S5 | RECOGNISED | Recognition only; no normative guard rule (S5). |
-| 99 | `var-decl-stmt` | `cosmcc:parser/StatementParser.java` parseVarDecl; case `concurrency-spawn-await` | E1-source+E1-case | — | RECOGNISED | Optional type annotation. |
-| 100 | `expression-stmt` | `cosmcc:parser/StatementParser.java` | E1-source | — | RECOGNISED | — |
-| 101 | `expression` | `cosmcc:parser/ExpressionParser.java`; probes §2.5, §6.3 | E1-source+E1-probe | S11 | RECOGNISED | Sampled JVM order is left-to-right; unsampled forms and targets NOT VERIFIED (S11, gates M-6). |
-| 102 | `assignment-expr` | `cosmcc:parser/ExpressionParser.java` parseAssignment; probe §2.5 | E1-source+E1-probe | S11 | RECOGNISED | Assignment is a statement (SEM027); `a = b = 1` rejected; associativity question dissolved (S11). |
-| 103 | `assignment-op` | `cosmcc:parser/ExpressionParser.java`; case `compound-assign` | E1-source+E1-case | — | RECOGNISED | Compound operators exercised; simple `=` exercised in `loops-control`. |
-| 104 | `binary-expr` | `cosmcc:parser/ExpressionParser.java` parseBinary; probe §6.3 | E1-source+E1-probe | S11 | RECOGNISED | Left-associative, verified for `<` and `>`; general order NOT VERIFIED. |
-| 105 | `binary-op` | `cosmcc:parser/ExpressionParser.java` precedence table | E1-source | S7, S12 | RECOGNISED | Numeric operations open (S7); equality measured for several kinds, enum and map-key contracts NOT VERIFIED (S12). |
-| 106 | `binary-rhs` | `cosmcc:parser/ExpressionParser.java` parseBinary | E1-source | — | RECOGNISED | `type-ref` right-hand side only for `as` and `instanceof`. |
-| 107 | `unary-expr` | `cosmcc:parser/ExpressionParser.java` parseUnary; case `concurrency-spawn-await` | E1-source+E1-case | S6 | RECOGNISED | `spawn`/`await` typing gated (S6). |
-| 108 | `postfix-expr` | `cosmcc:parser/ExpressionParser.java` parsePostfix, parseCallTypeArguments | E1-source | S1, S9 | RECOGNISED | Generic-call position evidenced; ambiguous overloads gated (S1); indexing details open (S9). |
-| 109 | `postfix-op` | `cosmcc:parser/ExpressionParser.java` parsePostfix | E1-source | S1 | RECOGNISED | Ambiguous overload selection gated (S1); overload tie-break NOT VERIFIED. |
-| 110 | `argument-list` | `cosmcc:parser/ExpressionParser.java` parsePostfix | E1-source | S11 | RECOGNISED | Sampled argument order left-to-right; cross-target NOT VERIFIED (S11). |
-| 111 | `primary` | `cosmcc:parser/ExpressionParser.java` parsePrimary | E1-source | — | RECOGNISED | Includes both a parenthesised expression and the lambda position; lookahead ambiguity unresolved (report §5.3, Phase 2 parser-design requirement). |
-| 112 | `if-expr` | `cosmcc:parser/ExpressionParser.java` parseIfExprBranch | E1-source | S5 | RECOGNISED | Parser-evidenced; no corpus exercise; surface provisional (S5). |
-| 113 | `array-literal` | No evidence located (grammar §3.7) | E2 | S9 | UNSUPPORTED | Brace form is a placeholder; refuse until evidenced or accepted (report §4.2). |
-| 114 | `lambda` | `cosmcc:parser/LambdaParser.java`, `ExpressionParser.parseTrailingLambdaBlock`; case `functions` | E1-source+E1-case | — | RECOGNISED | Parenthesis-versus-lambda lookahead unresolved (report §5.3); trailing-lambda same-line legacy rule is a proposed normative rule. |
-| 115 | `lambda-params` | `cosmcc:parser/LambdaParser.java`; case `functions` | E1-source+E1-case | — | RECOGNISED | Typed parameters. |
-| 116 | `lambda-body` | `cosmcc:parser/LambdaParser.java`; case `functions` | E1-source+E1-case | — | RECOGNISED | Expression or block. |
-| 117 | `switch-expr` | `cosmcc:parser/ExpressionParser.java` parseSwitchExpression; cases `enum-switch-expr`, `switch-expr`, `sealed-switch`, `string-switch-defaults` | E1-source+E1-case | S5 | RECOGNISED | Arrow arms; single-expression bodies (block bodies rejected, PARSE094); exhaustiveness not evidenced (S5). |
-| 118 | `switch-expr-arm` | `cosmcc:parser/ExpressionParser.java` parseSwitchExpression (ARROW, PARSE076/PARSE077); cases `enum-switch-expr`, `string-switch-defaults` (`default ->`) | E1-source+E1-case | S5 | RECOGNISED | Added by F2 (002-R3): `case X -> expression` and `default -> expression`. |
-| 119 | `new-expr` | `cosmcc:parser/ExpressionParser.java` parseNewExpression | E1-source | — | RECOGNISED | `new` keyword parser-evidenced; corpus exercise not established; no case is cited for it. |
+| 97 | `switch-label` | `cosmcc:parser/StatementParser.java` parseSwitchCasePatternOrValue (value/type branches); cases `switch-expr`, `enum-switch-expr` | E1-source+E1-case | S5 | RECOGNISED | Pattern alternatives are separate productions since F5 (002-R5); pattern-versus-value interpretation is semantic (S5); `default` is its own arm form since 002-R3. |
+| 98 | `binding-pattern` | `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java` parseSwitchCasePatternOrValue (lines 357-365: IDENTIFIER IDENTIFIER, then `:`/`->`/`if`); case `sealed-switch` (`cosmcc:tests/golden/sealed-switch/Main.kf` lines 19-20) | E1-source+E1-case | S5 | RECOGNISED | Added by F5 (002-R5). Recognition only: binding semantics, exhaustiveness and fallthrough are S5's and are not asserted; the type name is a single identifier (qualified names are not accepted by the legacy routine). |
+| 99 | `destructuring-pattern` | `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java` parseSwitchCasePatternOrValue (lines 366-403); case `switch-break-in-loop` (`cosmcc:tests/golden/switch-break-in-loop/Main.kf` line 22) | E1-source+E1-case | S5 | RECOGNISED | Added by F5 (002-R5). Recognition only: field-binding semantics are S5's. The legacy scanner's 20-token window, its bare-identifier field leniency and its comma leniency are implementation artifacts, not modelled. |
+| 100 | `pattern-field` | `cosmcc:lang/KofKeywords.java` lines 76-77 (`var`/`val` keyword tokens); `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java` lines 384-396 (prefixes skipped; only the bound name is recorded); case `switch-break-in-loop` | E1-source+E1-case | S5 | RECOGNISED | Added by F5 (002-R5). `val` is accepted by the same scanner path but is not case-attested; a bare identifier field is also accepted by the scanner (value-position forms remain derivable as expressions); the `var`/`val` distinction is not recorded, so no mutability meaning is claimed. |
+| 101 | `guard` | `cosmcc:parser/StatementParser.java` parseGuardIfPresent | E1-source | S5 | RECOGNISED | Recognition only; no normative guard rule (S5). |
+| 102 | `var-decl-stmt` | `cosmcc:parser/StatementParser.java` parseVarDecl; case `concurrency-spawn-await` | E1-source+E1-case | — | RECOGNISED | Optional type annotation. |
+| 103 | `expression-stmt` | `cosmcc:parser/StatementParser.java` | E1-source | — | RECOGNISED | — |
+| 104 | `expression` | `cosmcc:parser/ExpressionParser.java`; probes §2.5, §6.3 | E1-source+E1-probe | S11 | RECOGNISED | Sampled JVM order is left-to-right; unsampled forms and targets NOT VERIFIED (S11, gates M-6). |
+| 105 | `assignment-expr` | `cosmcc:parser/ExpressionParser.java` parseAssignment; probe §2.5 | E1-source+E1-probe | S11 | RECOGNISED | Assignment is a statement (SEM027); `a = b = 1` rejected; associativity question dissolved (S11). |
+| 106 | `assignment-op` | `cosmcc:parser/ExpressionParser.java`; case `compound-assign` | E1-source+E1-case | — | RECOGNISED | Compound operators exercised; simple `=` exercised in `loops-control`. |
+| 107 | `binary-expr` | `cosmcc:parser/ExpressionParser.java` parseBinary; probe §6.3 | E1-source+E1-probe | S11 | RECOGNISED | Left-associative, verified for `<` and `>`; general order NOT VERIFIED. |
+| 108 | `binary-op` | `cosmcc:parser/ExpressionParser.java` precedence table | E1-source | S7, S12 | RECOGNISED | Numeric operations open (S7); equality measured for several kinds, enum and map-key contracts NOT VERIFIED (S12). |
+| 109 | `binary-rhs` | `cosmcc:parser/ExpressionParser.java` parseBinary | E1-source | — | RECOGNISED | `type-ref` right-hand side only for `as` and `instanceof`. |
+| 110 | `unary-expr` | `cosmcc:parser/ExpressionParser.java` parseUnary; case `concurrency-spawn-await` | E1-source+E1-case | S6 | RECOGNISED | `spawn`/`await` typing gated (S6). |
+| 111 | `postfix-expr` | `cosmcc:parser/ExpressionParser.java` parsePostfix, parseCallTypeArguments | E1-source | S1, S9 | RECOGNISED | Generic-call position evidenced; ambiguous overloads gated (S1); indexing details open (S9). |
+| 112 | `postfix-op` | `cosmcc:parser/ExpressionParser.java` parsePostfix | E1-source | S1 | RECOGNISED | Ambiguous overload selection gated (S1); overload tie-break NOT VERIFIED. |
+| 113 | `argument-list` | `cosmcc:parser/ExpressionParser.java` parsePostfix | E1-source | S11 | RECOGNISED | Sampled argument order left-to-right; cross-target NOT VERIFIED (S11). |
+| 114 | `primary` | `cosmcc:parser/ExpressionParser.java` parsePrimary | E1-source | — | RECOGNISED | Includes both a parenthesised expression and the lambda position; lookahead ambiguity unresolved (report §5.3, Phase 2 parser-design requirement). |
+| 115 | `if-expr` | `cosmcc:parser/ExpressionParser.java` parseIfExprBranch | E1-source | S5 | RECOGNISED | Parser-evidenced; no corpus exercise; surface provisional (S5). |
+| 116 | `array-literal` | No evidence located (grammar §3.7) | E2 | S9 | UNSUPPORTED | Brace form is a placeholder; refuse until evidenced or accepted (report §4.2). |
+| 117 | `lambda` | `cosmcc:parser/LambdaParser.java`, `ExpressionParser.parseTrailingLambdaBlock`; case `functions` | E1-source+E1-case | — | RECOGNISED | Parenthesis-versus-lambda lookahead unresolved (report §5.3); trailing-lambda same-line legacy rule is a proposed normative rule. |
+| 118 | `lambda-params` | `cosmcc:parser/LambdaParser.java`; case `functions` | E1-source+E1-case | — | RECOGNISED | Typed parameters. |
+| 119 | `lambda-body` | `cosmcc:parser/LambdaParser.java`; case `functions` | E1-source+E1-case | — | RECOGNISED | Expression or block. |
+| 120 | `switch-expr` | `cosmcc:parser/ExpressionParser.java` parseSwitchExpression; cases `enum-switch-expr`, `switch-expr`, `sealed-switch`, `string-switch-defaults` | E1-source+E1-case | S5 | RECOGNISED | Arrow arms; single-expression bodies (block bodies rejected, PARSE094); exhaustiveness not evidenced (S5). |
+| 121 | `switch-expr-arm` | `cosmcc:parser/ExpressionParser.java` parseSwitchExpression (ARROW, PARSE076/PARSE077); cases `enum-switch-expr`, `string-switch-defaults` (`default ->`) | E1-source+E1-case | S5 | RECOGNISED | Added by F2 (002-R3): `case X -> expression` and `default -> expression`. |
+| 122 | `new-expr` | `cosmcc:parser/ExpressionParser.java` parseNewExpression | E1-source | — | RECOGNISED | `new` keyword parser-evidenced; corpus exercise not established; no case is cited for it. |
 
 ---
 
@@ -185,9 +188,12 @@ The mapping exercise checked every production against the executed corpus and th
 frozen source. Four statements in the merged Phase 1 documents did not survive
 that check. **F1, F2 and F4 change the derivable language; they were reported
 for owner authorization and the owner authorized the corrections in
-ENGINEERING DIRECTIVE 002-R3 §1 — they are applied in this branch.** F3 plus the
-minor corrections are annotation-level and were applied in the earlier R2
-commits on this branch.
+ENGINEERING DIRECTIVE 002-R3 §1 — they are applied in this branch.** A fifth
+gap — **F5**, the pattern-header finding recorded as S-G1S-1 in 002-R4 — was
+conditionally authorized by the owner in ENGINEERING DIRECTIVE 002-R5 §3,
+verified by direct read of the frozen legacy evidence, and **is applied in this
+revision** (production count 119 → 122). F3 plus the minor corrections are
+annotation-level and were applied in the earlier R2 commits on this branch.
 
 ### F1 — `break`/`continue`: corrected in 002-R3
 
@@ -274,6 +280,45 @@ interaction with inference) remain NOT VERIFIED and no component may invent
 them. Parameter-type omission and implicit inference remain unevidenced (S1).
 See recognition example 3 (§4).
 
+### F5 — pattern-header arm forms: corrected in 002-R5
+
+**Evidence (re-read directly at the frozen SHA for 002-R5 §3):**
+
+* Executed cases: `switch-break-in-loop`
+  (`cosmcc:tests/golden/switch-break-in-loop/Main.kf` line 22) exercises
+  `case Point(var x, var y):` — a **destructuring pattern** in a colon
+  statement arm; `sealed-switch` (`cosmcc:tests/golden/sealed-switch/Main.kf`
+  lines 19-20) exercises `case Circle c -> …` — a **type-and-binding pattern**
+  in an arrow expression arm. Both pass 222/222 on jvm/js/script.
+* Source: `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java`
+  `parseSwitchCasePatternOrValue` (lines 353-407) recognises both forms before
+  falling back to `ExpressionParser.parseExpression`;
+  `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/ExpressionParser.java`
+  `parseSwitchExpression` (line 463) shares the routine for arrow arms;
+  `cosmcc:lang/KofKeywords.java` lines 76-77 map `var`/`val` to keyword tokens.
+
+**Defect (as found, recorded as S-G1S-1 in 002-R4):**
+`switch-label = expression | type-ref` derived neither attested header form:
+`Circle c` is not an expression or a `type-ref`, and `Point(var x, var y)` is
+not an expression.
+
+**Correction applied (002-R5 §3, conditional on direct verification — verified):**
+
+```ebnf
+switch-label = expression | type-ref | binding-pattern | destructuring-pattern ;
+binding-pattern = identifier , identifier ;
+destructuring-pattern = identifier , "(" , pattern-field , { "," , pattern-field } , ")" ;
+pattern-field = ( "var" | "val" ) , identifier ;
+```
+
+The pattern type name is a single `identifier` because the legacy routine
+requires one IDENTIFIER token (qualified names fall back to expression
+parsing). **Recorded, not modelled:** the scanner's 20-token paren window, its
+acceptance of empty or bare-identifier field lists, and its comma leniency are
+implementation artifacts. Pattern *semantics* — binding meaning, match order,
+scoping, exhaustiveness, fallthrough, guards — remain S5's and are untouched.
+See recognition example 4 (§4).
+
 ### Minor corrections applied in this branch
 
 * `docs/spec/language-spec.md` §5: the switch bullet described both switch forms
@@ -288,8 +333,8 @@ See recognition example 3 (§4).
 ## 4. Recognition examples (independently authored)
 
 These snippets were written for this document — not copied from the legacy
-corpus — and exercise exactly the syntax the corrected productions of F1, F2
-and F4 derive. They are **recognition** examples: they show the forms the
+corpus — and exercise exactly the syntax the corrected productions of F1, F2,
+F4 and F5 derive. They are **recognition** examples: they show the forms the
 grammar now recognises. They are not compatibility fixtures and not a semantic
 contract.
 
@@ -364,6 +409,33 @@ main() {
 *Recognition:* the `Type name` declaration order with an optional `= default`
 (`greet`) and the `name : Type` lambda order (`inc`). Default-expression
 evaluation semantics are explicitly **not** specified.
+
+**Example 4 — F5: pattern-header switch labels.**
+
+```kof
+record Point(Int x, Int y)
+
+String name(Shape s) {
+    return switch (s) {
+        case Circle c -> "circle"
+        default -> "shape"
+    }
+}
+
+main() {
+    switch (Point(1, 2)) {
+        case Point(var x, var y):
+            println(x + y)
+        default:
+            println(0)
+    }
+}
+```
+
+*Recognition:* `binding-pattern` (`case Circle c`, arrow arm) and
+`destructuring-pattern` (`case Point(var x, var y)`, colon arm) as switch
+labels. Which labels are patterns versus values, binding scope and
+exhaustiveness are **not** claimed — those remain S5's open questions.
 
 ---
 

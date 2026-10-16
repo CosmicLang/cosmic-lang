@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Status** | **Machine-checked.** Produced by `tools/spec-consistency.py`. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 · 002-R2 (post-merge) §3 · 002-R3 §6 |
-| **Subject** | `docs/spec/grammar.ebnf` (119 productions) and the specification document set |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 · 002-R2 (post-merge) §3 · 002-R3 §6 · 002-R5 §3–§4 |
+| **Subject** | `docs/spec/grammar.ebnf` (122 productions) and the specification document set |
 | **Checked** | 2026-10-16 |
 | **Result** | **Proposed and machine-checkable** — run the checker for the current result; see §3 for its latest captured output |
 
@@ -56,24 +56,24 @@ productions, and one production body corrupted by mixed terminal quoting
 ## 3. Raw output
 
 ```
-G-grammar: 119 productions parsed from docs/spec/grammar.ebnf
+G-grammar: 122 productions parsed from docs/spec/grammar.ebnf
 G1 undefined nonterminals: none
 G2 unreachable productions: none (3 reference-only tables excluded: delimiter, operator, separator)
-G4 evidence: 10 production blocks, all carry a marker; inline per-production markers: 0/119 (per-production traceability: docs/spec/grammar-evidence-map.md, G13)
+G4 evidence: 10 production blocks, all carry a marker; inline per-production markers: 0/122 (per-production traceability: docs/spec/grammar-evidence-map.md, G13)
 G5 open productions reference 5 records, all present: S1, S13, S2, S5, S9
 
 G7 decision records: 18 of 18 (S1..S18)
 G7 register rows: 18
 G8 status vocabulary checked on 18 records
 
-G6 decision-record references: 817 occurrences, all resolve
+G6 decision-record references: 951 occurrences, all resolve
 G9 gate ids: 15 defined across 2 documents, 15 referenced, all known
-G10 internal links: 18 checked, 0 broken
-G11 repository paths: 383 checked, 0 unresolved, 2 legacy-context
+G10 internal links: 19 checked, 0 broken
+G11 repository paths: 475 checked, 0 unresolved, 2 legacy-context
 
 G12 normative vocabulary: 6 terms defined
 
-G13 evidence map: 119/119 productions mapped, rows in grammar definition order, cells well-formed
+G13 evidence map: 122/122 productions mapped, rows in grammar definition order, cells well-formed
 
 OK — all specification consistency checks passed
 ```
@@ -84,8 +84,9 @@ The directive — following the Phase 1 report — describes the delivered gramm
 as **"59 productions"**. A mechanical parse of the same file at the HEAD
 revision finds **97 production statements**. The "59" was an undercount that no
 tool produced; the grammar defined **117 productions** after the R1 corrections
-supplied the missing definitions, and **119** after the 002-R3 recognition
-corrections (F1, F2).
+supplied the missing definitions, **119** after the 002-R3 recognition
+corrections (F1, F2), and **122** after the 002-R5 pattern-header correction
+(F5 — finding S-G1S-1, verified directly against the frozen legacy evidence).
 
 The baseline is reproducible without editing the repository:
 
@@ -147,7 +148,7 @@ noise.
 So the checkable requirement was made **block-scoped**: every block that defines
 productions must carry at least one evidence or status marker. **10 of 10
 blocks do.** The inline per-production statistic is still reported for
-transparency: **0 of 119 productions carry their own inline marker** — every
+transparency: **0 of 122 productions carry their own inline marker** — every
 production is covered by a block-level citation, none by a citation that names
 only it.
 
@@ -193,6 +194,7 @@ a precise PARSE refusal until the owner approves a recognition contract.
 | labelled `break`/`continue` | Not evidenced | **Yes** | **Yes** — labels are syntax that may not exist | A probe using `break label` | S5 |
 | `break`/`continue` statements | **Corrected (002-R3)** — `break-stmt`/`continue-stmt` added; unlabelled forms only | **Yes** | No — the syntax is evidenced and now derived | — correction applied | S5 |
 | `switch-stmt` colon arms | **Corrected (002-R3)** — `switch-stmt-arm` (colon) and `switch-expr-arm` (arrow) are separate productions | **Yes** | No — the colon form is evidenced by executed cases | — correction applied | S5 |
+| `switch-label` pattern headers | **Corrected (002-R5)** — `binding-pattern`, `destructuring-pattern` and `pattern-field` added after direct verification of the frozen legacy evidence (002-R5 §3) | **Yes** | No — recognition is evidenced by executed cases and verified source | — correction applied | S5 |
 | `if-expr` | Parser-evidenced, corpus-unevidenced | **Yes** | No | A probe using `if` in expression position | S5 |
 | `array-literal` | Not evidenced at all | **Yes** | **Yes** — the surface form is a guess and must not be implemented | A corpus or source example | S9 |
 | Identifier class beyond letters/`_`/`$` | Combining marks, other categories | **Yes** | No | Probes with combining marks and digit-leading names | S13 |
@@ -257,7 +259,7 @@ unambiguity or of deterministic lookahead for the entire grammar:
 | `top-level-body`: `function-decl` vs `type-decl` | The parser's dispatch order is explicit and evidence-backed (`Parser.java parse()`), and a function begins with an identifier, `void`, a primitive type name, or `(` |
 | `statement`: `expression-stmt` vs the keyword-led forms | Disjoint on the leading keyword |
 | `binary-expr`: `as`/`instanceof` taking a type | Not an ambiguity: the production *requires* a `type-ref` for exactly those two operators |
-| `switch-label`: pattern vs value | Not an ambiguity at the grammar level; the disambiguation is semantic (S5); `default` is its own arm form since 002-R3 |
+| `switch-label`: pattern vs value | Not an ambiguity at the grammar level; the disambiguation is semantic (S5); `default` is its own arm form since 002-R3; the pattern-header alternatives are derived since 002-R5 (F5) |
 | `lambda`: `(params) -> body` vs a parenthesised expression | **UNRESOLVED** on `(` — see §5.3 |
 
 ### 5.3 One residual lookahead requirement — recorded, not resolved
@@ -306,8 +308,10 @@ still S8's responsibility. Grammar consistency alone is not approval.
   self-consistent and still mis-describe the language. Correctness is established
   by the differential harness (Phase 2), not by a consistency checker. The R2
   production mapping (`docs/spec/grammar-evidence-map.md` §3) found three
-  recognition gaps (F1, F2, F4) and one annotation error (F3); all four were
-  corrected under owner authorization — F3 in R2, F1/F2/F4 in 002-R3 — and the
+  recognition gaps (F1, F2, F4) and one annotation error (F3); the 002-R4
+  entry-readiness pass surfaced one further recognition gap — finding S-G1S-1 —
+  corrected as F5 in 002-R5 after direct verification; all were corrected under
+  owner authorization — F3 in R2, F1/F2/F4 in 002-R3, F5 in 002-R5 — and the
   map's per-production coverage is machine-checked (G13). The corrections
   removed known mis-descriptions; they do not establish correctness.
 * **It does not resolve any semantic question.** The provisional productions are

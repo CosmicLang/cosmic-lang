@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **OPEN** |
+| **Status** | **OPEN** — the 002-R4 update below corrects the Q1 syntax-recognition evidence (binding/destructuring *syntax* is evidenced; no semantics proposed) |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 validation |
 | **Related** | `docs/spec/language-spec.md` §5, `docs/spec/grammar.ebnf` §3.6, S1 |
@@ -69,7 +69,10 @@
 ## Recommendation (PROPOSED, not in force)
 
 * **Q1** — Patterns: value/constant patterns, **type patterns**, `null`, and
-  `default`. Destructuring is **not** proposed (no evidence).
+  `default`, plus the **evidenced recognition** of binding/destructuring arm
+  headers (see the 002-R4 update below; the earlier "no evidence" wording was
+  stale). **Normative pattern semantics — destructuring/binding meaning, match
+  order, scoping — are not proposed.**
 * **Q2** — Guards are part of the language (parser-evidenced). Scope: a guard
   may reference the pattern's binding and enclosing scope; it must be a boolean
   expression.
@@ -124,3 +127,43 @@
   are refused.
 * Status remains **OPEN**; the S1–S18 records remain individually
   authoritative.
+
+## 002-R4 update (2026-10-16)
+
+The 002-R4 correction reconciles the Q1 recommendation with the executed
+evidence, in four separate layers. **No status changes; nothing below is
+adopted.**
+
+| Layer | Record |
+|---|---|
+| **Verified syntax recognition** | Arm-header *syntax* for type-and-binding (`case Circle c ->`, `sealed-switch`) and destructuring (`case Point(var x, var y):`, `switch-break-in-loop`) is parser-evidenced (`StatementParser.parseSwitchCasePatternOrValue`, `cosmcc:parser/` at the frozen SHA) and exercised by executed cases. Recognition does not imply meaning. |
+| **Observed legacy behavior** | Both cases execute (222/222 on jvm/js/script); `switch-break-in-loop` prints 208/21, which requires `break` to exit the switch. Recorded behavior, not a rule. |
+| **Proposed normative semantics** | **None new.** Pattern semantics — destructuring/binding meaning, match order, scoping — are not proposed; Q2–Q4's existing PROPOSED items (boolean guards, sealed/enum exhaustiveness, no fallthrough) are unchanged. |
+| **Unresolved decisions** | Q1's breadth beyond the evidenced forms, Q2 guard-scope adoption, Q3 reachability measurement, Q4 fallthrough/break adoption, Q5 labels (refused, not evidenced), Q6 three-clause normative acceptance — all remain OPEN or gated as recorded. |
+
+**Cross-reference.** Whether the corrected grammar derives the two attested
+header forms is examined as finding S-G1S-1 in
+[`g1-s-syntax-decision-package.md`](../g1-s-syntax-decision-package.md) §3.3 — a
+recognition-subset question owned by G1-S. It does not change this record's
+statuses.
+
+## 002-R5 update (2026-10-16)
+
+Finding S-G1S-1 is **resolved**. The pattern-header recognitions were directly
+verified against the frozen legacy evidence and the owner-authorized bounded
+correction (ENGINEERING DIRECTIVE 002-R5 §3) is applied:
+
+* **Verification.** `cosmcc:tests/golden/sealed-switch/Main.kf` lines 19–20
+  (`case Circle c -> …`), `cosmcc:tests/golden/switch-break-in-loop/Main.kf`
+  line 22 (`case Point(var x, var y):`), and
+  `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java`
+  `parseSwitchCasePatternOrValue` (lines 353–407) at the frozen SHA — read
+  directly and recorded in `docs/spec/g1-s-syntax-decision-package.md` §3.3 and
+  `docs/spec/grammar-evidence-map.md` §3 (F5).
+* **Grammar.** `switch-label` now derives `binding-pattern` and
+  `destructuring-pattern` (plus `pattern-field`); the production count moves
+  119 → 122.
+* **Evidence versus semantics.** This is **syntax recognition only**,
+  consistent with the 002-R4 four-layer split: Q1's normative questions
+  (binding/destructuring *meaning*, match order, scoping) remain OPEN; Q2–Q6
+  are unchanged; no normative pattern semantics are proposed or adopted.

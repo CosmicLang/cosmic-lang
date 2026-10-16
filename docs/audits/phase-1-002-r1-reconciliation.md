@@ -186,7 +186,7 @@ Gate mapping per record: `docs/spec/implementation-gates.md` §4. Tier assignmen
 4. **Dependency licences** must be recorded when the first dependency is added (toolchain policy §3).
 5. **Uncertain provenance is escalated** for human review before commit.
 
-**Licensing recommendation (engineering, non-binding):** keep the decision open until **qualified counsel** rules on the ten legal dependencies (L1–L10 in `docs/audits/phase-1-licensing-recommendation.md` §5) — especially **L1** (is an independently written reimplementation of the same language a derivative work?), **L9/L10** (do behaviourally derived PortuKof/KofScript specifications create derivative works?) and **L6/L8** (black-box execution and CI logs). Among the options: **A (GPL-3.0)** is the cheapest path *if* the owner intends to reuse legacy-derived vocabulary/semantics and accepts copyleft; **B (permissive, e.g. Apache-2.0 or MIT)** preserves adoption and matches the project's independent-authorship posture, but rests on L1; **C (other copyleft)** requires the same review first; **D (stay unlicensed)** keeps the project internal-only. Engineering's stated preference for a published project is **B with an express patent grant**, contingent on L1 review — **the owner decides, and nothing is selected automatically.**
+**Licensing recommendation (engineering, non-binding):** keep the decision open until **qualified counsel** rules on the ten legal dependencies (L1–L10 in `docs/audits/phase-1-licensing-recommendation.md` §5) — especially **L1** (is an independently written reimplementation of the same language a derivative work?), **L9/L10** (do behaviourally derived PortuKof/KofScript specifications create derivative works?) and **L6/L8** (black-box execution and CI logs). Among the options: **A (GPL-3.0)** is the cheapest path *if* the owner intends to reuse legacy-derived vocabulary/semantics and accepts copyleft; **B (permissive, e.g. Apache-2.0 or MIT)** preserves adoption and matches the project's independent-authorship posture, but rests on L1; **C (other copyleft)** requires the same review first; **D (stay unlicensed)** keeps all rights reserved and blocks distribution and external contribution, but does not make the already-public repository private. Engineering's stated preference for a published project is **B with an express patent grant**, contingent on L1 review — **the owner decides, and nothing is selected automatically.**
 
 ---
 
@@ -249,7 +249,7 @@ Left-to-right evaluation, receiver-first, short-circuit, assignment-as-statement
 
 ### J-5. Licence (gate G1d)
 
-* Options A–D per `docs/audits/phase-1-licensing-recommendation.md`; engineering recommends deciding **after** counsel review of L1/L6/L8/L9/L10, with a permissive-with-patent-grant preference if publication is intended. ☐ A ☐ B ☐ C ☐ D ☐ defer. **Until then: internal development only, no release, no external contribution promises.**
+* Options A–D per `docs/audits/phase-1-licensing-recommendation.md`; engineering recommends deciding **after** counsel review of L1/L6/L8/L9/L10, with a permissive-with-patent-grant preference if publication is intended. ☐ A ☐ B ☐ C ☐ D ☐ defer. **Until then: no release and no external contribution promises — and no "internal" development in this public repository, where a pushed branch or PR is itself publication; the public/private choice is now explicit (Options L-A/L-B in `docs/spec/phase-2-entry-readiness.md` §3).**
 
 ### J-6. Scope decisions S3 (PortuKof) and S4 (KofScript)
 

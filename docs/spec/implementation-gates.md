@@ -246,21 +246,29 @@ already existed.
 | **G1-T** | **Semantic readiness** (name resolution, typing, typed HIR) — unlocks `cosmic-sema` | Accepted rules for each implemented semantic operation; per-operation (construct, decision, operation, diagnostic, closing evidence) entries for each unaccepted operation; negative tests require no output artifact |
 | **G1-M** | **Middle-end readiness** — unlocks `cosmic-mir` / `cosmic-opt` | Every Tier-M operation has an ACCEPTED NORMATIVE RULE and mechanically specified verifier obligations; otherwise defer that operation |
 | **G1-R** | **Backend readiness** — unlocks `cosmic-runtime` / codegen | S16 and S17 decided; the per-target capability table schema exists |
-| **G1c** | Owner: identity, compatibility | **Extension decided: `.cmic`** (2026-10-16, ADR-0002 §4.1). Identity naming and compatibility still require owner approval or explicit component-limited deferral; parser independent of filename extension; no publication |
-| **G1d** | Owner: licence | Owner approval or explicit internal-development-only deferral; no legacy artifacts imported, no release/distribution |
+| **G1c** | Owner: identity, compatibility | **Extension decided: `.cmic`** (2026-10-16, ADR-0002 §4.1). Identity naming and compatibility still require owner approval or explicit component-limited deferral; the parser is independent of filename extension. No release, announcement or MIME registration is authorized; source publication in this public repository is governed by G1d |
+| **G1d** | Owner: licence and publication | Owner licensing decision **and** the public/private development choice: **L-A** (public development under an established licensing and contribution policy after legal/provenance review) or **L-B** (development exclusively in a genuinely private repository or local environment) — see `docs/spec/phase-2-entry-readiness.md` §3. No legacy artifacts imported. A branch or PR in this public repository publishes source even without a release |
 | **G1e** | CI and governance | CI green on the branch; protection verified |
+
+> **002-R4 correction (2026-10-16).** The G1c and G1d rows previously said
+> "no publication" and offered an "internal-development-only deferral" while
+> Directive 003 directed implementation onto a public branch. That framing was
+> factually inconsistent: in a public repository, a pushed branch or pull
+> request publishes the source, with or without a binary release. The rows above
+> now state the two owner options (L-A/L-B); the licence itself remains
+> undecided.
 
 ### 5.1 The cycle, resolved
 
 | Gate | Status after Directive 002-R3 |
 |---|---|
-| G1 | **PARTIAL** — F1/F2/F4 recognition corrections applied under owner authorization; explicit recognition-subset and exclusion approval still outstanding |
+| G1 | **PARTIAL** — F1/F2/F4 recognition corrections applied under owner authorization, and F5 (S-G1S-1) verified and applied (002-R5); explicit recognition-subset and exclusion approval still outstanding |
 | **G1-L** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — technical evidence: S8, S13, S14 are closed or gated on executed evidence; the owner has not yet accepted the lexical contract |
-| **G1-S** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S; F1/F2/F4 corrections applied; explicit recognized-subset acceptance outstanding |
+| **G1-S** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S; F1/F2/F4 corrections applied and S-G1S-1 (F5) verified and applied (002-R5; `docs/spec/g1-s-syntax-decision-package.md` §3.3); explicit recognized-subset acceptance outstanding |
 | G1-T | **FRAMEWORK ACCEPTED · ENTRY PENDING** — every Tier-T record is closed or gated; the per-operation gates are specified in §4.1; acceptance outstanding |
 | G1-M | **FRAMEWORK ACCEPTED · ENTRY PENDING** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
 | G1-R | **FRAMEWORK ACCEPTED · ENTRY PENDING (OWNER)** — S16/S17 undecided. Does not gate Phase 2 or Phase 3 |
-| G1c / G1d | **PENDING OWNER** (extension part decided: `.cmic`) — an explicit limited-scope owner waiver is still required for frontend work without the identity/compatibility and licence choices |
+| G1c / G1d | **PENDING OWNER** (extension part decided: `.cmic`) — a limited-scope deferral for identity/compatibility, and the G1d public/private development choice (L-A/L-B, `docs/spec/phase-2-entry-readiness.md` §3), are still required before any frontend implementation |
 | G1e | **PRIOR SHA PASSED** — verify protection details and CI on the final SHA |
 
 **Therefore: the gate framework is accepted (002-R3); a component-scoped Phase 2
@@ -276,8 +284,9 @@ decision — not by relaxing any standard.
   gate change moves no decision.
 * **No `GATED` record is decided.** A gate is a refusal, not a rule.
 * **The owner-blocked decisions are still owner-blocked** (S3, S4, S16, S17, the
-  licence, the MIME type, the naming) — with one completion: the source
-  extension has been selected by the owner (`.cmic`, 2026-10-16).
+  licence and the public/private development choice, the MIME type, the naming)
+  — with one completion: the source extension has been selected by the owner
+  (`.cmic`, 2026-10-16).
 * **Phase 3 and Phase 4 remain blocked** on G1-M and G1-R respectively.
 * **G0-B remains PARTIAL.**
 
