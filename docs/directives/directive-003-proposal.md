@@ -1,11 +1,12 @@
 # ENGINEERING DIRECTIVE 003 — Proposed Phase 2 Frontend
 
 > **Status: PROPOSED NORMATIVE RULE / NOT AUTHORIZED.** Draft for owner
-> consideration under Directives 002-R1 and 002-R2 (post-merge). No
+> consideration under Directives 002-R1, 002-R2 (post-merge) and 002-R3. No
 > implementation may begin from this
 > document alone. Historic Directive 002 gate language (G1/G1b/G1c/G1d/G1e)
-> remains an archival record; this proposal requires an explicit owner decision
-> on the revised component gates in `docs/spec/implementation-gates.md`.
+> remains an archival record; the revised component gates in
+> `docs/spec/implementation-gates.md` were **accepted by the owner in Directive
+> 002-R3**, which still does not authorize this directive or any Phase 2 work.
 
 **Role:** Principal Rust Compiler Engineer
 **Repository:** `CosmicLang/cosmic-lang`
@@ -33,7 +34,9 @@ Directive 003 with the following scoped conditions:
 | **G1e** | CI green for exact branch SHA, governance/protection revalidated. |
 | **G0-B** | Remains PARTIAL; documented Phase 0 exception is not reported as a pass. |
 
-**G1b is replaced only if the owner approves the revised gate model.** The
+**G1b is replaced by the owner-accepted component gate model**
+(002-R3, 2026-10-16): G1-L/G1-S/G1-T/G1-M/G1-R in
+`docs/spec/implementation-gates.md`. The
 underlying unresolved semantic questions remain OPEN. Approval of lexer/parser
 recognition does not imply approval of the language's semantics, product
 identity, extension, license, or runtime architecture.

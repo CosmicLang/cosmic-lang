@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Proposed** — replaces the flat `G1b` gate. Awaiting owner acceptance. (Post-merge update: the `.cmic` extension selection is recorded in ADR-0002 §4.1; the gate model itself remains unaccepted.) |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 |
+| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 |
 | **Supersedes** | the single `G1b` gate defined in `docs/spec/decisions/README.md` and `docs/directives/directive-003-proposal.md` |
 | **Related** | `docs/spec/decisions/` (S1–S18), `docs/audits/phase-1-legacy-probes.md`, `docs/spec/grammar-consistency-report.md`, `docs/directives/directive-003-proposal.md` |
 
@@ -120,7 +120,7 @@ actual open questions:
 |---|---|---|
 | S1 Q1 — nested type-argument resolution | Reject all generic types | Accept `Box<Int>`, `List<Box<Int>>`; gate **only** a type argument that is itself a parameterised type at depth ≥ 2 |
 | S5 Q3 — exhaustiveness | Reject `switch` entirely | Accept every `switch`; gate **only** the exhaustiveness check, and only where exhaustiveness is required |
-| S5 Q4 — fallthrough | Reject `switch` in a loop | Accept `switch` anywhere; gate **only** the `break`-inside-`switch`-inside-loop resolution if it is needed |
+| S5 Q4 — fallthrough / `break` resolution | Reject `switch` in a loop | Accept `switch` anywhere; `break` inside a switch arm is executed behavior that exits the switch (recorded, 002-R3); gate **only** the normative adoption of the no-fallthrough / `break` rules if it is needed |
 | S12 Q7 — map-key/set contract | Reject all collections | Accept all collections; gate **only** hashing a key whose equality rule is open |
 | S7 — integer-literal promotion | Reject integer literals | Accept all literals; gate **only** the out-of-range decimal case |
 | S6 — per-target capability | Reject all concurrency | Accept `spawn`/`await`; gate **only** on a target that cannot honour the required guarantee |
@@ -214,16 +214,36 @@ Do not infer cross-target parity from JVM-only probes.
 
 ## 5. Revised gate structure
 
-The single `G1b` is replaced by **four component-scoped gates**, plus the three
-non-cyclical Phase 1 gates that already existed.
+The single `G1b` is replaced by **five component-scoped gates** (`G1-L`,
+`G1-S`, `G1-T`, `G1-M`, `G1-R`), plus the non-cyclical Phase 1 gates that
+already existed.
+
+> **Owner acceptance record (Directive 002-R3 §7, 2026-10-16).** The owner has
+> adopted this component-scoped model as the project's implementation-readiness
+> model, superseding the circular flat `G1b`. Five consequences are explicit:
+>
+> 1. **Component scoping.** G1-L gates lexical implementation, G1-S gates the
+>    parser/CST implementation, G1-T gates semantic analysis and typed HIR,
+>    G1-M gates MIR, and G1-R gates runtime/backend implementation.
+> 2. **No automatic satisfaction.** A passing component gate does **not**
+>    automatically satisfy any other component gate.
+> 3. **Framework, not rules.** The owner accepted the gate framework — not every
+>    normative language rule. The S1–S18 records remain individually
+>    authoritative.
+> 4. **No silent semantics.** No component may silently implement semantics
+>    whose required rule is still OPEN; the exact operation must be gated
+>    (§3.2, §7).
+> 5. **Entry conditions still apply.** Each component gate keeps its own
+>    measurable entry condition (table below). Accepting the model is not entry
+>    into any component gate and not Phase 2 authorization.
 
 | Gate | Scope | Measurable entry condition |
 |---|---|---|
 | **G1** | Specification evidence | Grammar/specification/typing contracts and consistency audit delivered; owner explicitly approves their stated recognition subset and provisional exclusions; per-production traceability limitations disclosed |
-| **G1b** | Historical flat semantic-decision gate | **SUPERSESSION PROPOSED; NOT ACCEPTED.** Original gate blocked Phase 2 on all 18 decisions. It remains an archival requirement unless the owner accepts G1-L/G1-S/G1-T/G1-M/G1-R as the replacement. |
+| **G1b** | Historical flat semantic-decision gate | **SUPERSEDED.** The owner accepted G1-L/G1-S/G1-T/G1-M/G1-R as the replacement (002-R3, 2026-10-16); the flat gate is an archival record only. |
 | **G1-L** | **Lexical readiness** — unlocks `cosmic-lexer` | The owner accepts the lexical contract for emitted tokens and error cases (including invalid escapes, Unicode boundaries and newline handling); GATE/LEX diagnostic codes allocated for open cases |
 | **G1-S** | **Syntactic readiness** — unlocks `cosmic-syntax` (parser/CST) | The owner accepts the recognized syntax subset; each unsupported syntax production is identified, each ambiguous construct has a documented disambiguation or a PARSE diagnostic; CST byte round-trip and recovery obligations are specified |
-| **G1-T** | **Type-checking readiness** — unlocks `cosmic-sema` | Accepted rules for each implemented semantic operation; per-operation (construct, decision, operation, diagnostic, closing evidence) entries for each unaccepted operation; negative tests require no output artifact |
+| **G1-T** | **Semantic readiness** (name resolution, typing, typed HIR) — unlocks `cosmic-sema` | Accepted rules for each implemented semantic operation; per-operation (construct, decision, operation, diagnostic, closing evidence) entries for each unaccepted operation; negative tests require no output artifact |
 | **G1-M** | **Middle-end readiness** — unlocks `cosmic-mir` / `cosmic-opt` | Every Tier-M operation has an ACCEPTED NORMATIVE RULE and mechanically specified verifier obligations; otherwise defer that operation |
 | **G1-R** | **Backend readiness** — unlocks `cosmic-runtime` / codegen | S16 and S17 decided; the per-target capability table schema exists |
 | **G1c** | Owner: identity, compatibility | **Extension decided: `.cmic`** (2026-10-16, ADR-0002 §4.1). Identity naming and compatibility still require owner approval or explicit component-limited deferral; parser independent of filename extension; no publication |
@@ -232,19 +252,21 @@ non-cyclical Phase 1 gates that already existed.
 
 ### 5.1 The cycle, resolved
 
-| Gate | Status after this directive |
+| Gate | Status after Directive 002-R3 |
 |---|---|
-| G1 | **PROPOSED — owner acceptance outstanding** |
-| **G1-L** | **PROPOSED — technical evidence only** — S8, S13, S14 are closed or gated on executed evidence |
-| **G1-S** | **PROPOSED — technical evidence only** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S |
-| G1-T | **PROPOSED — not accepted** — every Tier-T record is closed or gated; the gates are specified in §4.1 |
-| G1-M | **PROPOSED — not accepted** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
-| G1-R | **PENDING OWNER** — S16/S17. Does not gate Phase 2 or Phase 3 |
+| G1 | **PARTIAL** — F1/F2/F4 recognition corrections applied under owner authorization; explicit recognition-subset and exclusion approval still outstanding |
+| **G1-L** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — technical evidence: S8, S13, S14 are closed or gated on executed evidence; the owner has not yet accepted the lexical contract |
+| **G1-S** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S; F1/F2/F4 corrections applied; explicit recognized-subset acceptance outstanding |
+| G1-T | **FRAMEWORK ACCEPTED · ENTRY PENDING** — every Tier-T record is closed or gated; the per-operation gates are specified in §4.1; acceptance outstanding |
+| G1-M | **FRAMEWORK ACCEPTED · ENTRY PENDING** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
+| G1-R | **FRAMEWORK ACCEPTED · ENTRY PENDING (OWNER)** — S16/S17 undecided. Does not gate Phase 2 or Phase 3 |
 | G1c / G1d | **PENDING OWNER** (extension part decided: `.cmic`) — an explicit limited-scope owner waiver is still required for frontend work without the identity/compatibility and licence choices |
 | G1e | **PRIOR SHA PASSED** — verify protection details and CI on the final SHA |
 
-**Therefore: a component-scoped Phase 2 authorization is now possible if the owner accepts this gate revision, approves the lexical/syntactic contract, and authorizes Directive 003.** The dependency chain
-that made them impossible is gone, and it was removed by (a) measuring what
+**Therefore: the gate framework is accepted (002-R3); a component-scoped Phase 2
+authorization still requires the owner to approve the relevant component's entry
+conditions and to authorize Directive 003.** The dependency chain
+that made authorization impossible is gone, and it was removed by (a) measuring what
 could be measured, and (b) scoping each gate to the component that consumes the
 decision — not by relaxing any standard.
 
