@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **VERIFIED LEGACY BEHAVIOR** for Q1 (letters, `_`, `$` verified) and Q4 (divergence **measured**); Q3 **PROPOSED**; Q5/Q6 **OPEN** |
+| **Status** | **ACCEPTED NORMATIVE RULE** for the lexical decisions Q1 (D-L3), Q4 (D-L2), Q5 (D-L9) and Q6 (D-L1) — owner acceptance 003-G1 (2026-10-16, G1-L); **VERIFIED LEGACY BEHAVIOR** for the executed probes; Q3 remains a deferred proposal (UNI namespace, off by default); M-7 classification cases and the strict-rule corpus impact remain measurement obligations |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §1.3/§2.2, `docs/spec/typing-contracts.md` §1.2, S8 |
@@ -146,3 +146,32 @@ character.
 
 **Still OPEN:** identifier classes beyond letters/`_`/`$` (combining marks,
 digit-leading names), and lone-surrogate escapes.
+
+---
+
+## 003-G1 update (2026-10-16)
+
+The owner accepted the G1-L lexical contract (ENGINEERING DIRECTIVE 003-G1 §3),
+which decides this record's Q1, Q4, Q5 and Q6 at individual-rule granularity:
+
+* **Q1 → D-L3 — accepted as proposed.** Identifier start is a Unicode letter,
+  `_` or `$`; continuation adds Unicode digits; no normalisation; `$` retained.
+  The classification-authority caveat stands: the Rust standard-library
+  predicates are accepted, not verified, and the M-7 differential cases remain
+  owed before the rule is called settled.
+* **Q4 → D-L2 — accepted as proposed.** Byte spans are authoritative; columns
+  are scalar-value counts; the legacy UTF-16 divergence is declared and must be
+  normalised by the differential harness. The corrected tab-column example is
+  preserved.
+* **Q5 → D-L9 — accepted as proposed.** A lone-surrogate escape is an error
+  (LEX010); the corpus impact must still be measured.
+* **Q6 → D-L1 — accepted as proposed.** UTF-8 only; invalid bytes rejected at
+  load with the first invalid byte offset; one leading BOM consumed as a code
+  character and preserved as a three-byte prefix leaf contributing no language
+  token. The input boundary is preserved: no token stream or CST is owed for a
+  file that fails UTF-8 validation.
+* **Unchanged.** Q2's no-normalisation position is retained within the accepted
+  D-L3 contract (package item 3); Q3's confusable-identifier warning remains a
+  deferred proposal in the `UNI` namespace, off by default.
+
+No other status changes.

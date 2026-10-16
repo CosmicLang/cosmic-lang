@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **OPEN** — the 002-R4 update below corrects the Q1 syntax-recognition evidence (binding/destructuring *syntax* is evidenced; no semantics proposed) |
+| **Status** | **OPEN** — the 002-R4 update below corrects the Q1 syntax-recognition evidence (binding/destructuring *syntax* is evidenced; no semantics proposed); the 003-G1 update records that the accepted G1-S recognition subset includes the evidenced pattern arm-header forms and unlabelled `break`/`continue`, and decides no S5 semantic question |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 validation |
 | **Related** | `docs/spec/language-spec.md` §5, `docs/spec/grammar.ebnf` §3.6, S1 |
@@ -167,3 +167,22 @@ correction (ENGINEERING DIRECTIVE 002-R5 §3) is applied:
   consistent with the 002-R4 four-layer split: Q1's normative questions
   (binding/destructuring *meaning*, match order, scoping) remain OPEN; Q2–Q6
   are unchanged; no normative pattern semantics are proposed or adopted.
+
+## 003-G1 update (2026-10-16)
+
+The owner accepted the G1-S recognition contract (ENGINEERING DIRECTIVE 003-G1
+§4). At individual-rule granularity:
+
+* **Recognition accepted.** The evidenced pattern arm-header syntax
+  (`binding-pattern`, `destructuring-pattern`, `pattern-field`; S-G1S-1) and the
+  unlabelled `break`/`continue` forms are inside the accepted recognition
+  subset; labelled forms remain refused under the nine-family refusal contract.
+  Recognition does not imply meaning.
+* **No semantic question decided.** Q1's normative breadth (binding/destructuring
+  meaning, match order, scoping), Q2's guard-scope adoption, Q3's exhaustiveness,
+  Q4's fallthrough/`break` adoption, Q5's labels and Q6's three-clause normative
+  acceptance remain exactly as recorded above — OPEN or gated. The per-operation
+  gates of `docs/spec/implementation-gates.md` §4.1 continue to apply where an
+  open operation is required.
+
+Status remains **OPEN**.

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **VERIFIED LEGACY BEHAVIOR** for Q1 and Q4 (verified by executed probe); Q2 is a **confirmed defect** with a **PROPOSED** fix; Q3 unchanged |
+| **Status** | **ACCEPTED NORMATIVE RULE** for the lexical decisions Q1 (D-L6), Q2 (D-L8), Q4 (D-L7) and Q5 (D-L9) — owner acceptance 003-G1 (2026-10-16, G1-L); **VERIFIED LEGACY BEHAVIOR** for the Q1/Q4 probes; the Q2 strict rule is accepted (corpus impact measurement owed); Q3 unchanged; Q6 owned by S12 |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §2.4, `docs/spec/grammar.ebnf` §2.4, S13 |
@@ -141,3 +141,30 @@ silent folding of a three-quote literal to an empty string that the legacy
 project itself fixed. The proposed
 rule is that an unrecognised escape is an **error**. That is a **C2 divergence**
 and must be measured against the corpus.
+
+---
+
+## 003-G1 update (2026-10-16)
+
+The owner accepted the G1-L lexical contract (ENGINEERING DIRECTIVE 003-G1 §3),
+which decides this record's Q1, Q2, Q4 and Q5 at individual-rule granularity:
+
+* **Q1 → D-L6 — accepted as proposed.** Triple-quoted / raw / multiline syntax
+  remains rejected: one diagnostic per occurrence, consumed to the closing
+  `"""` or EOF, bytes preserved as an error region; `""` stays a legal empty
+  string. The rejection is now an accepted normative lexical rule (LEX009, part
+  of the accepted LEX allocation).
+* **Q2 → D-L8 — accepted as proposed.** An unrecognised escape is an error
+  (LEX008), one diagnostic per occurrence; the backslash is not silently
+  dropped. The declared C2 divergence stands and its corpus impact must be
+  measured by the Stage A differential harness.
+* **Q4 → D-L7 — accepted as proposed.** A raw newline inside `"…"` is permitted
+  (legacy parity); exact `\r\n`-inside-literal value semantics remain a required
+  differential case.
+* **Q5 → D-L9 — accepted as proposed.** A lone-surrogate escape is an error
+  (LEX010); a valid `\uXXXX` pair decodes to one Unicode scalar value.
+* **Unchanged.** Q3 (interpolation) and Q6 (string equality, owned by S12) are
+  not decided here.
+
+The earlier PROPOSED items above are accepted for the lexical layer; no other
+status changes.

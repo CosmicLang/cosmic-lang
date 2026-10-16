@@ -33,16 +33,16 @@ decision. JVM probes do not establish cross-target portability.
 | S2 | [S2-nullability.md](S2-nullability.md) | `T` / `T?` conversions, soft casts, nullability of type parameters, the legacy structural fallback | **OPEN** · VERIFIED LEGACY BEHAVIOR (soft-cast JVM probe) · PROPOSED NORMATIVE RULE |
 | S3 | [S3-portukof.md](S3-portukof.md) | PortuKof surface: which tokens differ, mixed-surface programs, whether it is in scope at all | **OPEN** (owner scope/legal choice) |
 | S4 | [S4-kofscript.md](S4-kofscript.md) | KofScript `.ks`: the wrapping transformation and its execution semantics | **OPEN** (owner scope/legal choice) |
-| S5 | [S5-pattern-matching.md](S5-pattern-matching.md) | Pattern breadth, guards, exhaustiveness, fallthrough, labelled `break`/`continue` | **OPEN** · NOT VERIFIED (exhaustiveness, fallthrough) |
+| S5 | [S5-pattern-matching.md](S5-pattern-matching.md) | Pattern breadth, guards, exhaustiveness, fallthrough, labelled `break`/`continue` | **OPEN** · NOT VERIFIED (exhaustiveness, fallthrough) · recognition accepted (G1-S, 003-G1) |
 | S6 | [S6-concurrency.md](S6-concurrency.md) | `spawn`/`await` typing, failure propagation, cancellation, per-target scheduling guarantees | **OPEN** (typing) · DEFERRED (runtime) |
 | S7 | [S7-numeric-semantics.md](S7-numeric-semantics.md) | Overflow, literal promotion, division, float formatting, bitwise complement | **OPEN** · NOT VERIFIED (division by zero and promotion) |
-| S8 | [S8-string-semantics.md](S8-string-semantics.md) | Escapes, silent unknown escapes, triple-quote policy, interpolation | **VERIFIED LEGACY BEHAVIOR** (raw newline, unknown escape, triple-quote JVM) · **PROPOSED NORMATIVE RULE** (invalid-escape rejection) · **OPEN** |
+| S8 | [S8-string-semantics.md](S8-string-semantics.md) | Escapes, silent unknown escapes, triple-quote policy, interpolation | **ACCEPTED NORMATIVE RULE** (lexical Q1/Q2/Q4/Q5 — G1-L, 003-G1) · **VERIFIED LEGACY BEHAVIOR** (JVM probes) · Q3 unchanged; Q6 owned by S12 |
 | S9 | [S9-stdlib-boundary.md](S9-stdlib-boundary.md) | Language versus runtime, properties versus methods, `package`/`import` rules, `string` dual status | **OPEN** · NOT VERIFIED (member boundary) |
 | S10 | [S10-reserved-keywords.md](S10-reserved-keywords.md) | `entity`/`extern`/`generated`/`audited`/`unique`, annotations, FFI, entity/query DSL, contextual declarations | **OPEN** · NOT VERIFIED (contextual declarations, FFI) |
 | S11 | [S11-evaluation-order.md](S11-evaluation-order.md) | Evaluation order (arguments, receiver, operands, short-circuit), assignment associativity, scoping, shadowing, nested-function capture | **VERIFIED LEGACY BEHAVIOR** (JVM order, scoping, capture rejection) · **PROPOSED NORMATIVE RULE** · **OPEN** (capture intent) |
 | S12 | [S12-equality.md](S12-equality.md) | Equality: reference versus structural per type kind, `NaN`/`-0.0`, records, enums, strings, map-key and set contracts | **VERIFIED LEGACY BEHAVIOR** (JVM strings, records, classes, floats) · **NOT VERIFIED** (enum and map/set) · **OPEN** |
-| S13 | [S13-unicode.md](S13-unicode.md) | Identifier classes, normalisation, confusables, and the legacy/new column divergence | **VERIFIED LEGACY BEHAVIOR** (JVM identifiers/UTF-16 columns) · **PROPOSED NORMATIVE RULE** (scalar columns) · **OPEN** |
-| S14 | [S14-trivia.md](S14-trivia.md) | Trivia preservation, terminator normalisation, block-comment nesting | **PROPOSED NORMATIVE RULE** (lossless CST) |
+| S13 | [S13-unicode.md](S13-unicode.md) | Identifier classes, normalisation, confusables, and the legacy/new column divergence | **ACCEPTED NORMATIVE RULE** (lexical Q1/Q4/Q5/Q6 — G1-L, 003-G1) · **VERIFIED LEGACY BEHAVIOR** (JVM probes) · Q3 deferred proposal; M-7 owed |
+| S14 | [S14-trivia.md](S14-trivia.md) | Trivia preservation, terminator normalisation, block-comment nesting | **ACCEPTED NORMATIVE RULE** (lossless CST, terminator forms, BOM prefix — G1-L, 003-G1); Q3 warning deferred |
 | S15 | [S15-feature-gates.md](S15-feature-gates.md) | Feature-gate vocabulary, severities, error-recovery contract | **PROPOSED NORMATIVE RULE** (diagnostic gate contract) |
 | S16 | [S16-memory-strategy.md](S16-memory-strategy.md) | Ownership+borrowing, GC or ARC | **DEFERRED** · **OPEN** (owner choice) |
 | S17 | [S17-abi-versioning.md](S17-abi-versioning.md) | Runtime ABI versioning and the runtime → frontend dependency ban | **DEFERRED** · **OPEN** (owner choice) |
@@ -63,7 +63,11 @@ decision. JVM probes do not establish cross-target portability.
 The component gate framework (G1-L/G1-S/G1-T/G1-M/G1-R) was **accepted by the
 owner** in Directive 002-R3 (2026-10-16) and replaces the flat `G1b`. Acceptance
 of the framework approves no language rule and does not authorize Phase 2;
-S1–S18 remain individually authoritative.
+S1–S18 remain individually authoritative. G1, G1-L and G1-S were subsequently
+accepted and the G1c Stage A-limited deferral approved by the owner
+(ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d remains PENDING** and no
+implementation is authorized. Acceptance is recorded at individual-rule
+granularity in the affected records (S5, S8, S13, S14 — 003-G1 updates).
 
 
 | Gate | Requirement | Covered by |

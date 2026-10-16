@@ -2,14 +2,16 @@
 
 | | |
 |---|---|
-| **Status** | **READY FOR OWNER DECISION — G1-L is NOT entered.** This document accepts nothing; it proposes the lexical contract whose owner acceptance is the G1-L entry condition. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R4 §5 · 002-R5 §5–§7 |
+| **Status** | **ACCEPTED by the owner — G1-L ENTERED** for Stage A lexical readiness (ENGINEERING DIRECTIVE 003-G1 §3, 2026-10-16). All eleven §6 decisions were accepted as proposed; the contract below is the accepted lexical contract. |
+| **Directive** | ENGINEERING DIRECTIVE 002-R4 §5 · 002-R5 §5–§7 · 003-G1 §3 |
 | **Scope** | The lexical contract of `cosmic-lexer`: emitted tokens and trivia, error cases, and the diagnostics carrying them. Tier-L records only (S8, S13, S14). |
 | **Related** | `docs/spec/implementation-gates.md` §5 (G1-L) and §7 · `docs/spec/language-spec.md` §1–§3 · `docs/spec/grammar.ebnf` §2 · `docs/spec/diagnostic-codes.md` · `docs/spec/decisions/S8-string-semantics.md` · `docs/spec/decisions/S13-unicode.md` · `docs/spec/decisions/S14-trivia.md` · `docs/spec/phase-2-entry-readiness.md` |
 
 > **Path convention.** A path prefixed `cosmcc:` refers to the legacy repository `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
 
-> **Acceptance is not given here.** Every item below is a proposal with testable expected outcomes. Declining an item leaves its question OPEN; in that case the affected construct must be enforced as a **lexical gate** (`docs/spec/implementation-gates.md` §3.1, §7) — refused with a named diagnostic — never resolved by silently following the legacy behaviour or by inventing a rule.
+> **Owner acceptance (ENGINEERING DIRECTIVE 003-G1 §3, 2026-10-16).** All eleven §6 decision rows — D-L1…D-L10 and the LEX allocation plan — were **accepted as proposed**. The `PROPOSED` labels below record the drafting state before acceptance and are superseded by this record. Carried obligations: the corpus impact of the strict LEX008/LEX010 rules must still be measured; the M-7 identifier-class cases remain owed; the `\r\n`-inside-literal value semantics remain a required differential case; the corrected column-counting example and the input boundary are preserved as accepted.
+
+> **No item was declined.** Had an item been declined, its question would stay OPEN and the affected construct would be enforced as a **lexical gate** (`docs/spec/implementation-gates.md` §3.1, §7) — refused with a named diagnostic — never resolved by silently following the legacy behaviour or by inventing a rule.
 
 ---
 
@@ -48,7 +50,7 @@ Three labels are used, and only these:
 | D-L9 | Lone-surrogate escapes | S13 Q5, S8 Q5 | **Error**; valid pairs decode to one scalar | E1; proposed tightening |
 | D-L10 | Lossless trivia and byte preservation | S14 Q1 | Full byte partition; reprint is the identity | E1; design requirement |
 
-No item below changes S8, S13 or S14's status; their proposals mature only through the owner action recorded in §6.
+The proposals below matured through the owner action recorded in §6 (completed 003-G1 §3, 2026-10-16); the S8, S13 and S14 records were updated at individual-rule granularity.
 
 ---
 
@@ -118,7 +120,7 @@ No item below changes S8, S13 or S14's status; their proposals mature only throu
 
 **Divergence.** C0/C1-neutral; C2-relevant only for tooling that compares diagnostic text — which the harness policy already addresses.
 
-**Status.** E1-implemented in `crates/cosmic-source`; owner acceptance pending (S13 Q4).
+**Status.** E1-implemented in `crates/cosmic-source`; accepted as proposed (003-G1 §3; S13 Q4).
 
 ---
 
@@ -416,7 +418,7 @@ No other preservation mechanism (for example storing the prefix outside the tree
 
 ## 5. What declining an item means
 
-If the owner declines rather than accepts an item, the question stays OPEN and the affected construct becomes a **lexical gate** (`docs/spec/implementation-gates.md` §3.1, §7): the compiler refuses it with a stable `GATE` diagnostic naming the construct, the decision record and the unsupported operation, and produces no artifact. Examples:
+**Not exercised** — all eleven rows were accepted as proposed (003-G1, 2026-10-16). Had an item been declined, the question would stay OPEN and the affected construct would become a **lexical gate** (`docs/spec/implementation-gates.md` §3.1, §7): the compiler refuses it with a stable `GATE` diagnostic naming the construct, the decision record and the unsupported operation, and produces no artifact. Examples:
 
 * **Decline D-L8** → an unknown escape is refused as "not yet specified" (the silent legacy drop is *not* adopted as the interim behaviour; it is the confirmed defect).
 * **Decline D-L7** → a raw newline inside a string is refused as "not yet specified" (neither silently permitted nor silently forbidden).
@@ -426,20 +428,20 @@ Refusing-with-a-name is the only non-choice this project permits; it is also wha
 
 ---
 
-## 6. Owner action checklist
+## 6. Owner action — completed (003-G1, 2026-10-16)
 
-| # | Decision | ☐ Accept as proposed | ☐ Accept with amendments (state) | ☐ Decline (lexical gate) |
-|---|---|---|---|---|
-| D-L1 | UTF-8 + BOM prefix (incl. §4 refinement and the input boundary) | ☐ | ☐ | ☐ |
-| D-L2 | Byte spans + scalar columns | ☐ | ☐ | ☐ |
-| D-L3 | Identifier classes | ☐ | ☐ | ☐ |
-| D-L4 | Whitespace / comments / terminators | ☐ | ☐ | ☐ |
-| D-L5 | Strings + escape set | ☐ | ☐ | ☐ |
-| D-L6 | Triple-quote rejection kept | ☐ | ☐ | ☐ |
-| D-L7 | Raw newline permitted | ☐ | ☐ | ☐ |
-| D-L8 | Unknown escape = error | ☐ | ☐ | ☐ |
-| D-L9 | Lone surrogate = error | ☐ | ☐ | ☐ |
-| D-L10 | Lossless byte partition | ☐ | ☐ | ☐ |
-| §3 | LEX allocation plan accepted | ☐ | ☐ | ☐ |
+| # | Decision | Owner decision |
+|---|---|---|
+| D-L1 | UTF-8 + BOM prefix (incl. §4 refinement and the input boundary) | **ACCEPTED as proposed** |
+| D-L2 | Byte spans + scalar columns | **ACCEPTED as proposed** |
+| D-L3 | Identifier classes | **ACCEPTED as proposed** |
+| D-L4 | Whitespace / comments / terminators | **ACCEPTED as proposed** |
+| D-L5 | Strings + escape set | **ACCEPTED as proposed** |
+| D-L6 | Triple-quote rejection kept | **ACCEPTED as proposed** |
+| D-L7 | Raw newline permitted | **ACCEPTED as proposed** |
+| D-L8 | Unknown escape = error | **ACCEPTED as proposed** |
+| D-L9 | Lone surrogate = error | **ACCEPTED as proposed** |
+| D-L10 | Lossless byte partition | **ACCEPTED as proposed** |
+| §3 | LEX allocation plan | **ACCEPTED as proposed** |
 
-**G1-L is entered only when all eleven rows are decided and the LEX allocation is accepted.** This document does not enter it; Directive 002-R4 does not authorize any compiler implementation.
+**G1-L was entered on 2026-10-16** — all eleven rows were decided and the LEX allocation accepted (003-G1 §3). Entry does not by itself authorize implementation: Stage A additionally requires G1d clearance and a separate owner authorization of Directive 003-A (`docs/spec/phase-2-entry-readiness.md` §5). No compiler implementation is authorized by this document.
