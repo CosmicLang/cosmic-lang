@@ -1,0 +1,12 @@
+[package]
+name = "cosmic-source"
+description = "Source management for the Cosmic-Lang compiler: file registry, byte spans, line/column mapping."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
