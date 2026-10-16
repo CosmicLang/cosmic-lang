@@ -22,10 +22,10 @@ Checks performed:
       legacy path (prefixed `cosmcc:`), a declared future deliverable, or an
       explicitly-allowed external path
   G12 the six normative statuses are defined in the specification
-  G13 the production evidence map covers all 117 productions: one entry per
-      production, numbered in grammar definition order, with well-formed
-      evidence/class/decision/status/residual cells and resolvable decision
-      references (docs/spec/grammar-evidence-map.md)
+  G13 the production evidence map covers every production exactly once: one
+      entry per production, numbered and sequenced in grammar definition order,
+      with well-formed evidence/class/decision/status/residual cells and
+      resolvable decision references (docs/spec/grammar-evidence-map.md)
 
 Exit status is non-zero if any check fails.
 """
@@ -459,7 +459,22 @@ def check_evidence_map() -> None:
     for name in unknown:
         fail(f"G13 evidence map lists unknown production `{name}`")
 
-    if not problems and not missing and not unknown and len(rows) == len(order):
+    # The rows must *follow the grammar's definition order*, not merely be
+    # numbered sequentially: compare position by position.
+    sequence = [row[1] for row in rows]
+    in_order = sequence == order
+    if len(sequence) == len(order) and not in_order:
+        first = next(
+            i for i, (actual, expected) in enumerate(zip(sequence, order), start=1)
+            if actual != expected
+        )
+        fail(
+            f"G13 evidence map is not in grammar definition order "
+            f"(row {first}: `{sequence[first - 1]}` listed where `{order[first - 1]}` is defined)"
+        )
+        problems += 1
+
+    if not problems and not missing and not unknown and len(rows) == len(order) and in_order:
         print(
             f"G13 evidence map: {len(rows)}/{len(order)} productions mapped, "
             "rows in grammar definition order, cells well-formed"

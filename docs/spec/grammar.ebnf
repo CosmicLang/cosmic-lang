@@ -244,7 +244,23 @@ the grammar must encode the lookahead rather than reserving them.
 (*§4.3*) function-decl   = [ return-type ] , identifier , parameter-list , function-body ;
           return-type   = type-ref ;                        (* omitted for a void/no-result function *)
           parameter-list = "(" , [ parameter , { "," , parameter } ] , ")" ;
-          parameter     = identifier , ":" , type-ref ;
+          parameter     = ( identifier , ":" , type-ref
+                          | type-ref , identifier )
+                        , [ "=" , expression ] ;
+                                                           (* E1:parser/TypeParser.java
+                                                              parseFormalParameter — one-token lookahead:
+                                                              an identifier directly followed by `:`
+                                                              selects the lambda order `name : Type`; the
+                                                              other evidenced order is `Type name`; both
+                                                              accept an optional `= default`.
+                                                              E1:cases functions (name : Type in lambdas,
+                                                              Type name in declarations), classes
+                                                              (constructors) and string-switch-defaults
+                                                              (five defaults, two call sites omit them).
+                                                              Recognition only: default-expression
+                                                              evaluation semantics are NOT defined here.
+                                                              Parameter-type omission and implicit
+                                                              inference are not evidenced [OPEN:S1]. *)
           function-body = block | ( "=" , expression ) ;
                                                            (* E1:parser/Parser.java parseFunctionDeclaration;
                                                               E1:cases hello (no return type, block body),
@@ -335,7 +351,7 @@ inference inside an enclosing generic call **drops a nested type argument**
 
 ```ebnf
 (*§5*) statement = block
-                 | return-stmt | throw-stmt
+                 | return-stmt | throw-stmt | break-stmt | continue-stmt
                  | if-stmt | while-stmt | do-while-stmt | for-stmt
                  | try-stmt | switch-stmt
                  | var-decl-stmt | nested-function-decl
@@ -347,6 +363,21 @@ inference inside an enclosing generic call **drops a nested type argument**
           return-stmt  = "return" , [ expression ] ;
           throw-stmt   = "throw" , expression ;
                                                            (* E1:case exceptions — "throw \"…\"" throws a string *)
+
+          break-stmt   = "break" ;
+          continue-stmt = "continue" ;
+                                                           (* E1:parser/TokenType.java BREAK/CONTINUE and
+                                                              parser/StatementParser.java lines 110-121
+                                                              (advance, then separator) — unlabelled forms
+                                                              only; labelled `break`/`continue` are NOT
+                                                              VERIFIED and stay refused [OPEN:S5].
+                                                              E1:cases loops-control (both, inside loops)
+                                                              and switch-break-in-loop (break inside a
+                                                              switch arm exits the switch, not the
+                                                              enclosing loop — executed). Control-flow
+                                                              semantics are documented separately from
+                                                              recognition: docs/spec/language-spec.md §5,
+                                                              docs/spec/grammar-evidence-map.md F1. *)
 
           if-stmt      = "if" , "(" , expression , ")" , statement ,
                          [ "else" , statement ] ;
@@ -368,15 +399,22 @@ inference inside an enclosing generic call **drops a nested type argument**
                                                            (* E1:cases exceptions, finally-control-flow,
                                                               finally-return *)
 
-          switch-stmt  = "switch" , "(" , expression , ")" , "{" , { switch-arm } , "}" ;
-          switch-arm   = "case" , switch-label , [ guard ] , "->" , switch-body ;
-          switch-label = expression | type-ref | "default" ;
+          switch-stmt  = "switch" , "(" , expression , ")" , "{" , { switch-stmt-arm } , "}" ;
+          switch-stmt-arm = "case" , switch-label , [ guard ] , ":" , { statement }
+                          | "default" , ":" , { statement } ;
+          switch-label = expression | type-ref ;
           guard        = "if" , expression ;
-          switch-body  = expression | block | statement ;
                                                            (* E1:parser/StatementParser.java
-                                                              parseSwitchStatement, parseSwitchCasePatternOrValue,
-                                                              parseGuardIfPresent; E1:cases enum-switch-expr,
-                                                              switch-expr, switch-break-in-loop, sealed-switch *)
+                                                              parseSwitchStatement (COLON arms,
+                                                              PARSE073/PARSE074),
+                                                              parseSwitchCasePatternOrValue,
+                                                              parseGuardIfPresent; E1:cases switch-expr,
+                                                              switch-break-in-loop and
+                                                              string-switch-defaults use the colon form in
+                                                              statement position, including `default :`.
+                                                              No fallthrough observed (switch-expr stops
+                                                              at the matched arm); exhaustiveness and
+                                                              labelled control flow remain [OPEN:S5]. *)
 
           var-decl-stmt = ( "var" | "val" ) , identifier , [ ":" , type-ref ] , "=" , expression ;
                                                            (* E1:parser/StatementParser.java parseVarDecl;
@@ -469,8 +507,17 @@ inference inside an enclosing generic call **drops a nested type argument**
                                                               E1:parser/LambdaParser.java,
                                                               ExpressionParser.parseTrailingLambdaBlock *)
 
-(*§6.1*) switch-expr  = "switch" , "(" , expression , ")" , "{" , { switch-arm } , "}" ;
-                                                           (* E1:cases enum-switch-expr, switch-expr *)
+(*§6.1*) switch-expr  = "switch" , "(" , expression , ")" , "{" , { switch-expr-arm } , "}" ;
+          switch-expr-arm = "case" , switch-label , [ guard ] , "->" , expression
+                          | "default" , "->" , expression ;
+                                                           (* E1:parser/ExpressionParser.java
+                                                              parseSwitchExpression (ARROW arms,
+                                                              PARSE076/PARSE077; block bodies are rejected,
+                                                              PARSE094); E1:cases enum-switch-expr,
+                                                              sealed-switch, string-switch-defaults and
+                                                              switch-expr use arrow arms in expression
+                                                              position, including `default ->`.
+                                                              Exhaustiveness not evidenced [OPEN:S5]. *)
 
 (*§6.1*) new-expr     = "new" , type-ref , "(" , [ argument-list ] , ")" ;
                                                            (* E1:parser/ExpressionParser.java parseNewExpression *)
@@ -528,10 +575,10 @@ parser to guess.
 | `type-ref` `?` semantics | Conversion rules beyond `T → T?` | Yes | S2 | **OPEN** (gated) |
 | `parameter` type optionality, default return type | Not evidenced | Yes | S1 | **OPEN** |
 | ~~`for-stmt` three-clause form~~ | **Annotation corrected (002-R2)** — exercised by the executed case `loops-control` | Yes | S5 | **CLOSED** |
-| `switch-arm` exhaustiveness, fallthrough, labelled `break`/`continue` | Not evidenced | Yes | S5 | **OPEN** (gated) |
-| `break`/`continue` statements (**no productions**) | **Grammar gap found (002-R2, F1)** — evidenced by source and executed cases; no production derives them | Yes | S5 | **OPEN** |
-| `switch-stmt` colon arms | **Grammar gap found (002-R2, F2)** — statement arms are `case X :`; the grammar models `->` for both switch forms | Yes | S5 | **OPEN** |
-| `parameter` order and `= default` | **Grammar gap found (002-R2, F4)** — the executed corpus uses `Type name [= default]`; the production models `name : Type` only | Yes | S1 | **OPEN** |
+| switch arm semantics (exhaustiveness, fallthrough, labelled `break`/`continue`) | Not evidenced | Yes | S5 | **OPEN** (gated) |
+| ~~`break`/`continue` statements~~ | **Corrected (002-R3)** — `break-stmt` / `continue-stmt` added; unlabelled forms only (labels stay refused) | Yes | S5 | **CLOSED** |
+| ~~`switch-stmt` colon arms~~ | **Corrected (002-R3)** — `switch-stmt-arm` derives `case X :` / `default :` with statement lists; `switch-expr-arm` keeps `->` | Yes | S5 | **CLOSED** |
+| ~~`parameter` order and `= default`~~ | **Corrected (002-R3)** — both evidenced orders and the optional `= default` are modelled; evaluation semantics remain open | Yes | S1 | **CLOSED** |
 | `if-expr` | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
 | `array-literal`, array indexing details | Not exercised by the corpus | Yes | S9 | **OPEN** |
 | Identifier class set, normalisation, confusables | Combining marks; normalisation policy | Yes | S13 | **PARTLY CLOSED** — letters, `_`, `$` verified by probe |

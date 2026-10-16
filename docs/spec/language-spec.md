@@ -361,12 +361,21 @@ The verified keyword set (E1) is:
   `StatementParser.java` `parseNestedFunction`.
 * **[OPEN]** Whether nested functions capture enclosing locals, and how
   (record S11).
-* **[VERIFIED LEGACY BEHAVIOR]** Parameters carry a type: `name: Type`. Evidence: the lambda
-  parameter form `(x: Int) -> …` in corpus case `functions`, and
-  `LambdaParser.parseLambdaBlockParams`.
-* **[OPEN]** Whether parameter types may be omitted in a function
-  declaration, and what the return type defaults to (record S1, which owns the
-  inference boundary).
+* **[VERIFIED LEGACY BEHAVIOR]** Parameters carry a type in **either of two orders**
+  the parser accepts: `name: Type` — idiomatic in lambdas, `(x: Int) -> …`,
+  corpus case `functions` — and `Type name` — the order used by every
+  parameterised declaration in the corpus (`functions`, `classes`
+  constructors). Either order may carry a default value:
+  `String fallback = "unknown"` (`string-switch-defaults`: five defaults
+  exercised, two call sites omitting them). Evidence:
+  `TypeParser.parseFormalParameter` (one-token lookahead: an identifier directly
+  followed by `:` selects `name: Type`); grammar finding F4 (corrected in
+  002-R3).
+* **[OPEN]** Default-expression **evaluation** semantics (evaluation point, scope,
+  interaction with inference) are not evidenced (record S1 owns the
+  parameter/inference boundary). Parameter types may not be omitted: whether
+  omission is ever legal, and what the return type defaults to, remain
+  unevidenced (record S1).
 
 ### 4.4 Type declarations
 
@@ -401,27 +410,42 @@ The verified keyword set (E1) is:
 
 * **[VERIFIED LEGACY BEHAVIOR]** Verified statement forms (E1, `StatementParser.java`):
   block `{ … }`; `return [expr]`; `if`/`else`; `while`; `do`/`while`; `for`;
-  `throw`; `try`/`catch`/`finally`; `switch` with `case` labels; `var`/`val`
-  declarations; nested function declarations; expression statements.
-* **[VERIFIED LEGACY BEHAVIOR]** `for` supports at least the `for (var x in collection)` form.
-  Evidence: corpus cases `interfaces`, `list-higher-order`.
+  `throw`; `break`; `continue`; `try`/`catch`/`finally`; `switch` with `case`
+  labels; `var`/`val` declarations; nested function declarations; expression
+  statements.
+* **[VERIFIED LEGACY BEHAVIOR]** `for` supports the `for (var x in collection)` form
+  (corpus cases `interfaces`, `list-higher-order`) and the three-clause form
+  `for (init; cond; step)` (corpus case `loops-control`, executed). Finding F3
+  corrected an annotation that had called the three-clause form
+  corpus-unevidenced.
+* **[VERIFIED LEGACY BEHAVIOR]** `break` and `continue` are **unlabelled** statements
+  (`TokenType.BREAK`/`CONTINUE`; `StatementParser.java` advances and then expects
+  only the separator — no label form). Semantics read from the executed corpus:
+  `break` inside a `switch` arm exits the **switch**, not the enclosing loop
+  (`switch-break-in-loop` prints 208/21, which is only derivable if the loop
+  continues after each arm); `continue` proceeds to the next loop iteration
+  (`loops-control` prints 9/ac). Grammar finding F1 (corrected in 002-R3); any
+  broader control-flow rule remains owned by record S5.
 * **[VERIFIED LEGACY BEHAVIOR]** `catch` binds a typed variable: `catch (String e)`. Evidence:
   corpus case `exceptions`; `throw "boom"` throws a **string**, so throwables
   are not restricted to a class hierarchy.
 * **[VERIFIED LEGACY BEHAVIOR]** `switch` supports both statement and expression forms:
-  statement switches use `case <pattern-or-value> :` arms with statement bodies
-  and `default :`; expression switches use `case <pattern-or-value> -> <result>`
-  arms. Arms may carry guards. (The merged grammar models only `->` arms for
-  both forms; the colon form of statement switches is a recorded grammar gap —
-  see `docs/spec/grammar-evidence-map.md` F2.)
-  Evidence: `StatementParser.parseSwitchStatement`,
+  statement switches use `case <pattern-or-value> :` arms with statement lists
+  and `default :`; expression switches use `case <pattern-or-value> -> <expression>`
+  arms with `default ->` also evidenced, and a block body is rejected there
+  (`PARSE094`). Arms may carry guards (`case … if cond :` / `case … if cond ->`).
+  No fallthrough was observed (`switch-expr` output stops at the matched arm).
+  Evidence: `StatementParser.parseSwitchStatement` (PARSE073/PARSE074),
   `StatementParser.parseSwitchCasePatternOrValue`,
-  `parseGuardIfPresent`, `ExpressionParser.parseSwitchExpression`; corpus cases
-  `enum-switch-expr`, `switch-expr`, `switch-break-in-loop`,
-  `string-switch-defaults`, `sealed-switch`.
+  `parseGuardIfPresent`, `ExpressionParser.parseSwitchExpression`
+  (PARSE076/PARSE077); corpus cases `enum-switch-expr`, `switch-expr`,
+  `switch-break-in-loop`, `string-switch-defaults`, `sealed-switch`.
+  Grammar finding F2 (corrected in 002-R3). Whether the observed no-fallthrough
+  behavior becomes a normative rule remains owned by record S5.
 * **[OPEN]** Exhaustiveness requirements for `switch` over sealed types
   (record S5).
-* **[OPEN]** Whether `break`/`continue` may carry labels (record S5).
+* **[OPEN]** Whether `break`/`continue` may carry labels (record S5). Labelled
+  forms are NOT VERIFIED and must be refused until this is decided.
 
 ---
 

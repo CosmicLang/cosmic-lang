@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Status** | **Machine-checked.** Produced by `tools/spec-consistency.py`. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 · 002-R2 (post-merge) §3 |
-| **Subject** | `docs/spec/grammar.ebnf` (117 productions) and the specification document set |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 · 002-R2 (post-merge) §3 · 002-R3 §6 |
+| **Subject** | `docs/spec/grammar.ebnf` (119 productions) and the specification document set |
 | **Checked** | 2026-10-16 |
 | **Result** | **Proposed and machine-checkable** — run the checker for the current result; see §3 for its latest captured output |
 
@@ -49,31 +49,31 @@ productions, and one production body corrupted by mixed terminal quoting
 | **G10** | Every internal markdown link resolves | No broken navigation |
 | **G11** | Every repository path referenced in backticks resolves | No reference to a file that does not exist (legacy paths must be prefixed `cosmcc:`) |
 | **G12** | The six normative statuses are defined in the specification | The status vocabulary exists and is authoritative |
-| **G13** | The production evidence map covers all 117 productions | Per-production traceability: one well-formed entry per production, in grammar definition order, with resolvable decision references (`docs/spec/grammar-evidence-map.md`) |
+| **G13** | The production evidence map covers every production exactly once | Per-production traceability: one well-formed entry per production, numbered and sequenced in grammar definition order, with resolvable decision references (`docs/spec/grammar-evidence-map.md`) |
 
 ---
 
 ## 3. Raw output
 
 ```
-G-grammar: 117 productions parsed from docs/spec/grammar.ebnf
+G-grammar: 119 productions parsed from docs/spec/grammar.ebnf
 G1 undefined nonterminals: none
 G2 unreachable productions: none (3 reference-only tables excluded: delimiter, operator, separator)
-G4 evidence: 10 production blocks, all carry a marker; inline per-production markers: 0/117 (per-production traceability: docs/spec/grammar-evidence-map.md, G13)
+G4 evidence: 10 production blocks, all carry a marker; inline per-production markers: 0/119 (per-production traceability: docs/spec/grammar-evidence-map.md, G13)
 G5 open productions reference 5 records, all present: S1, S13, S2, S5, S9
 
 G7 decision records: 18 of 18 (S1..S18)
 G7 register rows: 18
 G8 status vocabulary checked on 18 records
 
-G6 decision-record references: 798 occurrences, all resolve
+G6 decision-record references: 817 occurrences, all resolve
 G9 gate ids: 15 defined across 2 documents, 15 referenced, all known
 G10 internal links: 18 checked, 0 broken
-G11 repository paths: 377 checked, 0 unresolved, 2 legacy-context
+G11 repository paths: 383 checked, 0 unresolved, 2 legacy-context
 
 G12 normative vocabulary: 6 terms defined
 
-G13 evidence map: 117/117 productions mapped, rows in grammar definition order, cells well-formed
+G13 evidence map: 119/119 productions mapped, rows in grammar definition order, cells well-formed
 
 OK — all specification consistency checks passed
 ```
@@ -83,8 +83,9 @@ OK — all specification consistency checks passed
 The directive — following the Phase 1 report — describes the delivered grammar
 as **"59 productions"**. A mechanical parse of the same file at the HEAD
 revision finds **97 production statements**. The "59" was an undercount that no
-tool produced; the grammar now defines **117 productions** after the missing
-definitions were supplied.
+tool produced; the grammar defined **117 productions** after the R1 corrections
+supplied the missing definitions, and **119** after the 002-R3 recognition
+corrections (F1, F2).
 
 The baseline is reproducible without editing the repository:
 
@@ -146,7 +147,7 @@ noise.
 So the checkable requirement was made **block-scoped**: every block that defines
 productions must carry at least one evidence or status marker. **10 of 10
 blocks do.** The inline per-production statistic is still reported for
-transparency: **0 of 117 productions carry their own inline marker** — every
+transparency: **0 of 119 productions carry their own inline marker** — every
 production is covered by a block-level citation, none by a citation that names
 only it.
 
@@ -185,13 +186,13 @@ a precise PARSE refusal until the owner approves a recognition contract.
 | `type-ref` `?` | Conversions beyond `T → T?` | **Yes** | No | Probes per conversion direction | S2 |
 | `parameter` type optionality | Not evidenced | **Yes** | No | A probe omitting a parameter type | S1 |
 | `return-type` default | Not evidenced | **Yes** | No | A probe omitting a return type | S1 |
-| `parameter` order and `= default` | **Grammar gap found (002-R2, F4)** — the executed corpus uses `Type name [= default]`; the production models `name : Type` only | **Yes** | No — both orders are recognition-evidenced; semantics open | A grammar correction authorized by the owner | S1 |
+| `parameter` order and `= default` | **Corrected (002-R3)** — both evidenced orders and the optional `= default` are modelled | **Yes** | No — recognition is evidenced; default-expression evaluation semantics remain open | — correction applied | S1 |
 | `for-stmt` three-clause form | **Corrected (002-R2)** — already exercised by the executed case `loops-control` | **Yes** | No | — evidence found | S5 |
-| `switch-arm` exhaustiveness | Not evidenced | **Yes** | No — gate the *exhaustiveness check*, not `switch` | A probe with a non-exhaustive switch | S5 |
-| `switch-arm` fallthrough | Not evidenced | **Yes** | No | A probe with two adjacent arms | S5 |
+| `switch-stmt-arm` / `switch-expr-arm` exhaustiveness | Not evidenced | **Yes** | No — gate the *exhaustiveness check*, not `switch` | A probe with a non-exhaustive switch | S5 |
+| `switch-stmt-arm` / `switch-expr-arm` fallthrough | Not evidenced | **Yes** | No | A probe with two adjacent arms | S5 |
 | labelled `break`/`continue` | Not evidenced | **Yes** | **Yes** — labels are syntax that may not exist | A probe using `break label` | S5 |
-| `break`/`continue` statements | **Grammar gap found (002-R2, F1)** — no production derives them although they are source- and corpus-evidenced | **Yes** | No — the syntax is evidenced; the grammar must be corrected | A grammar correction authorized by the owner | S5 |
-| `switch-stmt` colon arms | **Grammar gap found (002-R2, F2)** — statement arms are `case X :`; the grammar models `->` for both switch forms | **Yes** | No — the colon form is evidenced by executed cases | A grammar correction authorized by the owner | S5 |
+| `break`/`continue` statements | **Corrected (002-R3)** — `break-stmt`/`continue-stmt` added; unlabelled forms only | **Yes** | No — the syntax is evidenced and now derived | — correction applied | S5 |
+| `switch-stmt` colon arms | **Corrected (002-R3)** — `switch-stmt-arm` (colon) and `switch-expr-arm` (arrow) are separate productions | **Yes** | No — the colon form is evidenced by executed cases | — correction applied | S5 |
 | `if-expr` | Parser-evidenced, corpus-unevidenced | **Yes** | No | A probe using `if` in expression position | S5 |
 | `array-literal` | Not evidenced at all | **Yes** | **Yes** — the surface form is a guess and must not be implemented | A corpus or source example | S9 |
 | Identifier class beyond letters/`_`/`$` | Combining marks, other categories | **Yes** | No | Probes with combining marks and digit-leading names | S13 |
@@ -256,7 +257,7 @@ unambiguity or of deterministic lookahead for the entire grammar:
 | `top-level-body`: `function-decl` vs `type-decl` | The parser's dispatch order is explicit and evidence-backed (`Parser.java parse()`), and a function begins with an identifier, `void`, a primitive type name, or `(` |
 | `statement`: `expression-stmt` vs the keyword-led forms | Disjoint on the leading keyword |
 | `binary-expr`: `as`/`instanceof` taking a type | Not an ambiguity: the production *requires* a `type-ref` for exactly those two operators |
-| `switch-arm`: pattern vs value vs `default` | Not an ambiguity at the grammar level; the disambiguation is semantic (S5) |
+| `switch-label`: pattern vs value | Not an ambiguity at the grammar level; the disambiguation is semantic (S5); `default` is its own arm form since 002-R3 |
 | `lambda`: `(params) -> body` vs a parenthesised expression | **UNRESOLVED** on `(` — see §5.3 |
 
 ### 5.3 One residual lookahead requirement — recorded, not resolved
@@ -304,9 +305,11 @@ still S8's responsibility. Grammar consistency alone is not approval.
 * **It does not claim the grammar is correct.** A production can be
   self-consistent and still mis-describe the language. Correctness is established
   by the differential harness (Phase 2), not by a consistency checker. The R2
-  production mapping (`docs/spec/grammar-evidence-map.md` §3) has already found
-  three recognition gaps (F1, F2, F4) and one corrected annotation (F3); they are
-  recorded there and are not repaired by this report.
+  production mapping (`docs/spec/grammar-evidence-map.md` §3) found three
+  recognition gaps (F1, F2, F4) and one annotation error (F3); all four were
+  corrected under owner authorization — F3 in R2, F1/F2/F4 in 002-R3 — and the
+  map's per-production coverage is machine-checked (G13). The corrections
+  removed known mis-descriptions; they do not establish correctness.
 * **It does not resolve any semantic question.** The provisional productions are
   classified, not decided.
 * **It does not claim the grammar is LL(1).** §5.3 identifies a position where it

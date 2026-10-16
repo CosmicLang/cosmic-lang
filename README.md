@@ -56,7 +56,7 @@ docs/
   spec/language-spec.md                      Phase 1 language specification (PROPOSED)
   spec/grammar.ebnf                          formal grammar (block-level evidence)
   spec/grammar-consistency-report.md         machine-checked consistency report (G0-G13)
-  spec/grammar-evidence-map.md               per-production evidence map (117/117, machine-checked)
+  spec/grammar-evidence-map.md               per-production evidence map (119/119, machine-checked)
   spec/typing-contracts.md                   type-system contracts
   spec/diagnostic-codes.md                   diagnostic code registry + stability policy
   spec/compatibility-matrix.md               language-construct evidence ledger
