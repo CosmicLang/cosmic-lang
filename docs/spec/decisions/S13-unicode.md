@@ -1,0 +1,116 @@
+# S13 — Unicode Semantics
+
+| | |
+|---|---|
+| **Status** | **PROPOSED** (one sub-question **OPEN**) |
+| **Owner** | Engineering (analysis); project owner (acceptance) |
+| **Phase** | Phase 1 decision; Phase 2 implementation |
+| **Related** | `docs/spec/language-spec.md` §1.3/§2.2, `docs/spec/typing-contracts.md` §1.2, S8 |
+
+## Question
+
+1. **Q1** — What is the exact **identifier character class**?
+2. **Q2** — Is there any **normalisation** (NFC/NFD) of identifiers or literals?
+3. **Q3** — Are **confusable** identifiers a diagnostic concern?
+4. **Q4** — **Column counting**: the legacy lexer counts UTF-16 code units while
+   the new foundation counts Unicode scalar values. Which is normative?
+5. **Q5** — How are **lone surrogates** from `\uXXXX` escapes handled?
+6. **Q6** — What is the **source encoding** contract, beyond UTF-8 plus BOM
+   tolerance?
+
+## Evidence
+
+* **E1 — Q4, the material finding.** The legacy lexer advances its column
+  counter once per **UTF-16 code unit**: `advance()` increments `column` by one
+  and `source.charAt(pos)` addresses code units
+  (`parser/Lexer.java`). An astral character (for example an emoji) therefore
+  occupies **two** legacy columns.
+  The Phase 0 foundation counts columns in Unicode **scalar values**
+  (`crates/cosmic-source/src/file.rs`, documented and tested). The two
+  therefore **disagree from the first astral character on a line**.
+  This divergence is already recorded in `docs/spec/language-spec.md` §1.3 and
+  is a direct consequence of a deliberate Phase 0 decision, not a bug in either
+  implementation.
+* **E1** — Identifiers start with a Unicode letter, `_` or `$`, and continue
+  with Unicode letters/digits, `_` or `$`
+  (`parser/Lexer.java` `tokenize`, `readIdentifier`). The predicate is
+  Unicode-aware, so non-ASCII letters are legal identifier characters.
+* **E1** — The corpus exercises **ASCII identifiers only**; the only non-ASCII
+  content in the corpus is inside string literals (for example the hello-world
+  text). So Q1's non-ASCII half is **unevidenced**.
+* **E1** — `\uXXXX` is a single UTF-16 code unit
+  (`parser/Lexer.java` `readUnicodeEscape` returns a `char`). A `\u` escape
+  naming a high surrogate is therefore accepted as a standalone value with **no
+  diagnostic**, producing an ill-formed scalar sequence when the resulting
+  string is used.
+* **E1** — There is **no** normalisation anywhere in the legacy lexer: it copies
+  characters verbatim. So `é` (U+00E9) and `e` + U+0301 are distinct
+  identifiers and distinct string contents.
+* **E1** — A leading UTF-8 BOM is tolerated and is **not** a code character
+  (`parser/Lexer.java`, comment `OBS-008`).
+* **E1** — Phase 0 already rejects invalid UTF-8 at load time and reports the
+  first invalid byte offset (`cosmic-source::SourceMap::load`), verified in
+  `docs/audits/phase-0-source-review.md`.
+
+## Options
+
+| # | Option | Assessment |
+|---|---|---|
+| M1 | **Keep legacy code-unit columns** (revert the Phase 0 decision) | Maximum diagnostic-position compatibility. Cost: it makes column numbers wrong for editors, which display scalar values or grapheme clusters, and it would undo a tested Phase 0 behaviour |
+| M2 | **Keep scalar-value columns** (Phase 0 behaviour) and record the divergence explicitly | Editors agree; diagnostics from the new toolchain differ from the legacy ones only on lines containing astral characters. Requires differential tests to normalise for it |
+| M3 | **Count grapheme clusters** (display columns) | Best match to what a user sees, but it needs Unicode segmentation tables, which the Phase 0 zero-dependency policy forbids and which are not stabilised in the Rust standard library |
+| M4 | **Add normalisation** (NFC) to identifiers | Prevents a class of confusable-identifier bugs, but silently changes program text, which contradicts the "no silent normalisation" rule |
+
+## Recommendation (PROPOSED, not in force)
+
+**M2, with Q2 answered as "no normalisation" and Q3 answered as "diagnose, do
+not normalise".**
+
+* **Q1** — Identifiers are Unicode **letters** and **digits** plus `_` and `$`,
+  with the same start restriction as the legacy lexer. Because the non-ASCII
+  half is unevidenced, this is recorded as **PROPOSED** and Phase 2 must add
+  cases with non-ASCII identifiers before it is treated as settled.
+* **Q2** — **No normalisation.** Source text is used verbatim; a decomposed and
+  a precomposed spelling are different identifiers. Rationale: normalising would
+  silently change the meaning of program text, and the project forbids silent
+  reinterpretation.
+* **Q3** — **Do not normalise; do diagnose.** A diagnostic is emitted when an
+  identifier contains characters that are visually confusable with ASCII or with
+  another identifier in the same scope. This is a **warning**, not an error, and
+  is a **new diagnostic** with no legacy counterpart — so it must not change the
+  meaning of any existing program. Rationale: confusable identifiers are a
+  security concern, and the design report's supply-chain section treats
+  adversarial input as in scope; a warning is the intervention that does not
+  break compatibility.
+* **Q4** — **Scalar values are normative (M2).** The Phase 0 decision stands. The
+  legacy divergence is recorded, is **C0/C1-neutral** (it affects diagnostic
+  positions, not acceptance) and is **C2-relevant only for tooling that compares
+  diagnostic text**. Differential tests must normalise positions or restrict to
+  the Basic Multilingual Plane. Explicitly: the new toolchain does **not** adopt
+  the legacy code-unit counting.
+* **Q5** — A `\uXXXX` escape naming a **lone surrogate is an error**. The legacy
+  lexer accepts it silently and produces ill-formed text; that is the same
+  silent-degradation class the project forbids (compare the triple-quote
+  history in S8). This is a **PROPOSED tightening** and a C2 divergence for
+  sources that rely on it — expected to be zero, but to be measured.
+* **Q6** — The encoding contract is UTF-8 with a single optional leading BOM
+  which is not a code character. Invalid UTF-8 is rejected at load with the byte
+  offset of the first invalid byte. Already implemented and tested in Phase 0.
+
+## Compatibility consequence
+
+* **Q4 is an intentional, documented divergence.** It must appear in the
+  "known differences" list that Phase 2's differential harness consults, or the
+  harness will report false failures on any astral-containing case.
+* **Q3 (confusable warning)** adds diagnostics. It must be off by default in any
+  comparison against legacy output, and it must never be an error.
+* **Q5** is a tightening; measure it against the corpus.
+
+## Open dependencies
+
+* **S8** shares the escape/surrogate handling; Q5 must be implemented once, in
+  the lexer, and referenced from both records.
+* Phase 2 must add non-ASCII identifier cases before Q1 can be treated as
+  settled.
+* The differential harness design (D8) must include a position-normalisation
+  mode; this record is a hard requirement on it.
