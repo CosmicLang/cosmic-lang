@@ -214,3 +214,50 @@ an unrelated application of the same name (§3.3).
 
 **No formal acceptance is recorded by this document.** Per the directive, the
 extension and MIME decisions remain **pending formal acceptance**.
+
+---
+
+## 8. Directive 002-R1 candidate matrix (2026-10-16)
+
+This supersedes the narrow two-candidate ranking in §7. Authenticated GitHub
+code search was repeated with `GET /search/code?q=extension:EXT&per_page=6`.
+Counts below are indexed public-file matches at this instant, **not a census**.
+Repository samples, not raw hit counts, establish competing source use. For a
+permanent decision, repeat queries and inspect full editor registrations.
+
+| Rank | Candidate | GitHub code-search evidence | Competing language/source use | Editor/LSP collision | Extension registry evidence | Package registry evidence | Residual uncertainty | Migration cost |
+|---|---|---|---|---|---|---|---|---|
+| **1** | `.cosmic` | **58** indexed; sampled `Dockerfile.cosmic`, `Xresources.cosmic`, `pdb.cosmic`, `compilers.cosmic` | No competing **language source** found **in sampled hits**; suffix is used for config/data | Existing suffix file associations may cause incidental highlighting; direct VS Code/Open VSX enumeration NOT VERIFIED | Indexed FileInfo lookup did not establish an exact `.cosmic` entry; NOT VERIFIED elsewhere | npm/crates.io/PyPI indexed name searches inconclusive; no authoritative extension mapping verified | Unindexed language tooling and repositories | **Medium** if changing from proposed `.csmx`: docs, templates, OS associations, editor `fileExtensions`, LSP selectors, CLI examples and historical sample renames |
+| **2** | `.cmic` | **0** indexed matches | None located; **absence cannot prove uniqueness** | Editor extension and LSP registration NOT VERIFIED | No directly confirmed format registry entry; NOT VERIFIED | Package mappings NOT VERIFIED | Search blindness/very short unfamiliar suffix | **Medium**: same surfaces as above, plus explanation/discoverability |
+| **3** | `.ccos` | **0** indexed matches | None located in indexed sample; NOT VERIFIED globally | Editor/LSP registrations NOT VERIFIED | No directly confirmed extension registry entry | Package mappings NOT VERIFIED | Potential confusion with `.cos`, new suffix has no recognizable established meaning | **Medium**: docs, editor/OS mapping and source rename |
+| **4** | `.csmx` | **10** indexed matches | **Confirmed** `akeit0/csharp-markup-extension`: C# JSX-like source and `.csmx` test fixtures | **Confirmed competing C# language server** in same file association namespace; actual client priority not tested | No entry confirmed by indirect FileInfo search; no exclusive claim | Package names/editor identifier ownership NOT VERIFIED | Existing PoC may gain uptake; editor activation details untested | **Low now** (existing proposal/documentation); **high later** after release, when files, highlighting and LSP setup migrate |
+| **5** | `.cos` | **~7,600** indexed matches | **Confirmed** Creatures CAOS source scripts; indexed examples also include `uwdb/Cosette` query files | Material competing scripting source and existing application associations | **Direct FileInfo listing**: Capture One Settings File + Creatures CAOS File (`https://fileinfo.com/extension/cos`) | Package/editor mappings NOT VERIFIED | Count includes unrelated formats and archive noise; no exclusivity | **High**: editor, OS, user data and build-system coexistence conflicts |
+| **6** | `.csm` | **~6,736** indexed matches | Used by CASL/other non-Cosmic formats; language-source subset not fully sampled | Collision risk across multiple established formats | FileInfo and other indexes not exhaustively validated; earlier round identified Steam/Autodesk usage | Package mappings NOT VERIFIED | Multiple mature associations; direct registry snapshot outstanding | **High**: confusing file associations and editor routing |
+
+**Search scope:** GitHub authenticated code search + indexed public web search +
+one directly viewed FileInfo page for `.cos`
+(`https://fileinfo.com/extension/cos`) + the IANA media-type registry
+(`https://www.iana.org/assignments/media-types`, dated 2026-10-09).
+Marketplaces: indexed queries of VS Code listings for `csmx` and `cosmic`
+did not establish either candidate's file association; the unrelated `Cosmic
+Code` VS Code theme is name overlap only, **not a language extension**.
+Queries for `cosmic-lang` packages on npm, crates.io and PyPI through indexed
+web search returned no definitive, directly verified package-to-suffix mapping.
+Package registry **direct API listings were not completed**; consequently all
+package-registration cells are **NOT VERIFIED**. No extension can be pronounced
+available based on these results.
+
+**Priority criterion:** competing language-source and editor/LSP ownership is
+more important than raw file counts. `.cosmic` is therefore the leading
+**proposal**, with `.cmic` a concise fallback and `.ccos` a conservative
+second fallback. `.csmx` should not be accepted without an explicit owner
+choice acknowledging its confirmed C# markup conflict. Neither the extension
+nor MIME type is approved. `text/x-cosmic-lang` remains only a provisional
+unregistered convention. A later change is a **migration** (file renames,
+tooling configuration, language-server activation, compatibility docs), even
+when the parser grammar is extension-independent.
+
+Remaining decision evidence: direct editor Marketplace/Open VSX extension
+manifest searches; direct package registry API searches; OS file association
+tests; another code forge; legal trademark review. These are bounded follow-ups,
+not conditions for treating absence of evidence as proof of uniqueness.

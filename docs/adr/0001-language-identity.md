@@ -126,7 +126,7 @@ not a migration — so the investigation should be time-boxed. See ADR-0002.
 * Owner confirmation of language/compiler/binary names.
 * A per-construct compatibility analysis of `.kf` semantics against the
   legacy suite (the matrix now contains the seed; the evidenced construct set
-  is now frozen in `docs/spec/language-spec.md` and `docs/spec/grammar.ebnf`).
+  is recorded as a PROPOSED NORMATIVE RULE in `docs/spec/language-spec.md` and `docs/spec/grammar.ebnf`; no owner acceptance is implied).
 * A decision on `.ptkf` and `.ks` handling in the new toolchain — the proposed
   per-format framework is in `docs/spec/compatibility-policy.md` §2, with
   decision records `S3-portukof.md` and `S4-kofscript.md`.

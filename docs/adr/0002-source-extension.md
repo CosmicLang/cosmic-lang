@@ -62,6 +62,14 @@ which is what round 1's web searches surfaced.
 
 ---
 
+### Directive 002-R1 update — ranked alternatives
+
+The six-candidate, registry/editor/package-coverage matrix in
+`docs/spec/extension-assessment.md` §8 supersedes this initial ranking:
+`.cosmic` (1), `.cmic` (2), `.ccos` (3), `.csmx` (4),
+`.cos` (5), `.csm` (6). The owner has approved **none**. Registry and
+package checks remain incomplete; zero GitHub hits do not establish uniqueness.
+
 ## 4. Decision
 
 **Not taken.** This ADR deliberately does not choose.
@@ -72,8 +80,8 @@ Engineering's **recommendation** to the owner is:
    acceptance, and the directive requires the extension decision to remain
    pending formal acceptance.
 2. **Close the two named search gaps first** (`extension-assessment.md` §6):
-   a direct file-extension-database query, and a package-registry query for the
-   language identifier. Both are cheap and both are currently *indirect*.
+   direct editor/extension registry inspection and package API checks for the
+   language identifier; these are NOT VERIFIED.
 3. **Then choose between A1 and A2.** The deciding criterion should be stated
    explicitly, because the two criteria point in opposite directions:
    * "fewest existing files" → `.csmx`
@@ -92,7 +100,8 @@ The verified grammar makes the parser **extension-independent**
 Q2): the extension selects a *surface profile*, never the core grammar. The
 extension is therefore a **discovery convenience**, not a semantic marker.
 
-A wrong extension choice costs a **rename**, not a migration. This is an
+An extension change requires **migration**: source-file renames, build tooling,
+editor and LSP associations, documentation and user update instructions. This is an
 argument for a time-boxed investigation and a prompt decision rather than an
 exhaustive one — and it is the strongest reason not to over-engineer this
 choice.
