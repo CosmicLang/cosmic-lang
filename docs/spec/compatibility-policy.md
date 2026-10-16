@@ -3,9 +3,9 @@
 | | |
 |---|---|
 | **Date** | 2026-10-16 (round 1) · 2026-10-16 (round 2, Directive 002) |
-| **Directive** | ENGINEERING DIRECTIVE 001-R1 §8 (round 1) · ENGINEERING DIRECTIVE 002 §4/D5 (round 2) |
-| **Status** | **Proposed.** Nothing here is a decision, a grammar, or a compatibility promise. |
-| **Priority order** | **Confirmed by Directive 002 §4**: `.csmx` primary → `.kf`/`.kof` priority legacy → `.ptkf` separately specified → `.ks` separately specified |
+| **Directive** | ENGINEERING DIRECTIVE 001-R1 §8 (round 1) · ENGINEERING DIRECTIVE 002 §4/D5 (round 2) · 002-R2 (post-merge: `.cmic` selection recorded) |
+| **Status** | **Proposed.** Nothing here is a decision, a grammar, or a compatibility promise — except the source-extension selection recorded in §2.1 (owner decision, 2026-10-16). |
+| **Priority order** | **Owner decision (post-merge R2, 2026-10-16)**: `.cmic` primary → `.kf`/`.kof` priority legacy → `.ptkf` separately specified → `.ks` separately specified |
 | **Related** | `docs/adr/0001-language-identity.md`, `docs/spec/extension-assessment.md`, `docs/spec/compatibility-matrix.md`, `docs/spec/decisions/` (S3, S4), `docs/audits/phase-0-design-conformance.md` |
 | **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
 
@@ -41,38 +41,40 @@ C0 alone is never presented as compatibility.
 
 ## 2. Per-format decision proposal
 
-### 2.1 `.csmx` — proposed primary Cosmic-Lang source format
+### 2.1 `.cmic` — selected primary Cosmic-Lang source format
 
-**Priority 1.** Confirmed as the intended primary surface by Directive 002 §4.
+**Priority 1.** Selected by the project owner on 2026-10-16 (post-merge
+Directive 002-R2); recorded with evidence in ADR-0002 §4.1.
 
 | Item | Proposal |
 |---|---|
 | Role | **Primary** source format for the new toolchain |
-| Current state | Proposed in ADR-0001 §2.2 and already used consistently by Phase 0 code, documentation and test fixtures |
-| Uniqueness | **NOT established — and round 2 found a real collision.** See `docs/spec/extension-assessment.md`. GitHub code search (`extension:csmx`, 2026-10-16) returns **10 hits**, dominated by `akeit0/csharp-markup-extension`: an MIT-licensed C# project using `.csmx` as a **language source extension**, shipping a **language server**. It is a stale PoC (last push 2026-06-15, 16 stars), and there is **no file-format-registry entry** for either project. Residual risk is **MODERATE at the tooling level** (editor/LSP association), **LOW at the registry level** |
-| Round 1 vs round 2 | Round 1 ran only generic web queries and concluded "low risk for the registry view, moderate for tooling". Round 2's code search **confirms and sharpens** the tooling risk into a named competitor. Round 1's explicit limitation ("exhaustive GitHub code search not performed") is now closed |
-| MIME type | `text/x-cosmic-lang` is proposed by the design report (page 12) but is a **`x-` prefixed, by-definition unregistered** type. IANA registers no `text/x-*` name and no `cosmic`/`csmx`/`kof`/`csm` subtype. A registered type would need the vendor or personal tree |
-| Editor association | Not created. A tree-sitter grammar plus editor associations are recommended for the phase that introduces the lexer — they also *mitigate* the tooling risk, because tooling is what creates the association |
+| Selection evidence | GitHub code search (`extension:cmic`, 2026-10-16) returns **zero indexed matches** — the only round-2 candidate with none; `filename:.cmic` returns only **substring artifacts** (`.cmic2`, `.cmico`, crawler-saved `*.cmic-holdings.co.jp.*` files); a direct extension-database query (FileInfo) returns **no registry entry**; the "CMiC" construction-ERP brand dominates web results for the string |
+| What is **not** claimed | **Worldwide uniqueness.** The evidence rests on indexed search and public sources; unindexed tooling, editor association stores and package registries were not exhaustively queried, and a package-registry query remains open (`docs/spec/extension-assessment.md` §9) |
+| MIME type | Not decided. `text/x-cosmic-lang` remains provisional and unregistered; no MIME registration is performed or promised |
+| Editor association | Not created. A tree-sitter grammar plus editor associations are recommended for the phase that introduces the lexer |
 | Compatibility level | N/A — this is the native format, not a legacy format |
-| Owner decision needed | Approve the extension **after** (a) a direct file-extension-database query and (b) a package-registry query for the language identifier. Both are named as gaps in `extension-assessment.md` §6 |
-| Target phase | Phase 1 (search + approval) → Phase 2 (tooling) |
+| Owner decision needed | None for the extension itself (decided). The MIME type remains an owner matter if a type is ever published |
+| Target phase | Phase 2 (tooling) → Phase 5 (publication) |
 
-**Non-promise:** `.csmx` is not claimed to be globally unique. The design report
-itself says this cannot be demonstrated, and round 2 found evidence that it is
-in fact **occupied by a competing language project**.
+**Non-promise:** `.cmic` is not claimed to be globally unique; no registry or
+editor publication has happened. The selection can be revisited by the owner at
+the cost of a rename, not a migration — because the parser is
+**extension-independent** (§3 rule 1).
 
-**Risk-mitigating observation.** Because the parser is **extension-independent**
-(§3 rule 1), the extension is a discovery convenience rather than a semantic
-marker. A wrong choice therefore costs a rename, not a migration — which
-materially lowers the stakes of the decision and is an argument for not
-over-investing in the search.
+#### History: why `.csmx` was not accepted (retained as evidence)
 
-**Alternative to evaluate:** `.cosmic`. GitHub code search finds 58 hits, but
-every sampled one is a derived/variant file (`Dockerfile.cosmic`,
-`Xresources.cosmic`, `pdb.cosmic`), and **no project claims it as a language
-extension**. If "no competing language claim" is the criterion that matters, it
-is the stronger candidate; if "fewest existing files" is the criterion, `.csmx`
-wins. The trade-off is recorded, not resolved.
+The design report proposed `.csmx`; ADR-0001 §2.2 carried it as a proposal. The
+round-2 collision investigation (`docs/spec/extension-assessment.md`) found a
+real competing language claim — `akeit0/csharp-markup-extension`, an MIT C#
+project using `.csmx` as a language source extension with a language server,
+though a stale PoC and with no file-format-registry entry for either project —
+placing tooling-level residual risk at **MODERATE**. `.cosmic` was the leading
+alternative (58 raw hits, all derived/variant files, **no competing language
+claim**) and remains the strongest fallback if tooling-association problems
+appear later. `.csm` was rejected: heavily used by unrelated formats. All of
+this is preserved as the historical record; the owner selected `.cmic` — the
+ranked-second candidate — on 2026-10-16.
 
 ### 2.2 `.kf` / `.kof` — high-priority legacy syntax compatibility candidates
 
@@ -86,7 +88,7 @@ Directive 002 §4.
 | Compatibility level | **Target C1 + C2**, scoped to the constructs the compatibility matrix has evidence for |
 | Priority | Highest of the four — it is the format that carries the language's actual behaviour |
 | What is *not* proposed | No promise of C2 for constructs outside the evidenced set; no promise of C3; no promise that legacy bugs are reproduced (see §4) |
-| Owner decision needed | Confirm `.kf` as the first compatibility target, or defer it in favour of `.csmx`-only support |
+| Owner decision needed | Confirm `.kf` as the first compatibility target, or defer it in favour of `.cmic`-only support |
 | Target phase | Phase 1 (freeze the evidenced construct set) → Phase 2 (frontend) → differential validation |
 
 **Non-promise:** no claim is made that every `.kf` program will compile. The
@@ -176,7 +178,7 @@ semantics; the stdlib/language boundary; the reserved keywords `entity`,
 
 | # | Question | Why it matters |
 |---|---|---|
-| Q1 | Is `.kf` compatibility a **Phase 2 gate**, or may `.csmx`-only support ship first? | Determines whether the Phase 2 frontend must accept the legacy surface on day one |
+| Q1 | Is `.kf` compatibility a **Phase 2 gate**, or may `.cmic`-only support ship first? | Determines whether the Phase 2 frontend must accept the legacy surface on day one |
 | Q2 | Which of the 74 golden cases constitute the minimum C2 contract for the first target? | The corpus is the only executed oracle; the gate needs a defined subset |
 | Q3 | How is a *legacy defect* recorded when the new compiler intentionally differs? | Without a mechanism, differential tests will report false failures |
 | Q4 | Does the new toolchain need to read `kof.toml` / `kofdeps.lock`? | The report proposes `Cosmic.toml`/`Cosmic.lock`; no migration story exists for existing projects |
@@ -191,11 +193,12 @@ semantics; the stdlib/language boundary; the reserved keywords `entity`,
 
 | Format | Proposed role | Compatibility level promised | Priority | Phase 1 deliverable | Owner decision required |
 |---|---|---|---|---|---|
-| `.csmx` | Primary Cosmic-Lang source | N/A (native) | **1** | Round-2 collision assessment + the two named search gaps closed | **Yes** |
+| `.cmic` | Primary Cosmic-Lang source (owner-selected, 2026-10-16) | N/A (native) | **1** | Selection recorded in ADR-0002 §4.1; collision evidence retained; MIME + publication remain explicit follow-ups | **MIME only** |
 | `.kf` / `.kof` | Legacy syntax compatibility | **C1 + C2**, scoped to evidenced constructs | **2** | Freeze the evidenced construct set (D1/D2) | **Yes** |
 | `.ptkf` | PortuKof, separately specified | None yet | **3** | Dedicated specification (if in scope) — S3 | **Yes** |
 | `.ks` | KofScript wrapping/execution, separately specified | None yet | **4** | Dedicated specification (if in scope) — S4 | **Yes** |
 
 **No full compatibility is promised for any format**, and no grammar is
-invented by this document. **No extension or MIME decision is accepted** — both
-remain pending formal owner acceptance.
+invented by this document. **The primary extension is decided by the owner
+(`.cmic`, 2026-10-16); no MIME type is accepted** — that question remains
+pending formal owner acceptance.

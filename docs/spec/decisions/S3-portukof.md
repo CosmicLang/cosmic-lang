@@ -52,7 +52,7 @@
 
 | # | Option | Assessment |
 |---|---|---|
-| C1 | **Out of scope.** Support `.csmx` and `.kf` only; `.ptkf` produces a clear "unsupported format" diagnostic | Smallest surface, honest, and consistent with the design report's "prioritise the core language" instruction. Breaks the 4 example programs |
+| C1 | **Out of scope.** Support `.cmic` and `.kf` only; `.ptkf` produces a clear "unsupported format" diagnostic | Smallest surface, honest, and consistent with the design report's "prioritise the core language" instruction. Breaks the 4 example programs |
 | C2 | **In scope as a lexical translation layer** — a profile table mapping surface tokens/members to canonical ones, with no separate grammar | Matches the evidenced architecture exactly (canonicalisation in the lexer). Cost is the profile tables, which must be derived from the vocabulary components, not guessed |
 | C3 | **In scope as a separately specified language** with its own grammar | Contradicts the evidence: the parser never sees the surface form |
 | C4 | **Defer the decision** to a later phase | Acceptable only if `.ptkf` files are *rejected loudly* meanwhile, never silently mis-parsed |

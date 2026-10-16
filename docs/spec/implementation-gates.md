@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Proposed** — replaces the flat `G1b` gate. Awaiting owner acceptance. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 |
+| **Status** | **Proposed** — replaces the flat `G1b` gate. Awaiting owner acceptance. (Post-merge update: the `.cmic` extension selection is recorded in ADR-0002 §4.1; the gate model itself remains unaccepted.) |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 |
 | **Supersedes** | the single `G1b` gate defined in `docs/spec/decisions/README.md` and `docs/directives/directive-003-proposal.md` |
 | **Related** | `docs/spec/decisions/` (S1–S18), `docs/audits/phase-1-legacy-probes.md`, `docs/spec/grammar-consistency-report.md`, `docs/directives/directive-003-proposal.md` |
 
@@ -226,7 +226,7 @@ non-cyclical Phase 1 gates that already existed.
 | **G1-T** | **Type-checking readiness** — unlocks `cosmic-sema` | Accepted rules for each implemented semantic operation; per-operation (construct, decision, operation, diagnostic, closing evidence) entries for each unaccepted operation; negative tests require no output artifact |
 | **G1-M** | **Middle-end readiness** — unlocks `cosmic-mir` / `cosmic-opt` | Every Tier-M operation has an ACCEPTED NORMATIVE RULE and mechanically specified verifier obligations; otherwise defer that operation |
 | **G1-R** | **Backend readiness** — unlocks `cosmic-runtime` / codegen | S16 and S17 decided; the per-target capability table schema exists |
-| **G1c** | Owner: identity, extension, compatibility | Owner approval or explicit component-limited deferral; parser independent of filename extension; no publication |
+| **G1c** | Owner: identity, compatibility | **Extension decided: `.cmic`** (2026-10-16, ADR-0002 §4.1). Identity naming and compatibility still require owner approval or explicit component-limited deferral; parser independent of filename extension; no publication |
 | **G1d** | Owner: licence | Owner approval or explicit internal-development-only deferral; no legacy artifacts imported, no release/distribution |
 | **G1e** | CI and governance | CI green on the branch; protection verified |
 
@@ -240,7 +240,7 @@ non-cyclical Phase 1 gates that already existed.
 | G1-T | **PROPOSED — not accepted** — every Tier-T record is closed or gated; the gates are specified in §4.1 |
 | G1-M | **PROPOSED — not accepted** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
 | G1-R | **PENDING OWNER** — S16/S17. Does not gate Phase 2 or Phase 3 |
-| G1c / G1d | **PENDING OWNER** — an explicit limited-scope owner waiver is required for frontend work without these choices |
+| G1c / G1d | **PENDING OWNER** (extension part decided: `.cmic`) — an explicit limited-scope owner waiver is still required for frontend work without the identity/compatibility and licence choices |
 | G1e | **PRIOR SHA PASSED** — verify protection details and CI on the final SHA |
 
 **Therefore: a component-scoped Phase 2 authorization is now possible if the owner accepts this gate revision, approves the lexical/syntactic contract, and authorizes Directive 003.** The dependency chain
@@ -254,7 +254,8 @@ decision — not by relaxing any standard.
   gate change moves no decision.
 * **No `GATED` record is decided.** A gate is a refusal, not a rule.
 * **The owner-blocked decisions are still owner-blocked** (S3, S4, S16, S17, the
-  licence, the extension, the naming).
+  licence, the MIME type, the naming) — with one completion: the source
+  extension has been selected by the owner (`.cmic`, 2026-10-16).
 * **Phase 3 and Phase 4 remain blocked** on G1-M and G1-R respectively.
 * **G0-B remains PARTIAL.**
 

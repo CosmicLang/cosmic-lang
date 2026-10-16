@@ -110,8 +110,9 @@
 
 ## Compatibility consequence
 
-* The gate schema is **C0–C3 neutral** for the source extension (currently
-  unapproved; the leading proposal is `.cosmic`, per `docs/spec/extension-assessment.md`). For legacy formats it
+* The gate schema is **C0–C3 neutral** for the source extension (owner-selected
+  `.cmic`, 2026-10-16; recorded in `docs/adr/0002-source-extension.md` §4.1).
+  For legacy formats it
   matters only in that a `refused` gate is a **C1 divergence** on the affected
   target — but only for targets that never fully supported the construct anyway
   (the legacy WASM backend already refuses).
