@@ -229,6 +229,62 @@ fn lone_cr_terminates_a_line() {
 }
 
 #[test]
+fn line_terminator_columns_agree_across_lf_crlf_and_lone_cr() {
+    // A terminator byte is not a column of its own: every byte of the
+    // terminator maps to the position one past the last visible character,
+    // which is also the position `line_text` stops at. LF, CRLF and lone CR
+    // must therefore report the same column.
+    let (sources, lf) = file("a\nb");
+    let source = sources.get(lf).unwrap();
+    assert_eq!(source.line_col(1), Some(loc(1, 2)), "LF terminator");
+    assert_eq!(source.line_text(0), Some("a"));
+
+    let (sources, crlf) = file("a\r\nb");
+    let source = sources.get(crlf).unwrap();
+    assert_eq!(source.line_col(1), Some(loc(1, 2)), "CR of a CRLF pair");
+    assert_eq!(source.line_col(2), Some(loc(1, 2)), "LF of a CRLF pair");
+    assert_eq!(source.line_text(0), Some("a"));
+    assert_eq!(
+        source.line_index(2),
+        Some(0),
+        "the \\n byte is still line 1"
+    );
+
+    let (sources, lone_cr) = file("a\rb");
+    let source = sources.get(lone_cr).unwrap();
+    assert_eq!(source.line_col(1), Some(loc(1, 2)), "lone CR");
+    assert_eq!(source.line_text(0), Some("a"));
+}
+
+#[test]
+fn every_offset_maps_inside_its_printed_line() {
+    // The renderer places a caret at `column - 1` characters into the printed
+    // line, so a column may never exceed the visible line length plus one.
+    for text in [
+        "", "abc", "a\nb\nc", "a\r\nb", "a\rb", "a\r\n", "\r\n", "héllo", "a😀b",
+    ] {
+        let (sources, id) = file(text);
+        let source = sources.get(id).unwrap();
+        for offset in 0..=source.len() {
+            if let Some(loc) = source.line_col(offset) {
+                let visible = source
+                    .line_text(loc.line - 1)
+                    .expect("reported line must exist")
+                    .chars()
+                    .count() as u32;
+                assert!(
+                    loc.column <= visible + 1,
+                    "{text:?} offset {offset} -> line {} column {} \
+                     exceeds the {visible}-character printed line",
+                    loc.line,
+                    loc.column
+                );
+            }
+        }
+    }
+}
+
+#[test]
 fn crlf_only_file_has_two_empty_lines() {
     let (sources, id) = file("\r\n");
     let source = sources.get(id).unwrap();
@@ -401,6 +457,40 @@ fn load_reports_invalid_utf8_precisely() {
         }
         other => panic!("expected NotUtf8 error, got {other:?}"),
     }
+
+    std::fs::remove_file(&path).unwrap();
+}
+
+/// `load` must reject an oversized file **from its metadata**, before reading
+/// it: the documented 4 GiB `u32` limit must never require allocating the file.
+///
+/// Ignored by default because the fixture is a 5 GiB *sparse* file: it costs
+/// no disk space, but if the metadata pre-check were removed this test would
+/// try to read 5 GiB into memory. Run it manually after touching `load`:
+///
+/// ```sh
+/// cargo test -p cosmic-source --test source_map -- --ignored oversized
+/// ```
+#[test]
+#[ignore = "creates a 5 GiB sparse file; run manually (see doc comment)"]
+fn load_rejects_oversized_files_from_metadata_without_reading() {
+    let path = temp_path("oversized.csmx");
+    let file = std::fs::File::create(&path).unwrap();
+    file.set_len(5 * 1024 * 1024 * 1024).unwrap();
+    drop(file);
+
+    let mut sources = SourceMap::new();
+    match sources.load(&path) {
+        Err(LoadError::TooLarge { path: got, len }) => {
+            assert_eq!(got, path);
+            assert!(len > 0, "declared length must be reported");
+        }
+        other => panic!("expected TooLarge error, got {other:?}"),
+    }
+    assert!(
+        sources.is_empty(),
+        "a rejected load must not register anything"
+    );
 
     std::fs::remove_file(&path).unwrap();
 }

@@ -194,11 +194,21 @@ impl SourceMap {
 
     /// Reads `path` from disk and registers it.
     ///
+    /// The declared file size is checked **before** the file is read, so an
+    /// oversized file is rejected without being materialized in memory.
+    ///
     /// # Errors
     ///
     /// See [`LoadError`]: I/O failures, invalid UTF-8, oversized files and a
     /// full map are all reported explicitly.
     pub fn load(&mut self, path: &Path) -> Result<FileId, LoadError> {
+        // Defence in depth: reject from metadata first so the documented
+        // `u32` limit never requires allocating the file. A metadata failure
+        // (missing file, permissions) is not reported here — the read below
+        // produces the authoritative I/O error for that case.
+        if let Ok(metadata) = std::fs::metadata(path) {
+            check_declared_len(metadata.len(), path)?;
+        }
         let bytes = std::fs::read(path).map_err(|source| LoadError::Io {
             path: path.to_path_buf(),
             source,
@@ -260,10 +270,24 @@ fn check_size(len: usize, path: &Path) -> Result<(), SourceMapError> {
     Ok(())
 }
 
+/// Rejects a file whose *declared* length (from metadata) cannot be addressed
+/// with `u32` byte offsets. Used by [`SourceMap::load`] before reading, so the
+/// limit is enforced without materializing the file in memory.
+fn check_declared_len(len: u64, path: &Path) -> Result<(), LoadError> {
+    let len = usize::try_from(len).unwrap_or(usize::MAX);
+    if len > MAX_SOURCE_LEN {
+        return Err(LoadError::TooLarge {
+            path: path.to_path_buf(),
+            len,
+        });
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{MAX_SOURCE_LEN, check_size};
-    use crate::SourceMapError;
+    use super::{MAX_SOURCE_LEN, check_declared_len, check_size};
+    use crate::{LoadError, SourceMapError};
     use std::path::Path;
 
     #[test]
@@ -277,6 +301,29 @@ mod tests {
             match check_size(len, path) {
                 Err(SourceMapError::SourceTooLarge { len: got, .. }) => assert_eq!(got, len),
                 other => panic!("expected SourceTooLarge for len {len}, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn declared_length_limit_is_checked_before_reading() {
+        let path = Path::new("huge.csmx");
+        assert!(check_declared_len(0, path).is_ok());
+        assert!(check_declared_len(MAX_SOURCE_LEN as u64, path).is_ok());
+
+        for len in [MAX_SOURCE_LEN as u64 + 1, 5 * 1024 * 1024 * 1024, u64::MAX] {
+            match check_declared_len(len, path) {
+                Err(LoadError::TooLarge {
+                    len: got,
+                    path: got_path,
+                }) => {
+                    assert_eq!(got_path, path);
+                    // On a 64-bit host the declared length survives exactly;
+                    // on 32-bit it saturates at `usize::MAX` (still over the
+                    // limit, which is all that matters here).
+                    assert!(got > MAX_SOURCE_LEN, "got {got}");
+                }
+                other => panic!("expected TooLarge for len {len}, got {other:?}"),
             }
         }
     }

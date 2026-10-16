@@ -117,18 +117,21 @@ impl SourceFile {
     ///
     /// Returns `None` when `offset` is beyond the end of the text or does not
     /// lie on a UTF-8 character boundary.
+    ///
+    /// The column is counted over the **visible** line content: a byte inside
+    /// the line terminator (`\n`, `\r\n` or a lone `\r`) maps to the column
+    /// one past the last character of the line, never further. This keeps LF
+    /// and CRLF files consistent — the `\r` of a `\r\n` pair is not a column
+    /// of its own, because [`Self::line_text`] does not print it either.
     #[must_use]
     pub fn line_col(&self, offset: u32) -> Option<LineCol> {
         if offset > self.len() || !self.text.is_char_boundary(offset as usize) {
             return None;
         }
         let line = self.line_index(offset)?;
-        let start = *self.line_starts.get(line as usize)?;
-        let column = self
-            .text
-            .get(start as usize..offset as usize)?
-            .chars()
-            .count();
+        let content = self.line_content_range(line)?;
+        let end = usize::min(offset as usize, content.end);
+        let column = self.text.get(content.start..end)?.chars().count();
         Some(LineCol {
             line: line + 1,
             column: u32::try_from(column).ok()?.saturating_add(1),
@@ -141,18 +144,29 @@ impl SourceFile {
     /// out-of-range indices.
     #[must_use]
     pub fn line_text(&self, line: u32) -> Option<&str> {
+        let content = self.line_content_range(line)?;
+        self.text.get(content)
+    }
+
+    /// Byte range of the **visible content** of a zero-based line: the line's
+    /// bytes without its terminator (`\r\n`, `\n` or a lone `\r`).
+    ///
+    /// Returns `None` for out-of-range indices.
+    fn line_content_range(&self, line: u32) -> Option<core::ops::Range<usize>> {
         let start = *self.line_starts.get(line as usize)? as usize;
         let end = match self.line_starts.get(line as usize + 1) {
             Some(&next) => next as usize,
             None => self.text.len(),
         };
-        let mut text = self.text.get(start..end)?;
-        if let Some(stripped) = text.strip_suffix("\r\n") {
-            text = stripped;
-        } else if let Some(stripped) = text.strip_suffix(['\n', '\r']) {
-            text = stripped;
-        }
-        Some(text)
+        let raw = self.text.get(start..end)?;
+        let terminator = if raw.ends_with("\r\n") {
+            2
+        } else if raw.ends_with(['\n', '\r']) {
+            1
+        } else {
+            0
+        };
+        Some(start..end - terminator)
     }
 
     /// Builds a checked span `[start, end)` for this file.

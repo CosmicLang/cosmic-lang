@@ -53,12 +53,21 @@ compilation session.
 
 **Design decisions:**
 
-* All offsets are `u32`; files of ≥ 4 GiB − 1 bytes are rejected at
-  registration with a typed error instead of silently truncating.
+* All offsets are `u32`; files of ≥ 4 GiB − 1 bytes are rejected with a typed
+  error instead of silently truncating. `load` enforces this from the file's
+  **metadata before reading**, so an oversized file is never materialized in
+  memory (the post-read check remains as defence in depth).
 * Line terminators are universal: `\n`, `\r\n` and lone `\r`. A trailing
   terminator opens one final empty line (`"a\n"` has two lines).
 * Columns in `LineCol` are **1-based and counted in Unicode scalar values**
   (`char`s), which is what editors show; byte offsets remain authoritative.
+* A byte inside a line terminator maps to the column **one past the last
+  visible character** — terminators are not columns of their own, so LF, CRLF
+  and lone CR files report identical columns for the same logical position
+  (`"a\r\nb"`: both terminator bytes report line 1, column 2). This keeps
+  `line_col` consistent with `line_text`, which never prints the terminator,
+  and guarantees the diagnostic renderer's caret never lands beyond the
+  printed line.
 * No panics on input data: every fallible operation returns `Option` or a
   typed error. No `unsafe`. No dependencies.
 
