@@ -1,5 +1,15 @@
 # Phase 1 — Specification Engineering Report
 
+> **Historical Directive 002 snapshot.** The inventory, status distribution,
+> Phase 1 gate assessment and CI SHA in this report describe the initial draft
+> before Directive 002-R1. They are **superseded for current decisions** by
+> `docs/audits/phase-1-002-r1-reconciliation.md`,
+> `docs/spec/implementation-gates.md`, and
+> `docs/spec/decisions/README.md`. In particular, S1/S11 now have bounded JVM
+> experimental evidence; 117 grammar productions are currently defined; G1b
+> remains a proposed supersession awaiting owner acceptance. Prior CI results
+> do not establish CI success on the final corrective commit.
+
 | | |
 |---|---|
 | **Date** | 2026-10-16 |
@@ -89,7 +99,7 @@ GitHub permission was bypassed.
 | # | Deliverable | Path | Status |
 |---|---|---|---|
 | D1 | Language specification | `docs/spec/language-spec.md` | **Delivered** — 12 sections + unresolved register |
-| D2 | Formal grammar | `docs/spec/grammar.ebnf` | **Delivered** — 59 productions, all evidence-marked |
+| D2 | Formal grammar | `docs/spec/grammar.ebnf` | **Historical: 59 productions**; Directive 002-R1 expanded the working proposal to 117 productions, with block-level evidence markers only |
 | D3 | Type-system contracts | `docs/spec/typing-contracts.md` | **Delivered** — 9 sections, TI-1…TI-8 |
 | D4 | Semantic decisions | `docs/spec/decisions/` | **Delivered** — 18 records + register index |
 | D5 | Compatibility policy | `docs/spec/compatibility-policy.md` | **Updated** — priority order confirmed, round-2 findings folded in |
@@ -124,7 +134,7 @@ Every production in `docs/spec/grammar.ebnf` carries one of:
 * `[E1:case]` — witnessed by an executed golden case (222/222 for
   jvm/js/script);
 * `[E2]` — inferred from E1 material;
-* `[UNRESOLVED:Sn]` — deliberately undecided, owned by decision record `Sn`.
+* `[OPEN:Sn]` — deliberately undecided, owned by decision record `Sn`.
 
 **Primary evidence sources read in this phase:** `parser/Lexer.java`,
 `parser/Parser.java`, `parser/StatementParser.java`, `parser/ExpressionParser.java`,
@@ -211,7 +221,8 @@ bounds syntax.
 | S17 | Runtime ABI versioning and layering | **BLOCKED-ON-OWNER** |
 | S18 | Typed-IR invariants and the MIR verifier | **PROPOSED** |
 
-**Distribution:** 9 OPEN · 4 PROPOSED · 4 BLOCKED-ON-OWNER · 1 BLOCKED-ON-MEASUREMENT.
+**Historical Directive 002 distribution (superseded by Directive 002-R1):**
+9 OPEN · 4 PROPOSED · 4 BLOCKED-ON-OWNER · 1 BLOCKED-ON-MEASUREMENT.
 
 **No record claims owner approval.** Every record separates **proven legacy
 behaviour** (E1) from **proposed new semantics** (P) and marks unresolved
@@ -364,7 +375,7 @@ documentation defect (unresolvable evidence references), not a false positive.
 | Gate | Criterion | Status |
 |---|---|---|
 | **G1** | Grammar and specification evidence complete | **SATISFIED (engineering)** — D1 and D2 delivered; every production evidence-marked; **owner approval of the grammar is still required** |
-| **G1b** | All 18 questions have documented decisions or explicitly identified unresolved owner dependencies | **SATISFIED (engineering)** — 18 records, every one with an explicit status and a named dependency. 13 of 18 are not decided, and that is the honest outcome, not a failure |
+| **G1b** | Historical flat all-decisions gate | **SUPERSESSION PROPOSED, NOT ACCEPTED.** The old engineering completeness criterion created a dependency cycle; see `docs/spec/implementation-gates.md` for the proposed replacement. |
 | **G1c** | Identity, extension and compatibility decisions prepared for approval | **SATISFIED (engineering)** — ADR-0001 reviewed, ADR-0002 new, compatibility policy updated. **Owner approval outstanding** |
 | **G1d** | Licensing decision presented; not falsely marked resolved | **SATISFIED (engineering)** — recommendation delivered; licence **undecided**; 10 legal dependencies identified. **Owner decision outstanding** |
 | **G1e** | CI green and governance protections verified | **SATISFIED** — see §9 |

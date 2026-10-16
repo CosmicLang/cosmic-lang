@@ -74,20 +74,16 @@ semantic decision records and five ADRs** — all **Proposed**. No compiler
 implementation was added: the workspace still contains exactly the three Phase 0
 crates.
 
-The decision register is `docs/spec/decisions/README.md`. It is the honest
-ledger of what is settled and what is not. Status distribution across the 18
-records:
-
-| Status | Count | Records |
-|---|---|---|
-| **OPEN** — analysed, no decision made | 9 | S1, S2, S5, S6, S7, S8, S9, S10, S12 |
-| **PROPOSED** — a recommendation exists, not in force | 4 | S13, S14, S15, S18 |
-| **BLOCKED-ON-OWNER** | 4 | S3 (PortuKof scope), S4 (KofScript scope), S16 (memory strategy), S17 (ABI naming/layering) |
-| **BLOCKED-ON-MEASUREMENT** | 1 | S11 (evaluation order) — S1 also carries a measurement-blocked part |
-
-**No record claims owner approval**, and **no OPEN record may be guessed at in
-Phase 2**: the `GATE` diagnostic family turns every open question into a hard
-"not yet specified" error instead of an accidental language choice.
+The authoritative register is `docs/spec/decisions/README.md`; the component
+entry gates are `docs/spec/implementation-gates.md`, both pending owner
+acceptance. The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
+**PROPOSED NORMATIVE RULE**, **ACCEPTED NORMATIVE RULE**, **OPEN**, **DEFERRED**
+and **NOT VERIFIED**. Their use is per question: a record can contain several.
+The Directive 002-R1 read-only JVM probes (`docs/audits/phase-1-legacy-probes.md`)
+resolved some evidence gaps but do not establish cross-target compatibility or
+approve semantics. Unsupported semantic operations must be refused by their
+specific `GATE` diagnostic; unrelated syntax remains recognizable when evidenced.
+**No record claims owner acceptance.**
 
 **Phase 2 is not authorised.** The proposed Directive 003 is
 `docs/directives/directive-003-proposal.md`.
@@ -114,7 +110,8 @@ inconsistency and an allocation-limit bypass in `SourceMap::load`); see
 * **Source extension:** `.csmx` (proposed). Round 2 of the collision
   investigation (`docs/spec/extension-assessment.md`) found a competing
   language claim in GitHub code search, so the extension remains **pending owner
-  acceptance**; `.cosmic` is recorded as the alternative. **No extension or MIME
+  acceptance**; `.cosmic` is ranked the leading proposal, with `.cmic` and
+  `.ccos` as alternatives. **No extension or MIME
   decision is accepted.**
 * **Standard library:** naming proposed in ADR-0003, **pending owner
   acceptance**.
