@@ -101,9 +101,9 @@
   entities, annotations, FFI, `test`/`application`/`infra` blocks or the query
   DSL. Since **no golden case uses them**, the executed corpus is unaffected —
   but the *ecosystem* is not, and the owner must know that J1 excludes it.
-* This is a **scope decision, not a technical one**, and therefore
-  **BLOCKED-ON-OWNER** in substance: engineering recommends J1, but only the
-  owner can decide that these surfaces are out of scope.
+* This is a **scope decision, not a technical one**, and therefore an
+  **owner choice (OPEN — owner input required)**: engineering recommends J1, but
+  only the owner can decide that these surfaces are out of scope.
 * No **C0–C3** claim is made for any of these constructs at any level.
 
 ## Open dependencies

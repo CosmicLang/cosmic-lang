@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **PROPOSED** |
+| **Status** | **PROPOSED NORMATIVE RULE** — owner acceptance outstanding |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §9, `docs/spec/compatibility-policy.md` §3, `docs/spec/diagnostic-codes.md` (D9), S6, S14 |
@@ -110,7 +110,8 @@
 
 ## Compatibility consequence
 
-* The gate schema is **C0–C3 neutral** for `.csmx`. For legacy formats it
+* The gate schema is **C0–C3 neutral** for the source extension (currently
+  unapproved; the leading proposal is `.cosmic`, per `docs/spec/extension-assessment.md`). For legacy formats it
   matters only in that a `refused` gate is a **C1 divergence** on the affected
   target — but only for targets that never fully supported the construct anyway
   (the legacy WASM backend already refuses).

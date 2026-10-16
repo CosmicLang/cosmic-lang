@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **PROPOSED** |
+| **Status** | **PROPOSED NORMATIVE RULE** — owner acceptance outstanding |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §3, `docs/spec/grammar.ebnf` §2.1, S13, S15 |

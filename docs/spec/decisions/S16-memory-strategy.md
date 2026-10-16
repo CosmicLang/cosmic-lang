@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **BLOCKED-ON-OWNER** — this is a major architectural choice and must not be made by engineering alone |
+| **Status** | **DEFERRED** — owner-dependent runtime architectural choice; OPEN before runtime implementation |
 | **Owner** | Project owner (decision); engineering (study and options) |
 | **Phase** | Decision in Phase 1; ADR-0005 carries the record |
 | **Related** | ADR-0005, `docs/spec/typing-contracts.md` §9, S11 (Q7), S9 |

@@ -5,7 +5,7 @@
 
 > **Path convention.** A path prefixed `cosmcc:` refers to the **legacy repository** `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
 
-| **Status** | **PROPOSED** |
+| **Status** | **PROPOSED NORMATIVE RULE** — owner acceptance outstanding |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; enforcement in Phase 2/3 |
 | **Related** | `docs/spec/typing-contracts.md` §8, `docs/spec/language-spec.md` §12, S1, S11, S15 |

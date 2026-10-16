@@ -2,10 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | **PROPOSED** (one sub-question **OPEN**) |
+| **Status** | **VERIFIED LEGACY BEHAVIOR** for Q1 (letters, `_`, `$` verified) and Q4 (divergence **measured**); Q3 **PROPOSED**; Q5/Q6 **OPEN** |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §1.3/§2.2, `docs/spec/typing-contracts.md` §1.2, S8 |
+
+> **R1 status interpretation:** Evidence claims below are VERIFIED LEGACY BEHAVIOR only; any proposed semantics remain PROPOSED NORMATIVE RULE pending owner action. Older recommendations predate the experiments and may describe the prior evidence gap.
 
 ## Question
 
@@ -114,3 +116,33 @@ not normalise".**
   settled.
 * The differential harness design (D8) must include a position-normalisation
   mode; this record is a hard requirement on it.
+
+---
+
+## Experimental evidence (Directive 002-R1 §4)
+
+Executed read-only against the frozen legacy compiler on 2026-10-16,
+`--target jvm`, OpenJDK 27. Full commands, programs, stdout, stderr and exit
+statuses are in `docs/audits/phase-1-legacy-probes.md`.
+
+The probe **resolved Q1's non-ASCII half and measured Q4**.
+
+| Question | Result | Observed |
+|---|---|---|
+| Q1 non-ASCII letters | **valid identifier characters** | `Int café(Int x) = x + 1` compiled; `café(41)` printed `42` |
+| Q1 `_` and `$` starts | **valid** | `_under(1)` → `2`; `$dollar(1)` → `2` |
+| Q4 column counting | **UTF-16 code units, measured** | see below |
+
+**Q4 is now quantified, not merely asserted.** For the source line
+`main() { println("😀" +) }` the legacy compiler reported the `)` at **column
+24**. Counting in UTF-16 code units, the emoji occupies columns 19–20 and `)`
+falls at 24. Counting in **Unicode scalar values**, `)` would be at **23**.
+
+**The divergence is therefore exactly +1 per astral character preceding the
+position on that line.** The Phase 1 record asserted this from source; the probe
+measures it. The proposed rule (scalar values) is unchanged, and the differential
+harness must normalise diagnostic columns on any line containing an astral
+character.
+
+**Still OPEN:** identifier classes beyond letters/`_`/`$` (combining marks,
+digit-leading names), and lone-surrogate escapes.

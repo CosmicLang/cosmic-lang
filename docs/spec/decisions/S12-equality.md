@@ -2,10 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | **OPEN** (one part **PROPOSED**) |
+| **Status** | **VERIFIED LEGACY BEHAVIOR** for Q1/Q4/Q5 (verified by executed probe, Directive 002-R1 §4); Q6 enum identity **NOT VERIFIED**, Q7 **OPEN** (gated) |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 measurement |
 | **Related** | `docs/spec/language-spec.md` §6.1/§9, `docs/spec/typing-contracts.md` §1.1/§7, S9, S11 |
+
+> **R1 status interpretation:** Evidence claims below are VERIFIED LEGACY BEHAVIOR only; any proposed semantics remain PROPOSED NORMATIVE RULE pending owner action. Older recommendations predate the experiments and may describe the prior evidence gap.
 
 ## Question
 
@@ -114,3 +116,36 @@
   measured in the same Phase 2 pass.
 * **S1** owns whether equality is defined for type parameters.
 * The collection library (S9 Q5) depends on Q7.
+
+---
+
+## Experimental evidence (Directive 002-R1 §4)
+
+Executed read-only against the frozen legacy compiler on 2026-10-16,
+`--target jvm`, OpenJDK 27. Full commands, programs, stdout, stderr and exit
+statuses are in `docs/audits/phase-1-legacy-probes.md`.
+
+Equality was **verified by execution** per type kind.
+
+| Question | Result | Observed |
+|---|---|---|
+| Strings | **value equality** | `"ab" == "a" + "b"` → `true` |
+| Records | **component-wise structural** | two distinct `Point(1,2)` → `true` |
+| Classes | **reference equality** | two distinct `C(1)` → `false`; same instance → `true` |
+| `NaN` | **IEEE-754** | `NaN == NaN` → `false`; prints as `NaN` |
+| `-0.0` | **IEEE-754, sign preserved** | `-0.0 == 0.0` → `true`; `1.0 / -0.0` → `-Infinity` |
+
+**Formatting contract extension.** The probe adds `NaN` and `-Infinity` to the
+printed-value contract already recorded in S7: capital `I`, sign printed.
+
+**Q7 (map-key / set contract) is still OPEN** and is **GATED**: a collection
+operation that requires hashing a key whose equality rule is open must be
+refused, not guessed. Enums were not probed.
+
+### Directive 002-R1 evidence correction
+
+The JVM experiments substantiate string value equality, class reference
+equality, record component equality, and sampled IEEE-754 comparisons. **No
+enum-identity comparison was executed**, therefore S12 Q6 remains **NOT
+VERIFIED** for enum behavior. The map-key and set contract S12 Q7 is OPEN.
+None of these legacy observations is an ACCEPTED NORMATIVE RULE.

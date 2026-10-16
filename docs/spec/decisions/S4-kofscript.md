@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **BLOCKED-ON-OWNER** — whether KofScript is in scope is a product decision |
+| **Status** | **OPEN** — owner-dependent KofScript scope decision |
 | **Owner** | Project owner (scope); engineering (analysis) |
 | **Phase** | Phase 1 decision; specification and implementation only if authorised |
 | **Related** | `docs/spec/compatibility-policy.md` §2.4, `docs/spec/language-spec.md` §4.3, ADR-0002 |

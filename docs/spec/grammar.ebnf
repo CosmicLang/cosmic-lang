@@ -10,21 +10,22 @@
 
 ## 0. Evidence policy
 
-**Every production below carries an evidence marker.** A production without
-evidence does not appear.
+**Evidence is inherited from the surrounding production block.** Individual
+productions do not have unique evidence markers. The machine checker verifies
+block coverage, but this alone does not establish each rule as normative.
 
 | Marker | Meaning |
 |---|---|
 | `[E1:path]` | Derived directly from the legacy source at the frozen SHA. The path is given relative to `kof-compiler/src/main/java/dev/kof/compiler/`. |
 | `[E1:case]` | Witnessed by an executed golden case (`tests/golden/<case>/`), executed 222/222 for jvm/js/script per `docs/audits/phase-0-baseline.md` §5.2. |
 | `[E2]` | Inferred from E1 material; the inference is stated. |
-| `[UNRESOLVED:Sn]` | Deliberately not decided. Owned by decision record `Sn`. The production is **provisional** and must not be implemented as if settled. |
+| `[OPEN:Sn]` | Deliberately not decided. Owned by decision record `Sn`. The production is **provisional** and must not be implemented as if settled. |
 
 **No legacy code or fixture text is reproduced.** Where a form is illustrated,
 the example is written for this document; the evidence marker names the source
 of the *form*, not of the example.
 
-**This grammar is not yet a contract.** Productions marked `[UNRESOLVED]` are
+**This grammar is not yet a contract.** Productions marked `[OPEN]` are
 placeholders that record the shape observed in the legacy parser so that Phase 2
 can be held to a decision rather than to an accident.
 
@@ -45,7 +46,7 @@ ISO-style EBNF: `=` definition · `,` concatenation · `|` alternation ·
 ### 2.1 Source characters and layout
 
 ```ebnf
-(*§1.1*) source        = [ bom ] , { character } ;
+(*§1.1*) source        = [ bom ] , { lexical-element } ;
           bom           = "\uFEFF" ;
 
 (*§1.2*) line-terminator = "\n" | "\r\n" | "\r" ;
@@ -53,22 +54,37 @@ ISO-style EBNF: `=` definition · `,` concatenation · `|` alternation ·
 
 (*§2.1*) comment         = line-comment | block-comment ;
           line-comment  = "//" , { any-char - line-terminator } ;
-          block-comment = "/*" , { any-char } , "*/" ;    (* non-nesting: E1:parser/Lexer.java skipBlockComment; UNRESOLVED:S14 *)
+          block-comment = "/*" , { any-char } , "*/" ;    (* non-nesting: E1:parser/Lexer.java skipBlockComment; OPEN:S14 *)
+
+(* Layout and tokens are the elements a source is a sequence of. Listing them
+   here is what makes the layout productions reachable rather than orphaned. *)
+          lexical-element = whitespace | line-terminator | comment | token ;
+          token           = identifier | literal | operator | delimiter | separator ;
 ```
 
 ### 2.2 Identifiers
 
 ```ebnf
-(*§2.2*) identifier = identifier-start , { identifier-part } ;
+(*§2.2*) identifier      = identifier-name - ( keyword | reserved-invalid ) ;
+          identifier-name = identifier-start , { identifier-part } ;
           identifier-start = unicode-letter | "_" | "$" ;  (* E1:parser/Lexer.java tokenize *)
           identifier-part  = unicode-letter | unicode-digit | "_" | "$" ;
                                                            (* E1:parser/Lexer.java readIdentifier *)
+          unicode-letter   = (* Unicode general category L*) ;
+          unicode-digit    = (* Unicode general category Nd *) ;
+          any-char         = (* any Unicode scalar value, except where a production excludes it *) ;
 ```
+
+`identifier` excludes the keyword and reserved-invalid sets, which is what makes
+a keyword a keyword rather than a name. Contextual words (`test`,
+`application`, `infra`, `foreign`, `module`, `sealed`) are **not** in `keyword`
+and therefore remain usable as identifiers — see `§3.2`.
 
 `unicode-letter` / `unicode-digit` follow the Unicode general categories used by
 the legacy lexer (`Character.isLetter` / `isLetterOrDigit`), i.e. they are
-**Unicode-aware, not ASCII-only**. `[E2]` because the corpus exercises ASCII
-identifiers only. `[UNRESOLVED:S13]` owns the exact class set and normalisation.
+**Unicode-aware, not ASCII-only**. This was **verified by execution** for
+non-ASCII letters (`docs/audits/phase-1-legacy-probes.md` §5.1). `[OPEN:S13]`
+owns the exact class set, the treatment of combining marks, and normalisation.
 
 ### 2.3 Keywords
 
@@ -106,7 +122,10 @@ must never be accepted as identifiers. `[E1:parser/Parser.java parse()]`
           long-literal   = ( decimal-int | hex-int ) , ( "l" | "L" ) ;
           decimal-int    = digit , { digit } ;
           hex-int        = ( "0x" | "0X" ) , hex-digit , { hex-digit } ;
-                                                           (* E1:parser/Lexer.java readNumber *)
+          digit          = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+          hex-digit      = digit | "a" | "b" | "c" | "d" | "e" | "f"
+                                 | "A" | "B" | "C" | "D" | "E" | "F" ;
+                                                           (* E1:parser/Lexer.java readNumber, isHexDigit *)
 
           float-literal  = number-body , ( "f" | "F" ) ;
           double-literal = number-body , [ ( "d" | "D" ) ] ;
@@ -118,14 +137,15 @@ must never be accepted as identifiers. `[E1:parser/Parser.java parse()]`
              trailing ".", hex floats, leading-"." floats, "~" operator.       *)
                                                            (* E1: negative evidence, Lexer.java + TokenType.java *)
 
-(*§2.4*) string-literal = '"' , { string-char | escape } , '"' ;
-          string-char    = any-char - ( '"' | "\" ) ;
+(*§2.4*) string-literal = "\"" , { string-char | escape } , "\"" ;
+          string-char    = any-char - ( "\"" | "\\" ) ;
           char-literal   = "'" , ( char-value ) , "'" ;
-          char-value     = escape | ( any-char - ( "'" | "\" | line-terminator ) ) ;
+          char-value     = escape | ( any-char - ( "'" | "\\" | line-terminator ) ) ;
 
-(*§2.4*) escape         = "\" , ( "n" | "t" | "r" | "\" | "'" | '"' | "0" | unicode-escape )
-                        | "\" , any-char ;                 (* unknown escape yields the character itself,
-                                                              with NO diagnostic: E1:parser/Lexer.java readEscape *)
+(*§2.4*) escape         = "\\" , ( "n" | "t" | "r" | "\\" | "'" | "\"" | "0" | unicode-escape )
+                        | "\\" , any-char ;                (* unknown escape yields the character itself,
+                                                              with NO diagnostic: E1:parser/Lexer.java readEscape;
+                                                              VERIFIED by execution: docs/audits/phase-1-legacy-probes.md §4.1 *)
           unicode-escape = "u" , hex-digit , hex-digit , hex-digit , hex-digit ;
                                                            (* E1:parser/Lexer.java readUnicodeEscape *)
 
@@ -135,8 +155,17 @@ must never be accepted as identifiers. `[E1:parser/Parser.java parse()]`
 (*§2.4*) (* EXPLICITLY ABSENT: triple-quoted strings. The legacy lexer recognises
            '"""' only to reject it with LEX008. There is no raw/multiline string
            literal and no interpolation. [E1:parser/Lexer.java skipTripleQuoted]
-           [UNRESOLVED:S8] owns whether the new language keeps the rejection. *)
+           VERIFIED by execution: docs/audits/phase-1-legacy-probes.md §4.2.
+           NOTE: a raw newline inside "\"" ... "\"" IS accepted (same record §4.3),
+           so `char-value` excludes `line-terminator`, but `string-char` admits it.
+           This records VERIFIED LEGACY BEHAVIOR; S8's normative policy is OPEN. *)
 ```
+
+> **Terminal escaping convention.** Inside a terminal, `\` escapes the next
+> character (ISO EBNF). So `"\""` is the double-quote terminal, `"\\"` the
+> backslash terminal, and `"\n"` the line-feed terminal. This convention exists
+> so that the grammar is machine-parseable; `tools/spec-consistency.py` relies
+> on it.
 
 ### 2.5 Operators and delimiters
 
@@ -166,8 +195,8 @@ Longest-match applies: `>>>` before `>>` before `>`, `>>>=` before `>>>`.
 ```ebnf
 (*§4.1*) compilation-unit = [ package-decl ] , { import-decl } , { top-level-decl } ;
                                                            (* E1:parser/Parser.java parse() *)
-(*§4.1*) package-decl     = "package" , qualified-name ;   (* UNRESOLVED:S9 — optionality and placement *)
-(*§4.1*) import-decl      = "import" , qualified-name ;    (* UNRESOLVED:S9 — wildcards, aliases, static imports *)
+(*§4.1*) package-decl     = "package" , qualified-name ;   (* OPEN:S9 — optionality and placement *)
+(*§4.1*) import-decl      = "import" , qualified-name ;    (* OPEN:S9 — wildcards, aliases, static imports *)
           qualified-name   = identifier , { "." , identifier } ;
 ```
 
@@ -198,12 +227,15 @@ Consequence `[E2]`: they remain valid identifiers in every other position, so
 the grammar must encode the lookahead rather than reserving them.
 
 ```ebnf
-(*§4.2*) test-decl          = "test" , string-literal , block ;      (* UNRESOLVED:S10 *)
-(*§4.2*) application-decl   = "application" , block ;                (* UNRESOLVED:S10 *)
-(*§4.2*) infra-decl         = "infra" , string-literal , block ;      (* UNRESOLVED:S10 *)
-(*§4.2*) extern-decl        = "extern" , function-signature ;         (* UNRESOLVED:S10 *)
+(*§4.2*) test-decl          = "test" , string-literal , block ;      (* OPEN:S10 *)
+(*§4.2*) application-decl   = "application" , block ;                (* OPEN:S10 *)
+(*§4.2*) infra-decl         = "infra" , string-literal , block ;      (* OPEN:S10 *)
+(*§4.2*) extern-decl        = "extern" , function-signature ;         (* OPEN:S10 *)
+          function-signature = [ return-type ] , identifier , parameter-list ;
+                                                                    (* E1:parser/Parser.java parseExternDeclaration;
+                                                                       semantics OPEN:S10 *)
 (*§4.2*) foreign-module-decl = "foreign" , "module" , string-literal , block ;
-                                                                    (* UNRESOLVED:S10; desugars to extern-decls *)
+                                                                    (* OPEN:S10; desugars to extern-decls *)
 ```
 
 ### 3.3 Functions
@@ -218,17 +250,17 @@ the grammar must encode the lookahead rather than reserving them.
                                                               E1:cases hello (no return type, block body),
                                                               functions (block and "=" bodies) *)
 (*§4.3*) nested-function-decl = function-decl ;             (* E1:parser/StatementParser.java parseNestedFunction
-                                                              UNRESOLVED:S11 — capture semantics *)
+                                                              OPEN:S11 — capture semantics *)
 ```
 
-`[UNRESOLVED:S1]` — whether a parameter type may be omitted, and what the
+`[OPEN:S1]` — whether a parameter type may be omitted, and what the
 return-type default is when absent (S1 owns the inference boundary). The corpus
 shows the *absence* of a return type for `main`, but not the rule.
 
 ### 3.4 Types
 
 ```ebnf
-(*§4.4*) type-ref        = nominal-type , [ "?" ] , { array-suffix } ;
+(*§4.4*) type-ref        = ( primitive-type | nominal-type ) , [ "?" ] , { array-suffix } ;
           nominal-type  = qualified-name , [ type-arguments ] ;
           type-arguments = "<" , type-ref , { "," , type-ref } , ">" ;
           array-suffix  = "[" , "]" ;
@@ -241,9 +273,20 @@ shows the *absence* of a return type for `main`, but not the rule.
                                                            (* E1:lang/KofKeywords.java *)
 ```
 
-`[UNRESOLVED:S1]` — nested type-argument resolution
-(`Box<Box<Int>>`) is a known legacy defect area and is **not** specified.
-`[UNRESOLVED:S2]` — the meaning of `?` beyond the suffix position.
+`type-ref` accepts a `primitive-type` **or** a `nominal-type`. Without the
+explicit alternative, a primitive type name would only be reachable as an
+identifier, which would conflate two different things — a consistency defect
+found by `tools/spec-consistency.py` and corrected here.
+
+`[OPEN:S1]` — nested type-argument resolution
+(`Box<Box<Int>>`) is a known legacy defect area and is **not** specified. It was
+**reproduced by execution** (`docs/audits/phase-1-legacy-probes.md` §6.1): the
+program compiles and then fails at run time with `NoSuchMethodError`, and
+inference inside an enclosing generic call **drops a nested type argument**
+(§6.2). Both are **defects**, not rules.
+`[OPEN:S2]` — the meaning of `?` beyond the suffix position. The
+**soft cast** `expr as T?` is now **VERIFIED** to yield `null` on failure
+(same record §8).
 `[E2]` — the `?` suffix is evidenced by the corpus; a *prefix* `?` is not.
 
 ### 3.5 Type declarations
@@ -255,13 +298,14 @@ shows the *absence* of a return type for `main`, but not the rule.
           class-decl     = "class" , identifier , [ supertypes ] , class-body ;
           interface-decl = "interface" , identifier , [ supertypes ] , class-body ;
           entity-decl    = "entity" , identifier , [ supertypes ] , class-body ;
-                                                           (* UNRESOLVED:S10 — entity semantics *)
+                                                           (* OPEN:S10 — entity semantics *)
 
           supertypes     = [ "extends" , type-ref ] ,
                            [ "implements" , type-ref , { "," , type-ref } ] ;
 
 (*§4.4*) record-decl     = "record" , identifier , ( positional-record | record-body ) ;
           positional-record = "(" , [ record-component , { "," , record-component } ] , ")" ;
+          record-body    = "{" , { member } , "}" ;
           record-component  = type-ref , identifier ;
                                                            (* E1:case records — positional form has no braces,
                                                               accessors are called as value.x() *)
@@ -281,10 +325,10 @@ shows the *absence* of a return type for `main`, but not the rule.
           modifier        = "public" | "private" | "protected" | "static" | "final"
                           | "abstract" | "transient" | "volatile" | "synchronized"
                           | "native" | "default" | "override" ;
-                                                           (* UNRESOLVED:S10 — legal combinations unknown *)
+                                                           (* OPEN:S10 — legal combinations unknown *)
 (*§4.4*) annotation      = "@" , qualified-name , [ "(" , [ annotation-args ] , ")" ] ;
           annotation-args = expression , { "," , expression } ;
-                                                           (* UNRESOLVED:S10 — vocabulary and semantics *)
+                                                           (* OPEN:S10 — vocabulary and semantics *)
 ```
 
 ### 3.6 Statements
@@ -312,9 +356,11 @@ shows the *absence* of a return type for `main`, but not the rule.
                          , [ expression ] , ")" , statement
                        | "for" , "(" , [ "var" | "val" ] , identifier , "in"
                          , expression , ")" , statement ;
+          for-init     = ( "var" | "val" ) , identifier , [ ":" , type-ref ] , "=" , expression
+                       | expression ;
                                                            (* E1:case interfaces — "for (var a in animals)".
                                                               The three-clause form is E1 from the parser but is
-                                                              NOT exercised by the corpus: [UNRESOLVED:S5] *)
+                                                              NOT exercised by the corpus: [OPEN:S5] *)
 
           try-stmt     = "try" , block , { catch-clause } , [ finally-clause ] ;
           catch-clause = "catch" , "(" , type-ref , identifier , ")" , block ;
@@ -338,21 +384,30 @@ shows the *absence* of a return type for `main`, but not the rule.
           expression-stmt = expression ;
 ```
 
-`[UNRESOLVED:S5]` — exhaustiveness, whether arms may fall through, and whether
+`[OPEN:S5]` — exhaustiveness, whether arms may fall through, and whether
 `break`/`continue` accept labels.
 
 ### 3.7 Expressions
 
 ```ebnf
 (*§6.1*) expression   = assignment-expr ;
-          assignment-expr = postfix-expr ,
-                            [ assignment-op , assignment-expr ] ;   (* associativity: UNRESOLVED:S11 *)
+          assignment-expr = binary-expr ,
+                            [ assignment-op , assignment-expr ] ;
           assignment-op  = "=" | "+=" | "-=" | "*=" | "/=" | "%="
                          | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" ;
-                                                           (* E1:parser/ExpressionParser.java parseAssignment *)
+                                                           (* E1:parser/ExpressionParser.java parseAssignment;
+                                                              assignment is a STATEMENT, not an expression:
+                                                              VERIFIED, docs/audits/phase-1-legacy-probes.md §2.5 *)
+          (* NOTE: because assignment is a statement, the `assignment-expr`
+             production is reachable only from a statement position. A chained
+             assignment such as `a = b = 1` is rejected with SEM027. *)
 
-(*§6.1*) (* Precedence climbing; the table is E1 from ExpressionParser.precedence(). *)
-          binary-expr(min) = unary-expr , { binary-op , binary-rhs } ;
+(*§6.1*) (* The precedence table below is E1, read from
+             ExpressionParser.precedence(). It is encoded here as one flat
+             production plus the table, because EBNF cannot express a
+             precedence-climbing parameter; the precedence table is proposed and the
+             `binary-op` alternatives are ordered from lowest to highest. *)
+          binary-expr    = unary-expr , { binary-op , binary-rhs } ;
           binary-op      = "||"                      (* level 1, lowest *)
                          | "&&"                      (* level 2 *)
                          | "|" | "^"                 (* level 3 *)
@@ -362,8 +417,11 @@ shows the *absence* of a return type for `main`, but not the rule.
                          | "+" | "-"                 (* level 7 *)
                          | "*" | "/" | "%" ;         (* level 8, highest *)
           binary-rhs     = type-ref                   (* only for "as" and "instanceof" *)
-                         | binary-expr(level + 1) ;
-                                                           (* E1:parser/ExpressionParser.java parseBinary *)
+                         | unary-expr ;
+                                                           (* E1:parser/ExpressionParser.java parseBinary.
+                                                              All binary operators are LEFT-associative:
+                                                              VERIFIED for `<`/`>` by execution,
+                                                              docs/audits/phase-1-legacy-probes.md §6.3 *)
 
 (*§6.1*) unary-expr   = ( "!" | "-" | "++" | "--" ) , unary-expr
                      | "spawn" , unary-expr
@@ -392,6 +450,17 @@ shows the *absence* of a return type for `main`, but not the rule.
                      | array-literal ;                     (* E2 — array syntax not exercised by the corpus *)
                                                            (* E1:parser/ExpressionParser.java parsePrimary *)
 
+(*§6.1*) if-expr      = "if" , "(" , expression , ")" , expression ,
+                       [ "else" , expression ] ;
+                                                           (* E1:parser/ExpressionParser.java parseIfExprBranch;
+                                                              no golden case exercises the if-EXPRESSION form,
+                                                              so the surface is [OPEN:S5] *)
+(*§6.1*) array-literal = "{" , [ expression , { "," , expression } ] , "}" ;  (* E2 *)
+                                                           (* NOT evidenced: the corpus contains no array
+                                                              literal. The brace form is a placeholder and
+                                                              is [OPEN:S9]; it must not be implemented
+                                                              as if settled. *)
+
 (*§6.1*) lambda       = "(" , [ lambda-params ] , ")" , "->" , lambda-body
                      | "{" , [ lambda-params ] , "->" , { statement } , "}" ;
           lambda-params = parameter , { "," , parameter } ;
@@ -407,7 +476,7 @@ shows the *absence* of a return type for `main`, but not the rule.
                                                            (* E1:parser/ExpressionParser.java parseNewExpression *)
 ```
 
-**Line-sensitive rule (normative for the new frontend).** A trailing lambda
+**Line-sensitive observed legacy rule (PROPOSED NORMATIVE RULE).** A trailing lambda
 block is attached only when its `{` starts on the **same line** as the token
 closing the preceding call. `[E1:parser/ExpressionParser.java
 trailingLambdaSameLine]` This is the single place where the legacy grammar
@@ -433,28 +502,44 @@ These are **not** in the grammar. Their absence is a finding, not an omission.
 
 ---
 
-## 5. Unresolved productions register
+## 5. Provisional productions register
 
-| Production | Reason | Record |
-|---|---|---|
-| `package-decl`, `import-decl` | Optionality, placement, wildcards, aliases | S9 |
-| `test-decl`, `application-decl`, `infra-decl` | Outside the corpus; semantics unknown | S10 |
-| `extern-decl`, `foreign-module-decl` | Outside the corpus; FFI semantics unknown | S10 |
-| `entity-decl` | Keyword reserved; semantics unknown | S10 |
-| `annotation` | Vocabulary and semantics unknown | S10 |
-| `modifier` combinations | Legal combinations unknown | S10 |
-| `type-ref` with nested arguments | Known legacy defect area | S1 |
-| `type-ref` `?` semantics | Conversion rules unknown | S2 |
-| `parameter` type optionality, default return type | Not evidenced | S1 |
-| `for-stmt` three-clause form | Parser-evidenced, corpus-unevidenced | S5 |
-| `switch-arm` exhaustiveness, fallthrough, labelled `break`/`continue` | Not evidenced | S5 |
-| `assignment-expr` associativity | Not evidenced | S11 |
-| `nested-function-decl` capture semantics | Not evidenced | S11 |
-| `array-literal`, array indexing details | Not exercised by the corpus | S9 |
-| `expression` evaluation order | Never written down; observable only | S11 |
-| Identifier class set, normalisation, confusables | Unicode policy open | S13 |
-| Trivia and terminator normalisation | Formatter/LSP policy open | S14 |
-| Feature-gate syntax for unsupported targets | Not designed | S15 |
+Directive 002-R1 §5 requires, for every provisional production: the exact
+unresolved dependency, whether **recognition** is separable from **semantic
+acceptance**, whether the lexer/parser can implement it independently, and what
+evidence would close it. That classification is
+`docs/spec/grammar-consistency-report.md` §4; this table is its index.
+
+**Recognition is separable for every production below except where stated.** A
+production is *recognised* by the parser regardless of whether its semantics are
+settled; the semantic stage then **gates** the unsupported operation
+(`docs/spec/implementation-gates.md` §3.1–3.2). No production below requires the
+parser to guess.
+
+| Production | Unresolved dependency | Recognition separable? | Record | Status |
+|---|---|---|---|---|
+| `package-decl`, `import-decl` | Optionality, placement, wildcards, aliases | Yes | S9 | **OPEN** |
+| `test-decl`, `application-decl`, `infra-decl` | Outside the corpus; semantics unknown | Yes | S10 | **OPEN** |
+| `extern-decl`, `foreign-module-decl` | FFI semantics unknown | Yes | S10 | **OPEN** |
+| `entity-decl` | Keyword reserved; semantics unknown | Yes | S10 | **OPEN** |
+| `annotation` | Vocabulary and semantics unknown | Yes | S10 | **OPEN** |
+| `modifier` combinations | Legal combinations unknown | Yes | S10 | **OPEN** |
+| `type-ref` with nested arguments | **Verified defect**, not a missing rule | Yes | S1 | **OPEN** (gated) |
+| `type-ref` `?` semantics | Conversion rules beyond `T → T?` | Yes | S2 | **OPEN** (gated) |
+| `parameter` type optionality, default return type | Not evidenced | Yes | S1 | **OPEN** |
+| `for-stmt` three-clause form | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
+| `switch-arm` exhaustiveness, fallthrough, labelled `break`/`continue` | Not evidenced | Yes | S5 | **OPEN** (gated) |
+| `if-expr` | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
+| `array-literal`, array indexing details | Not exercised by the corpus | Yes | S9 | **OPEN** |
+| Identifier class set, normalisation, confusables | Combining marks; normalisation policy | Yes | S13 | **PARTLY CLOSED** — letters, `_`, `$` verified by probe |
+| Trivia and terminator normalisation | Formatter/LSP policy | Yes (CST layer) | S14 | **OPEN** |
+| Feature-gate syntax | — | — | S15 | **CLOSED** — `implementation-gates.md` §3.2 |
+| ~~`assignment-expr` associativity~~ | — | — | S11 | **CLOSED** — assignment is a statement (`SEM027`), so associativity does not exist |
+| ~~`nested-function-decl` capture~~ | Intent only | Yes | S11 | **CLOSED** — capture is rejected (`SEM011`); *intent* remains OPEN |
+| ~~`expression` evaluation order~~ | — | — | S11 | **CLOSED** — measured left-to-right at every position |
+
+Struck-through rows are retained deliberately: a register that silently deletes
+a resolved question loses the record that it was ever asked.
 
 ---
 

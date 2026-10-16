@@ -2,10 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | **OPEN**, with one part **PROPOSED** |
+| **Status** | **VERIFIED LEGACY BEHAVIOR** for Q1 and Q4 (verified by executed probe); Q2 is a **confirmed defect** with a **PROPOSED** fix; Q3 unchanged |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §2.4, `docs/spec/grammar.ebnf` §2.4, S13 |
+
+> **R1 status interpretation:** Evidence claims below are VERIFIED LEGACY BEHAVIOR only; any proposed semantics remain PROPOSED NORMATIVE RULE pending owner action. Older recommendations predate the experiments and may describe the prior evidence gap.
 
 ## Question
 
@@ -110,3 +112,32 @@
 * Q4 requires a new case and an owner decision.
 * S13 owns the Unicode/surrogate interaction.
 * S12 owns string equality as part of the general equality question.
+
+---
+
+## Experimental evidence (Directive 002-R1 §4)
+
+Executed read-only against the frozen legacy compiler on 2026-10-16,
+`--target jvm`, OpenJDK 27. Full commands, programs, stdout, stderr and exit
+statuses are in `docs/audits/phase-1-legacy-probes.md`.
+
+The probe **confirmed** the source-level findings
+and resolved two questions.
+
+| Question | Result | Observed |
+|---|---|---|
+| Q1 triple-quoted | **rejected** | `LEX008` with the message that Kof has no raw/multiline string literal |
+| Q4 raw newline inside `"…"` | **PERMITTED** | a literal spanning two lines printed two lines, exit 0 |
+| Q2 unknown escape | **silently dropped** | `"a\qb"` printed `aqb`, **no diagnostic**, exit 0 |
+| Q3 interpolation | absent | stated by the `LEX008` message |
+
+**Q1 and Q4 together are coherent, not contradictory.** The language rejects the
+`\"\"\"` *syntax* while permitting the *capability* via a raw newline — which is
+exactly what the `LEX008` message directs the user to.
+
+**Q2 is a confirmed defect**, not a rule. Silently dropping an escape is a silent
+reinterpretation of the program text, the same defect class as the historical
+silent folding of a three-quote literal to an empty string that the legacy
+project itself fixed. The proposed
+rule is that an unrecognised escape is an **error**. That is a **C2 divergence**
+and must be measured against the corpus.

@@ -2,10 +2,12 @@
 
 | | |
 |---|---|
-| **Status** | **OPEN** |
+| **Status** | **OPEN** — Q2 **VERIFIED LEGACY BEHAVIOR** (the soft cast is defined by executed probe); Q1/Q3 **PROPOSED** and **GATED**; Q4 **OPEN** |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision, with Phase 2 differential validation |
 | **Related** | `docs/spec/typing-contracts.md` §2/§4, `docs/spec/language-spec.md` §6.1, `docs/spec/grammar.ebnf` §3.4 |
+
+> **R1 status interpretation:** Evidence claims below are VERIFIED LEGACY BEHAVIOR only; any proposed semantics remain PROPOSED NORMATIVE RULE pending owner action. Older recommendations predate the experiments and may describe the prior evidence gap.
 
 ## Question
 
@@ -76,3 +78,28 @@
   close.
 * S1 (Q3, variance) interacts: nullability plus wildcards is an unanalysed
   combination.
+
+---
+
+## Experimental evidence (Directive 002-R1 §4)
+
+Executed read-only against the frozen legacy compiler on 2026-10-16,
+`--target jvm`, OpenJDK 27. Full commands, programs, stdout, stderr and exit
+statuses are in `docs/audits/phase-1-legacy-probes.md`.
+
+The probe **defined the "soft cast"** (Q2), which the
+Phase 1 record had left open.
+
+| Probe | Result |
+|---|---|
+| `a as Dog?` where `a` is an `Animal` | `== null` → **`true`** (no throw) |
+| `d as Dog?` where `d` holds a `Dog` | `!= null` → **`true`** |
+| `o as String?` where `o` holds an `Int` boxed as `Object` | `== null` → **`true`** |
+
+**Definition (VERIFIED LEGACY BEHAVIOR).** `expr as T?` is a **soft cast**: it
+yields **`null`** when the run-time type is not `T`, instead of throwing. A
+failed cast to a nullable type is an ordinary null result.
+
+**Still OPEN:** the conversion rules beyond `T → T?` (Q1/Q3 remain PROPOSED and
+**GATED**), and whether the legacy structural assignability fallback is a feature
+or a defect (Q4).

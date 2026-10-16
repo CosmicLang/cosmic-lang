@@ -5,10 +5,12 @@
 
 > **Path convention.** A path prefixed `cosmcc:` refers to the **legacy repository** `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
 
-| **Status** | **OPEN** (the overload-resolution and nested-argument sub-questions are **BLOCKED-ON-MEASUREMENT**) |
+| **Status** | **OPEN** — Q1 is a **verified defect** (not a missing rule); Q5 is **PARTIAL**. Both are **GATED**, not blocking. |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Decision needed in Phase 1; differential evidence produced in Phase 2 |
 | **Related** | `docs/spec/typing-contracts.md` §3/§6, `docs/spec/language-spec.md` §6.1, `docs/spec/grammar.ebnf` §3.4 |
+
+> **R1 status interpretation:** Evidence claims below are VERIFIED LEGACY BEHAVIOR only; any proposed semantics remain PROPOSED NORMATIVE RULE pending owner action. Older recommendations predate the experiments and may describe the prior evidence gap.
 
 ## Question
 
@@ -95,3 +97,42 @@ Five related sub-questions, all currently unanswered:
 * **Phase 2 differential harness** must exist before Q1 and Q5 can be closed.
 * Owner acceptance of the "legacy defects are not part of the contract" policy
   (already proposed in `docs/spec/compatibility-policy.md` §3 rule 6).
+
+---
+
+## Experimental evidence (Directive 002-R1 §4)
+
+Executed read-only against the frozen legacy compiler on 2026-10-16,
+`--target jvm`, OpenJDK 27. Full commands, programs, stdout, stderr and exit
+statuses are in `docs/audits/phase-1-legacy-probes.md`.
+
+The probe **changed the character of Q1**: it is
+not a missing rule, it is a **confirmed defect**.
+
+| Probe | Result |
+|---|---|
+| `Box<Box<Int>>` | **compiles, then crashes at run time** — `NoSuchMethodError: 'int Box.get()'` |
+| `List<Box<Int>> = listOf(Box(3))` | `SEM021`, and the message renders the inferred type as **`List<Box>`** — the nested type argument was **dropped during inference** |
+| `Box<List<Int>>` (assignment) | accepted |
+| `m(Int)` vs `m(Long)` with `1` | **`int`** — the most specific applicable overload wins |
+| `m(A)` vs `m(B)`, argument implements both | **`A`** — **no ambiguity reported**; the first declared overload is selected silently |
+| `a < b > c` | a **left-associative comparison chain**, not a generic application |
+
+**Two consequences that matter.**
+
+1. **Q1 cannot be specified from the legacy behaviour**, because the legacy
+   behaviour is wrong. There is no correct rule to read off. It must be
+   **designed**, and the legacy divergence recorded as a defect. This is why the
+   record stays OPEN rather than moving to PROPOSED.
+2. **Q5's tie-break is confirmed.** `docs/spec/typing-contracts.md` §6 *predicted*
+   that declaration order was the tie-break. That prediction is now backed by
+   execution, which makes the proposed rule ("ambiguity is an error") a
+   **measured C2 divergence** rather than a guess.
+
+**Still NOT DISTINGUISHED:** whether the tie-break is *strictly* declaration
+order in all cases (one ordering was probed); generic bounds and variance syntax
+(no evidence at all).
+
+**Gating.** Nested type arguments (depth ≥ 2) and ambiguous overloads are
+**GATED**: `Box<Int>` and unambiguous calls compile normally; only the
+unsupported operation is refused. See `docs/spec/implementation-gates.md` §3.2.

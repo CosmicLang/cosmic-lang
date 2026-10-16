@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **BLOCKED-ON-OWNER** for the layering/naming decisions; **PROPOSED** for the versioning mechanics |
+| **Status** | **DEFERRED** — owner-dependent ABI choice; versioning mechanics are PROPOSED NORMATIVE RULE, not accepted |
 | **Owner** | Project owner (naming via ADR-0003, layering via ADR-0004); engineering (mechanics) |
 | **Phase** | Decision in Phase 1; implementation in Phase 3/4 |
 | **Related** | ADR-0003, ADR-0004, ADR-0005, `docs/spec/decisions/S16-memory-strategy.md`, S9, S15 |
@@ -104,13 +104,13 @@
   If the owner prefers no exception at all, the runtime defines its own error
   type and the driver converts — which is the cleaner design and is the one
   proposed here: **no exception; the runtime owns its error type.**
-* **Q4 — Naming is BLOCKED-ON-OWNER.** ADR-0003 must decide between the two
+* **Q4 — Naming is OPEN (owner decision required).** ADR-0003 must decide between the two
   names the design report uses: `cosmic-std` (page 3) and the split
   `cosmic.core` / `cosmic.io` / `cosmic.time` / `cosmic.net` (page 17). This
   record does not choose, and the crate names above are **placeholders**.
 * **Q5 — Resource-management entry points are deliberately left unversioned.**
   Their shape depends on S16 (memory strategy), which is itself
-  BLOCKED-ON-OWNER. Until S16 is decided, the ABI **must not** expose
+  **DEFERRED / owner decision required**. Until S16 is decided, the ABI **must not** expose
   allocation or reclamation entry points at all — which is achievable, because
   no backend exists. **This is the concrete reason S16 must precede Phase 4.**
 

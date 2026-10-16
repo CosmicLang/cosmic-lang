@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **BLOCKED-ON-OWNER** — whether PortuKof is in scope at all is a product decision |
+| **Status** | **OPEN** — owner-dependent PortuKof scope decision |
 | **Owner** | Project owner (scope); engineering (analysis) |
 | **Phase** | Phase 1 decision; specification and implementation only if authorised |
 | **Related** | `docs/spec/compatibility-policy.md` §2.3, `docs/spec/language-spec.md` §2.3, ADR-0002 |
