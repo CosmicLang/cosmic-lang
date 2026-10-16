@@ -99,7 +99,7 @@ Two to eight letters, so the namespace is the letter run before the digits.
 | `CONC` | `cosmic-sema` (Phase 2) | Concurrency: spawn capture, await misuse, unsupported concurrency on a target | **Allocated** |
 | `NUM` | `cosmic-sema` (Phase 2) | Numeric: literal out of range, division by zero, narrowing without a cast | **Allocated** |
 | `UNI` | `cosmic-sema` (Phase 2) | Unicode: confusable identifier, lone surrogate escape, invalid identifier character | **Allocated** |
-| `GATE` | driver (Phase 4) | Feature gates: `refused` on this target, construct not yet specified (S15) | **Allocated** |
+| `GATE` | consuming component; `cosmic-sema` for semantic operations (Phase 2) | Feature gates: `refused` on this target, construct not yet specified (S15); a gate names the (construct, decision, operation) triple and produces no artifact, per `docs/spec/implementation-gates.md` §7 | **Allocated** |
 | `MIR` | `cosmic-mir` (Phase 3) | MIR construction and verification failures | **Allocated** |
 | `OPT` | `cosmic-opt` (Phase 3) | Optimization-pass verification failures | **Allocated** |
 | `ICE` | any | Internal compiler error: an invariant the compiler itself must uphold was violated | **Allocated** |
