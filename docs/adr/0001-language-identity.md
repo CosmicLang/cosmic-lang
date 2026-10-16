@@ -172,8 +172,11 @@ deliverables that are now complete.
 * The owner selected `.cmic` as the primary source extension (2026-10-16).
   Current normative documents and examples use it; historical `.csmx`/`.cosmic`
   references are retained only where they document previous proposals and the
-  collision investigations. Phase 0 Rust test fixtures still use `.csmx`
-  filenames — changing them is Phase 2 implementation work, recorded as such.
+  collision investigations. **The Rust crates are deliberately not modified**:
+  43 `.csmx` filename strings remain in test fixtures and doc/runtime examples
+  across `crates/cosmic-source`, `crates/cosmic-diagnostics` and
+  `crates/cosmic-cli`; updating them is Phase 2 implementation work, recorded
+  here so the extension-migration inventory is complete.
 * No compatibility claims are made anywhere until the matrix rows carrying
   evidence graduate from "verified in legacy run" to "verified in cosmcc-rs".
 * The workspace contains no `LICENSE` file and no legacy-derived code; this
