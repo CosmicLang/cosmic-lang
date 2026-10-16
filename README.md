@@ -41,17 +41,56 @@ crates/
   cosmic-diagnostics/   structured diagnostics + renderers
   cosmic-cli/           the `cosmic` executable
 docs/
-  audits/phase-0-baseline.md            legacy audit (cosmcc @ 284358f4, v0.6.5)
-  audits/phase-0-design-conformance.md  the 20-page design report vs. the implementation
-  audits/phase-0-source-review.md       source-level review of the Rust foundation
-  audits/phase-0-licensing-matrix.md    licensing and provenance decision matrix (no licence chosen)
-  architecture/compiler-pipeline.md     target architecture + current state
-  adr/0001-language-identity.md         naming / .csmx / compatibility (PROPOSED)
-  spec/compatibility-matrix.md          language-construct evidence ledger
-  spec/compatibility-policy.md          per-format compatibility proposal
-  directives/directive-002-proposal.md  proposed Phase 1 (specification-only)
-  development/toolchain-policy.md       Rust pin, dependency and lint policy
+  audits/phase-0-baseline.md                 legacy audit (cosmcc @ 284358f4, v0.6.5)
+  audits/phase-0-design-conformance.md       the 20-page design report vs. the implementation
+  audits/phase-0-source-review.md            source-level review of the Rust foundation
+  audits/phase-0-licensing-matrix.md         licensing and provenance decision matrix (no licence chosen)
+  audits/phase-1-licensing-recommendation.md Phase 1 licensing recommendation + legal dependencies
+  audits/phase-1-specification-report.md     Phase 1 engineering report
+  architecture/compiler-pipeline.md          target architecture + current state
+  adr/0001-language-identity.md              naming / .csmx / compatibility (PROPOSED)
+  adr/0002-source-extension.md               extension + MIME selection (PROPOSED)
+  adr/0003-standard-library-naming.md        stdlib and runtime naming (PROPOSED)
+  adr/0004-module-ownership.md               crate layering + ownership (PROPOSED)
+  adr/0005-memory-strategy.md                memory strategy (DECISION WITHHELD)
+  spec/language-spec.md                      Phase 1 language specification (PROPOSED)
+  spec/grammar.ebnf                          formal grammar with per-production evidence
+  spec/typing-contracts.md                   type-system contracts
+  spec/diagnostic-codes.md                   diagnostic code registry + stability policy
+  spec/compatibility-matrix.md               language-construct evidence ledger
+  spec/compatibility-policy.md               per-format compatibility proposal
+  spec/extension-assessment.md               .csmx collision investigation, round 2
+  spec/decisions/                            S1-S18 semantic decision register
+  development/toolchain-policy.md            Rust pin, dependency and lint policy
+  development/measurement-plan.md            reproducible measurement specifications
+  development/test-strategy.md               test ladder + differential harness design
+  directives/directive-002-proposal.md       proposed Phase 1 (specification-only)
 ```
+
+## Phase 1 status (specification)
+
+Phase 1 produced the **language specification, grammar, typing contracts, 18
+semantic decision records and five ADRs** — all **Proposed**. No compiler
+implementation was added: the workspace still contains exactly the three Phase 0
+crates.
+
+The decision register is `docs/spec/decisions/README.md`. It is the honest
+ledger of what is settled and what is not. Status distribution across the 18
+records:
+
+| Status | Count | Records |
+|---|---|---|
+| **OPEN** — analysed, no decision made | 9 | S1, S2, S5, S6, S7, S8, S9, S10, S12 |
+| **PROPOSED** — a recommendation exists, not in force | 4 | S13, S14, S15, S18 |
+| **BLOCKED-ON-OWNER** | 4 | S3 (PortuKof scope), S4 (KofScript scope), S16 (memory strategy), S17 (ABI naming/layering) |
+| **BLOCKED-ON-MEASUREMENT** | 1 | S11 (evaluation order) — S1 also carries a measurement-blocked part |
+
+**No record claims owner approval**, and **no OPEN record may be guessed at in
+Phase 2**: the `GATE` diagnostic family turns every open question into a hard
+"not yet specified" error instead of an accidental language choice.
+
+**Phase 2 is not authorised.** The proposed Directive 003 is
+`docs/directives/directive-003-proposal.md`.
 
 ## Phase 0 review status
 
@@ -67,17 +106,18 @@ Two defects were found in the foundation and fixed narrowly (a CRLF column
 inconsistency and an allocation-limit bypass in `SourceMap::load`); see
 `docs/audits/phase-0-source-review.md`.
 
-**Phase 1 remains blocked pending owner approval**, and no lexer or parser work
-is authorised. The proposed Phase 1 directive is
-`docs/directives/directive-002-proposal.md`.
-
-## Project identity (proposed — see ADR-0001)
+## Project identity (proposed — see ADR-0001 and ADR-0002)
 
 * **Language:** Cosmic-Lang
 * **Compiler:** `cosmcc-rs`
 * **Executable:** `cosmic`
-* **Source extension:** `.csmx` (proposed; collision investigation in
-  ADR-0001 §3; final approval pending)
+* **Source extension:** `.csmx` (proposed). Round 2 of the collision
+  investigation (`docs/spec/extension-assessment.md`) found a competing
+  language claim in GitHub code search, so the extension remains **pending owner
+  acceptance**; `.cosmic` is recorded as the alternative. **No extension or MIME
+  decision is accepted.**
+* **Standard library:** naming proposed in ADR-0003, **pending owner
+  acceptance**.
 
 ## Legacy baseline
 

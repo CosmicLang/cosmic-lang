@@ -4,3 +4,7 @@ target/
 *.swp
 .idea/
 .vscode/
+
+# Local assistant/agent working state. Not project content; must never be
+# committed.
+.workbuddy-ai/
