@@ -1,0 +1,73 @@
+name: CI
+
+# The foundation must be validated in both places it can change:
+#
+#   * on every pull request (pre-merge review evidence), and
+#   * on every push to every branch, **including `main`** (post-integration
+#     evidence). Excluding `main` from `push` would let a direct or merge
+#     commit land on the default branch with no recorded validation.
+#
+# Branch-protection settings are intentionally not managed here.
+on:
+  pull_request:
+  push:
+    branches:
+      - '**'
+
+# Least privilege: this workflow only reads the repository.
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Treat warnings as errors in every compiled target and in rustdoc, so no
+  # change can silently accumulate lint debt.
+  RUSTFLAGS: -D warnings
+  RUSTDOCFLAGS: -D warnings
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        # Pinned to a commit SHA, not a moving tag: `v4` can be repointed by
+        # the action's maintainers (or by a compromised account), and a
+        # workflow that executes third-party code must not depend on a
+        # mutable ref.
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install Rust toolchain
+        # Version pinned here as well as in rust-toolchain.toml so a workflow
+        # edit cannot drift from the documented policy
+        # (docs/development/toolchain-policy.md).
+        #
+        # This action derives the installed toolchain from the `toolchain`
+        # input, not from the ref, so pinning the ref to a SHA is safe.
+        uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: 1.99.0
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --all-targets
+
+      - name: Doc
+        run: cargo doc --workspace --no-deps

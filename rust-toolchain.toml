@@ -1,0 +1,6 @@
+# Pinned Rust toolchain for the Cosmic-Lang compiler workspace.
+# Policy: docs/development/toolchain-policy.md
+[toolchain]
+channel = "1.99.0"
+components = ["clippy", "rustfmt"]
+profile = "minimal"

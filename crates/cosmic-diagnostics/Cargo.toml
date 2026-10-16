@@ -1,0 +1,18 @@
+[package]
+name = "cosmic-diagnostics"
+description = "Structured diagnostics for the Cosmic-Lang compiler: severities, stable codes, spans, labels, suggestions, rendering."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cosmic-source = { path = "../cosmic-source" }
+
+[dev-dependencies]
+# Integration tests exercise the renderers through the public API and need
+# to build real spans, so the source crate must be reachable from tests too.
+cosmic-source = { path = "../cosmic-source" }

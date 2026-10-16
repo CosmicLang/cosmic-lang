@@ -1,0 +1,16 @@
+[package]
+name = "cosmic-cli"
+description = "The `cosmic` executable: Cosmic-Lang compiler driver (cosmcc-rs) command-line interface."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+
+[[bin]]
+name = "cosmic"
+path = "src/main.rs"
