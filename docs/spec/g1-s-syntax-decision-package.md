@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Status** | **READY FOR OWNER DECISION — G1-S is NOT entered.** This document accepts nothing; it proposes the parser-recognition contract whose owner acceptance is the G1-S entry condition. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R4 §6 |
-| **Basis** | `docs/spec/grammar.ebnf` (119 productions, corrected F1/F2/F4) and `docs/spec/grammar-evidence-map.md` (119/119, machine-checked) |
+| **Directive** | ENGINEERING DIRECTIVE 002-R4 §6 · 002-R5 §3–§4, §7 |
+| **Basis** | `docs/spec/grammar.ebnf` (122 productions, corrected F1/F2/F4/F5) and `docs/spec/grammar-evidence-map.md` (122/122, machine-checked) |
 | **Scope** | Recognition only: the recognized syntax subset, unsupported families, disambiguation, recovery and CST obligations for `cosmic-syntax`. Semantic adoption is explicitly out of scope (see §9). |
 | **Related** | `docs/spec/implementation-gates.md` §5 (G1-S) and §7 · `docs/spec/grammar-consistency-report.md` · `docs/spec/decisions/S15-feature-gates.md` · `docs/spec/decisions/S5-pattern-matching.md` · `docs/spec/g1-l-lexical-decision-package.md` · `docs/spec/phase-2-entry-readiness.md` |
 
@@ -22,7 +22,7 @@ This package supplies each element:
 
 1. the **recognized subset** from the corrected grammar and its machine-checked evidence map (§3);
 2. the **unsupported families** and their refusal contract (§4);
-3. the **ambiguous constructs** with disambiguation or PARSE behavior (§5) — including one finding that must be resolved before the subset can be accepted in full (§3.3);
+3. the **ambiguous constructs** with disambiguation or PARSE behavior (§5) — including the S-G1S-1 pattern-header correction, verified against the frozen legacy evidence and applied under 002-R5 (§3.3);
 4. the **recovery obligations** (§6) and the **CST round-trip invariants** (§7);
 5. the proposed PARSE diagnostic conditions (§8).
 
@@ -32,40 +32,63 @@ The governing principle is `docs/spec/implementation-gates.md` §3.1–3.2: **th
 
 | Status | Count | Meaning |
 |---|---|---|
-| `RECOGNISED` | 108 | The parser may recognise and preserve the production; open semantics are gated later (Tier T), not here. |
+| `RECOGNISED` | 111 | The parser may recognise and preserve the production; open semantics are gated later (Tier T), not here. |
 | `UNSUPPORTED` | 10 | The parser must emit a PARSE refusal for this construct until its recognition is accepted (§4). |
 | `REJECTED` | 1 | Refused by design: the reserved-invalid tokens (`fun`, `fn`, `func`). |
-| **Total** | **119** | One row per production; machine-checked by G13. |
+| **Total** | **122** | One row per production; machine-checked by G13. |
 
 ## 3. The evidenced recognition subset
 
 ### 3.1 What the subset is
 
-**The parser recognises all 108 `RECOGNISED` productions of the corrected grammar** — including constructs whose *semantics* remain OPEN (S1, S2, S5, S6, S7, S9, S10, S11, S12, S13, S14). Recognition is not adoption: a program using only settled operations must parse and (later) type-check normally; a program that reaches an open *operation* fails at the semantic gate that names it.
+**The parser recognises all 111 `RECOGNISED` productions of the corrected grammar** — including constructs whose *semantics* remain OPEN (S1, S2, S5, S6, S7, S9, S10, S11, S12, S13, S14). Recognition is not adoption: a program using only settled operations must parse and (later) type-check normally; a program that reaches an open *operation* fails at the semantic gate that names it.
 
-### 3.2 Corrections already authorized (F1/F2/F4)
+### 3.2 Corrections already authorized (F1/F2/F4/F5)
 
-The subset is defined by the corrected grammar; the following corrections were authorized by the owner (ENGINEERING DIRECTIVE 002-R3 §1) and are applied, taking the production count from 117 to **119**:
+The subset is defined by the corrected grammar; the following corrections were authorized by the owner and are applied — F1/F2/F4 in ENGINEERING DIRECTIVE 002-R3 §1, taking the production count from 117 to 119; F5 in ENGINEERING DIRECTIVE 002-R5 §3, conditionally on direct verification (performed), taking it to **122**:
 
 | Finding | Correction applied | Recognition examples |
 |---|---|---|
 | F1 | `break-stmt`, `continue-stmt` added (unlabelled only; labelled remain refused) | `docs/spec/grammar-evidence-map.md` §4, example 1 |
 | F2 | `switch-stmt-arm` (colon, statement list) and `switch-expr-arm` (arrow, single expression) separated; `switch-arm`/`switch-body` removed; `default` is its own arm form | same, example 2 |
 | F4 | `parameter = ( identifier ":" type-ref \| type-ref identifier ) [ "=" expression ]` — both evidenced orders and `= default` | same, example 3 |
+| F5 | S-G1S-1 corrected (002-R5 §3): `binding-pattern`, `destructuring-pattern` and `pattern-field` added; `switch-label` derives both attested header forms | same, example 4 |
 | F3 | annotation-level correction (three-clause `for` is executed via `loops-control`) | report §4.1, F3 |
 
-### 3.3 Finding S-G1S-1 — attested pattern header forms are not derivable
+### 3.3 Finding S-G1S-1 — resolved: pattern-header correction applied (002-R5)
 
-**This is the one item that must be resolved before the recognized subset can be accepted in full.**
+**Resolved in this revision.** ENGINEERING DIRECTIVE 002-R5 §3 authorized a
+narrowly scoped recognition correction conditional on direct verification of
+the frozen legacy evidence. The evidence was re-read at
+`CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` and verified;
+the correction is applied. The production count moves from 119 to **122**.
 
-* **Evidence.** The executed corpus contains two arm-header forms beyond value and bare-type labels: a **destructuring pattern** — `switch-break-in-loop` exercises `case Point(var x, var y):` — and a **type-and-binding pattern** — `sealed-switch` exercises `case Circle c -> …` (S5 E1, read and recorded in 002-R3; the parser entry point is `parseSwitchCasePatternOrValue`, `cosmcc:parser/StatementParser.java`).
-* **Observation.** The current production is `switch-label = expression | type-ref` (grammar §3.6). It derives value labels (`case 1:`, `case "two":`) and bare type labels, but **neither attested header form**: `Circle c` is not an expression or a type-ref, and `Point(var x, var y)` is not an expression under the corrected grammar. The evidence map's `switch-label` row records the pattern/value disambiguation as semantic (S5) but does not model the attested header surface.
-* **Classification.** Same defect class as F1/F2/F4: an executed, evidenced form that the grammar as written cannot derive. It was **not** part of the authorized corrections, and Directive 002-R4 authorizes no grammar change — so it is **reported here, not corrected**.
-* **Why it blocks full acceptance.** G1-S asks the owner to accept a *recognized syntax subset*. Accepting a subset that silently omits two executed forms would make the summary in §3.1 false for `sealed-switch` and `switch-break-in-loop`.
-* **Options.**
-  1. **Authorize a bounded recognition correction (recommended).** A new F-class correction derived from `parseSwitchCasePatternOrValue` plus the two executed cases, exactly as F1/F2/F4 were; it must first pin the exact header forms (a bounded re-read of the two case files is owed, since the current record attests but does not exhibit the source text), then update the grammar, the evidence map (G13) and the count, and re-run the checker. An illustrative shape — **not a specification and not to be implemented as written** — is `switch-label = expression | type-ref | binding-pattern | destructuring-pattern` with `binding-pattern = type-ref , identifier` and a parenthesised pattern-argument list for destructuring; the disambiguation is one-token lookahead after the type/name, matching the parser method.
-  2. **Declare the two header forms refused** with PARSE diagnostics until evidenced again. Not recommended: it contradicts executed evidence and S5's classification, and it would refuse programs the legacy toolchain accepts.
-* **What this does not change.** S5 remains OPEN; pattern *semantics* (binding rules, exhaustiveness, fallthrough) are untouched and stay gated (§9).
+* **Verified evidence (direct read; full record in
+  `docs/spec/grammar-evidence-map.md` §3, F5).**
+  `switch-break-in-loop` (`cosmcc:tests/golden/switch-break-in-loop/Main.kf`
+  line 22) executes `case Point(var x, var y):`; `sealed-switch`
+  (`cosmcc:tests/golden/sealed-switch/Main.kf` lines 19-20) executes
+  `case Circle c -> …`.
+  `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java`
+  `parseSwitchCasePatternOrValue` (lines 353-407) recognises both forms;
+  `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/ExpressionParser.java`
+  `parseSwitchExpression` (line 463) shares the routine for arrow arms;
+  `cosmcc:lang/KofKeywords.java` lines 76-77 map `var`/`val` to keyword tokens.
+* **Correction applied.**
+  `switch-label = expression | type-ref | binding-pattern | destructuring-pattern`;
+  `binding-pattern = identifier , identifier`;
+  `destructuring-pattern = identifier , "(" , pattern-field , { "," , pattern-field } , ")"`;
+  `pattern-field = ( "var" | "val" ) , identifier` (grammar §3.6; the
+  pattern type name is a single identifier, as the legacy routine requires).
+* **Remaining ambiguities — recorded, not modelled.** The legacy scanner's
+  20-token paren window, its acceptance of empty or bare-identifier field lists
+  (bare fields remain derivable as expressions where value-like) and its comma
+  leniency are implementation artifacts, not adopted rules; `val` fields are
+  accepted by the same scanner path but are not case-attested; the `var`/`val`
+  distinction is not recorded by the legacy pipeline.
+* **What this does not change.** S5 remains OPEN; pattern *semantics* (binding
+  rules, destructuring meaning, match order, scoping, exhaustiveness,
+  fallthrough, guards) are untouched and stay gated (§9).
 
 ### 3.4 Recognition notes and latent items
 
@@ -115,7 +138,7 @@ Resolved in the grammar: `type-arguments` is reachable only from `type-ref` and 
 
 ### 5.3 Switch label: pattern versus value
 
-The disambiguation is **semantic** (S5, gated): label *syntax* is recognised under `switch-label`, both forms of arm are separate productions (F2), `default` is its own arm form, and guards are recognised on `case` arms only (no guard rule is adopted). The header-surface finding in §3.3 applies here.
+The disambiguation is **semantic** (S5, gated): label *syntax* is recognised under `switch-label`, both forms of arm are separate productions (F2), the pattern-header alternatives are derived since the S-G1S-1 correction (F5, §3.3), `default` is its own arm form, and guards are recognised on `case` arms only (no guard rule is adopted). Whether a given label is a pattern or a value remains an S5 semantic question.
 
 ## 6. Parser recovery obligations
 
@@ -135,10 +158,10 @@ From S15 Q3 and the staged proposal's E3 contract, as binding entry requirements
 
 ## 7. CST round-trip invariants
 
-1. **Byte-for-byte reprint**: source → CST → source is the identity, for valid and malformed inputs, including all trivia, the BOM prefix (G1-L D-L1/§4) and error regions.
+1. **Byte-for-byte reprint**: source → CST → source is the identity, for every accepted input (any file that passed UTF-8 validation; G1-L D-L1), including malformed *language* syntax, all trivia, error regions and the BOM prefix leaf (G1-L D-L1/§4 — a byte span covering the original three bytes, contributing no language token). Invalid UTF-8 is rejected by the loader before the lexical pipeline and no CST is owed for it.
 2. The parser consumes the **lossless** lexer stream without discarding anything (G1-L D-L10); trivia attachment is a tree decision, never a deletion.
 3. Token leaves carry exact byte spans; tree construction never synthesises bytes absent from the source (zero-width structural nodes, if any, are flagged as such and contribute no text).
-4. A CST exists for **every** input, including refused constructs and malformed regions.
+4. A CST exists for **every accepted** input, including refused constructs and malformed regions.
 5. Reprint is deterministic (no map-order effects, no normalisation).
 6. The round-trip property is exercised by the fuzz/property suite (deliverable E8) over corpus fixtures and generated malformed inputs.
 
@@ -157,7 +180,7 @@ Requirements: each refusal names the construct, the family and the decision reco
 
 ## 9. What this package does not do
 
-* It does **not** change the grammar. Finding S-G1S-1 is reported for decision, not applied.
+* It does **not** change the grammar beyond the owner-authorized S-G1S-1 recognition correction (002-R5 §3), which is verified against the frozen legacy evidence and applied (§3.3). Nothing else in the grammar moves, and no semantics are adopted.
 * It does **not** adopt semantics: exhaustiveness, fallthrough, guards, destructuring/binding meaning, evaluation order, overloads, equality, concurrency — every Tier-T/M question stays exactly where S1–S18 put it (OPEN or GATED).
 * It does **not** enter G1-S, authorize Stage A, or authorize implementations. **Recognition acceptance is a separate owner action from semantic acceptance**, per `docs/spec/implementation-gates.md` §3.1 and the acceptance record in §5 of that document.
 
@@ -165,11 +188,11 @@ Requirements: each refusal names the construct, the family and the decision reco
 
 | # | Decision | ☐ Accept as proposed | ☐ Amend (state) | ☐ Decline (keep gated) |
 |---|---|---|---|---|
-| 1 | Recognized subset: all 108 `RECOGNISED` productions parse; semantics gated downstream (§3.1–3.2) | ☐ | ☐ | ☐ |
-| 2 | S-G1S-1: authorize a bounded F-class correction for the attested pattern header forms (§3.3, recommended) *or* declare them refused | ☐ | ☐ | ☐ |
+| 1 | Recognized subset: all 111 `RECOGNISED` productions parse; semantics gated downstream (§3.1–3.2) | ☐ | ☐ | ☐ |
+| 2 | S-G1S-1 — **resolved**: correction verified and applied under 002-R5 §3 (§3.3); no further decision open | — | — | — |
 | 3 | Refusal contract for the nine unsupported families incl. labelled break/continue (§4) | ☐ | ☐ | ☐ |
 | 4 | Lambda lookahead rule + trailing-lambda same-line rule (§5.1) | ☐ | ☐ | ☐ |
 | 5 | Recovery obligations (§6) and CST round-trip invariants (§7) | ☐ | ☐ | ☐ |
 | 6 | PARSE allocation plan (§8) | ☐ | ☐ | ☐ |
 
-**G1-S is entered only when rows 1–6 are decided and S-G1S-1 is resolved (authorized correction applied, or explicit refusal recorded).** This document does not enter it; Directive 002-R4 does not authorize any compiler implementation.
+**G1-S is entered only when the remaining rows (1, 3–6) are decided; S-G1S-1 is already resolved (correction verified and applied, 002-R5 §3).** This document does not enter it; no directive authorizes any compiler implementation.

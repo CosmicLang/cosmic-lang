@@ -1,9 +1,10 @@
 # ENGINEERING DIRECTIVE 003 — Proposed Phase 2 Frontend
 
 > **Status: PROPOSED NORMATIVE RULE / NOT AUTHORIZED.** Draft for owner
-> consideration under Directives 002-R1, 002-R2 (post-merge), 002-R3 and
+> consideration under Directives 002-R1, 002-R2 (post-merge), 002-R3,
 > **revised for staged sequencing and the public-repository reconciliation in
-> 002-R4**. No implementation may begin from this document alone. Historic
+> 002-R4, and reconciled with the verified S-G1S-1 pattern-header correction
+> (002-R5)**. No implementation may begin from this document alone. Historic
 > Directive 002 gate language (G1/G1b/G1c/G1d/G1e) remains an archival record;
 > the revised component gates in `docs/spec/implementation-gates.md` were
 > **accepted by the owner in Directive 002-R3**, which still does not authorize
@@ -33,7 +34,7 @@ Directive 003 with the following scoped conditions:
 |---|---|
 | **G1** | Evidence-backed specification/grammar approved by owner **for the precise recognition subset**, with provisional and unsupported syntax listed. No global freeze presumed. |
 | **G1-L** | Owner accepts the lexical contract for emitted tokens and error cases; the decision package (`docs/spec/g1-l-lexical-decision-package.md`) presents ten decisions with testable expected outcomes and a LEX allocation plan. **Not yet accepted; G1-L not entered.** |
-| **G1-S** | Owner approves the concrete parser recognition subset and ambiguous cases (especially lambda lookahead); the decision package (`docs/spec/g1-s-syntax-decision-package.md`) includes finding S-G1S-1, which must be resolved before acceptance. Syntax with no evidenced form is explicitly rejected with PARSE diagnostics, while evidenced syntax with open semantics remains parsable. **Not yet accepted; G1-S not entered.** |
+| **G1-S** | Owner approves the concrete parser recognition subset and ambiguous cases (especially lambda lookahead); finding S-G1S-1 is resolved (verified pattern-header correction applied, 002-R5 — `docs/spec/g1-s-syntax-decision-package.md` §3.3). Syntax with no evidenced form is explicitly rejected with PARSE diagnostics, while evidenced syntax with open semantics remains parsable. **Not yet accepted; G1-S not entered.** |
 | **G1-T** | Before type checker / typed HIR: every implemented semantic operation must have an ACCEPTED NORMATIVE RULE or owner-authorized narrow provisional contract. All others have operation-specific, tested GATE diagnostics. |
 | **G1c** | Owner accepts the identity decision **or explicitly defers** it for frontend-only work — the source extension is already selected (`.cmic`, 2026-10-16, ADR-0002 §4.1). Never hardcode `.cmic` or any extension in the grammar. |
 | **G1d** | Owner licensing decision **and** the public/private development choice: **Option L-A** (public development under an established licensing and contribution policy after legal/provenance review) or **Option L-B** (implementation exclusively in a genuinely private repository or local environment) — see `docs/spec/phase-2-entry-readiness.md` §3. **This repository is public: a branch or PR pushed here publishes source even without a release.** No legacy artifacts imported. |
@@ -70,7 +71,7 @@ G1c/G1d conditions (see §1 and `docs/spec/phase-2-entry-readiness.md` §5).
 |---|---|---|
 | E1 | `cosmic-lexer` | Total tokenization over arbitrary bytes, no panic, byte spans and diagnosed invalid lexical forms; S8/S13/S14 fixtures authored afresh; contract per `docs/spec/g1-l-lexical-decision-package.md`. |
 | E2 | `cosmic-syntax` lossless CST | Source-to-CST-to-source byte-for-byte property, including errors, the BOM prefix and all trivia (G1-L D-L10; G1-S §7). |
-| E3 | Recovering parser | Tested recognized subset from the corrected grammar; explicit PARSE refusals for the nine unsupported families; bounded lambda/parenthesis disambiguation without an LL(1) assumption; stable recovery with >=3 independent errors (S15 Q3); OPEN semantics never cause parser rejection; finding S-G1S-1 resolved per `docs/spec/g1-s-syntax-decision-package.md` §3.3 before acceptance. |
+| E3 | Recovering parser | Tested recognized subset from the corrected grammar; explicit PARSE refusals for the nine unsupported families; bounded lambda/parenthesis disambiguation without an LL(1) assumption; stable recovery with >=3 independent errors (S15 Q3); OPEN semantics never cause parser rejection; finding S-G1S-1 resolved (verified and applied, 002-R5: `docs/spec/g1-s-syntax-decision-package.md` §3.3). |
 | E7 | Differential harness | Isolated fresh test inputs, external pinned legacy oracle, explicit target, normalized intentional divergences (including S13 scalar columns and the S8 strict-escape rules), skip-with-reason if unavailable. Never vendor legacy fixtures. |
 | E8 | Fuzz / properties | Parser termination, CST roundtrip, well-formed diagnostics and no panic under documented budget. |
 
@@ -105,7 +106,7 @@ implementation.
 |---|---|---|
 | S1 | JVM nested-generic failure and limited overload samples | Reject only unresolved nested-generic *resolution* and ambiguous overload operations until an explicit rule is accepted. Reverse-order overload tie-break measurement still needed. |
 | S2 | JVM soft-cast failure-to-null observation | Conversion table and structural fallback not accepted. |
-| S5 | Parser-recognized switch/pattern forms; binding/destructuring arm-header syntax is executed-evidenced (002-R4) | Normative pattern semantics (including destructuring meaning) remain unadopted; define exhaustiveness, fallthrough and labelled-break treatment; gate those checks individually. Recognition completeness depends on finding S-G1S-1 (`docs/spec/g1-s-syntax-decision-package.md` §3.3). |
+| S5 | Parser-recognized switch/pattern forms; binding/destructuring arm-header syntax is executed-evidenced (002-R4) and derived by the corrected grammar (F5, 002-R5) | Normative pattern semantics (including destructuring meaning) remain unadopted; define exhaustiveness, fallthrough and labelled-break treatment; gate those checks individually. S-G1S-1 (pattern-header recognition completeness) is resolved (`docs/spec/g1-s-syntax-decision-package.md` §3.3). |
 | S7 | Numeric operations partly observed | Division by zero, promotion and Bool/Int discrepancy unresolved. |
 | S8 | JVM raw newline allowed, unknown escape silently consumed, triple quote rejected | Decide whether to prohibit invalid escapes as a correct divergence; lexer must fail safely on unaccepted forms. |
 | S11 | JVM evaluation order, short circuit, assignment statement, scope, capture rejection observed | Proposed normative rules require acceptance; intended closure semantics still OPEN. |

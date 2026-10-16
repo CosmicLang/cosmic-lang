@@ -262,9 +262,9 @@ already existed.
 
 | Gate | Status after Directive 002-R3 |
 |---|---|
-| G1 | **PARTIAL** — F1/F2/F4 recognition corrections applied under owner authorization; explicit recognition-subset and exclusion approval still outstanding |
+| G1 | **PARTIAL** — F1/F2/F4 recognition corrections applied under owner authorization, and F5 (S-G1S-1) verified and applied (002-R5); explicit recognition-subset and exclusion approval still outstanding |
 | **G1-L** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — technical evidence: S8, S13, S14 are closed or gated on executed evidence; the owner has not yet accepted the lexical contract |
-| **G1-S** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S; F1/F2/F4 corrections applied; explicit recognized-subset acceptance outstanding, and finding S-G1S-1 (`docs/spec/g1-s-syntax-decision-package.md` §3.3) must be resolved for that acceptance |
+| **G1-S** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S; F1/F2/F4 corrections applied and S-G1S-1 (F5) verified and applied (002-R5; `docs/spec/g1-s-syntax-decision-package.md` §3.3); explicit recognized-subset acceptance outstanding |
 | G1-T | **FRAMEWORK ACCEPTED · ENTRY PENDING** — every Tier-T record is closed or gated; the per-operation gates are specified in §4.1; acceptance outstanding |
 | G1-M | **FRAMEWORK ACCEPTED · ENTRY PENDING** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
 | G1-R | **FRAMEWORK ACCEPTED · ENTRY PENDING (OWNER)** — S16/S17 undecided. Does not gate Phase 2 or Phase 3 |

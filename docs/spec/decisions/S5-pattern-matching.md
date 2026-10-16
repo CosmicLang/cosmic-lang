@@ -146,3 +146,24 @@ header forms is examined as finding S-G1S-1 in
 [`g1-s-syntax-decision-package.md`](../g1-s-syntax-decision-package.md) §3.3 — a
 recognition-subset question owned by G1-S. It does not change this record's
 statuses.
+
+## 002-R5 update (2026-10-16)
+
+Finding S-G1S-1 is **resolved**. The pattern-header recognitions were directly
+verified against the frozen legacy evidence and the owner-authorized bounded
+correction (ENGINEERING DIRECTIVE 002-R5 §3) is applied:
+
+* **Verification.** `cosmcc:tests/golden/sealed-switch/Main.kf` lines 19–20
+  (`case Circle c -> …`), `cosmcc:tests/golden/switch-break-in-loop/Main.kf`
+  line 22 (`case Point(var x, var y):`), and
+  `cosmcc:kof-compiler/src/main/java/dev/kof/compiler/parser/StatementParser.java`
+  `parseSwitchCasePatternOrValue` (lines 353–407) at the frozen SHA — read
+  directly and recorded in `docs/spec/g1-s-syntax-decision-package.md` §3.3 and
+  `docs/spec/grammar-evidence-map.md` §3 (F5).
+* **Grammar.** `switch-label` now derives `binding-pattern` and
+  `destructuring-pattern` (plus `pattern-field`); the production count moves
+  119 → 122.
+* **Evidence versus semantics.** This is **syntax recognition only**,
+  consistent with the 002-R4 four-layer split: Q1's normative questions
+  (binding/destructuring *meaning*, match order, scoping) remain OPEN; Q2–Q6
+  are unchanged; no normative pattern semantics are proposed or adopted.

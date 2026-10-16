@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | **READY FOR OWNER DECISION — G1-L is NOT entered.** This document accepts nothing; it proposes the lexical contract whose owner acceptance is the G1-L entry condition. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R4 §5 |
+| **Directive** | ENGINEERING DIRECTIVE 002-R4 §5 · 002-R5 §5–§7 |
 | **Scope** | The lexical contract of `cosmic-lexer`: emitted tokens and trivia, error cases, and the diagnostics carrying them. Tier-L records only (S8, S13, S14). |
 | **Related** | `docs/spec/implementation-gates.md` §5 (G1-L) and §7 · `docs/spec/language-spec.md` §1–§3 · `docs/spec/grammar.ebnf` §2 · `docs/spec/diagnostic-codes.md` · `docs/spec/decisions/S8-string-semantics.md` · `docs/spec/decisions/S13-unicode.md` · `docs/spec/decisions/S14-trivia.md` · `docs/spec/phase-2-entry-readiness.md` |
 
@@ -37,7 +37,7 @@ Three labels are used, and only these:
 
 | ID | Topic | Record | Recommendation | Disposition of evidence |
 |---|---|---|---|---|
-| D-L1 | UTF-8 validation and leading BOM | S13 Q6 | UTF-8 only; one leading BOM consumed; preserved as a prefix (see §4) | E1 + E1-implemented |
+| D-L1 | UTF-8 validation and leading BOM | S13 Q6 | UTF-8 only; invalid bytes rejected at load; one leading BOM consumed, preserved as a three-byte prefix leaf contributing no language token (see §4) | E1 + E1-implemented |
 | D-L2 | Byte spans and scalar-value columns | S13 Q4 | Byte spans authoritative; scalar-value columns; legacy UTF-16 divergence declared | E1 + probe; E1-implemented |
 | D-L3 | Identifier classes | S13 Q1 | Unicode letters/digits + `_`/`$`; no normalisation | E1 + probes; M-7 debt named |
 | D-L4 | Whitespace, comments, CR/LF/CRLF | S14 | Three whitespace characters; non-nesting comments; three terminators preserved distinctly | E1 |
@@ -67,15 +67,16 @@ No item below changes S8, S13 or S14's status; their proposals mature only throu
 **Recommended normative option (PROPOSED).**
 
 1. Source is UTF-8. Ill-formed input (invalid byte, truncated sequence, overlong form) is rejected at load with the first invalid byte offset; no replacement characters are substituted.
-2. A single leading U+FEFF is **consumed** — it is not a code character — and **preserved as a zero-width prefix leaf** so reprinting reproduces the original bytes (§4).
+2. A single leading U+FEFF is **consumed** — it is not a code character — and **preserved as a prefix leaf** whose byte span covers the original three bytes (`0..3`) and which contributes no language token, so reprinting reproduces the original bytes (§4).
 3. U+FEFF elsewhere is not whitespace: it is an unexpected character (see LEX005 in §3) with a help note that a byte-order mark is recognised only at the start of a file.
 4. At most one BOM is consumed; a second one immediately after the first is an unexpected character.
+5. **Input boundary (002-R5 §6).** This contract applies to source files that pass UTF-8 validation. A file with invalid UTF-8 — an invalid byte, a truncated sequence or an overlong form — is rejected by the source loader (`crates/cosmic-source`) with the first invalid byte offset, and the lexical pipeline is not entered: no token stream and no CST are owed for such a file. Malformed *language* syntax is a different matter — it is accepted input that the lexer/CST must still preserve losslessly (D-L10).
 
 **Testable expected outcomes.**
 
 | # | Input | Expected |
 |---|---|---|
-| T1 | `EF BB BF` + `main() {}` | token stream identical to the same source without the BOM; prefix leaf records bytes 0–3 |
+| T1 | `EF BB BF` + `main() {}` | token stream identical to the same source without the BOM; prefix leaf has byte span `0..3` (the original three bytes) and contributes no language token |
 | T2 | BOM-only file | empty token stream; one prefix leaf; no diagnostics |
 | T3 | two leading BOMs + `main` | first consumed; second reported (LEX005); reprint byte-identical |
 | T4 | file whose byte 0 is `0x80` | load error with offset 0 (existing Phase 0 behaviour) |
@@ -100,7 +101,7 @@ No item below changes S8, S13 or S14's status; their proposals mature only throu
 
 1. **Byte spans are authoritative**: every token, trivia element and diagnostic carries validated byte offsets into the original file. No position is derived from character counts downstream.
 2. **Columns are scalar-value counts** for presentation, derived from the span; the legacy UTF-16 counting is not adopted.
-3. Tabs count as one column (Phase 0 behaviour).
+3. A tab occupies one column position (Phase 0 behaviour: in `\tx`, `x` is column 2).
 4. A terminator resets the column: the first character after `\n`, `\r\n` or a lone `\r` is column 1; a CRLF pair never splits a column position.
 5. The legacy divergence is declared and must be normalised by the differential harness on any line containing an astral character (S13 compatibility consequence).
 
@@ -113,7 +114,7 @@ No item below changes S8, S13 or S14's status; their proposals mature only throu
 | T3 | two astral characters on one line | divergence +2, per the recorded rule |
 | T4 | `a\r\nb` | `b` is line 2, column 1; the CRLF is one trivia element |
 | T5 | `a\rb` | same as T4 for the lone-CR case |
-| T6 | `a\tb` | `b` is column 2 (tab = one column) |
+| T6 | `a\tb` | `b` is column 3 (one-based: `a`=1, tab=2, `b`=3 — the tab advances exactly one column) |
 
 **Divergence.** C0/C1-neutral; C2-relevant only for tooling that compares diagnostic text — which the harness policy already addresses.
 
@@ -354,7 +355,7 @@ No item below changes S8, S13 or S14's status; their proposals mature only throu
 
 1. The lexer emits a stream in which **every byte of the file is covered exactly once, in order**, by exactly one of: a token, a trivia element (whitespace run, comment, terminator with its exact form, BOM prefix), or an error region holding the bytes consumed by a recovery step.
 2. No normalisation beyond the D-L1 prefix handling; no byte is dropped or duplicated.
-3. **Reprint identity:** concatenating the leaves in byte order reproduces the input file byte-for-byte, for every input, valid or malformed. This makes S14 N1's guarantee testable at the lexer boundary before any parser exists.
+3. **Reprint identity:** concatenating the leaves in byte order reproduces the input file byte-for-byte, for every accepted input — any file that passed UTF-8 validation (D-L1's input boundary) — including malformed *language* syntax; invalid UTF-8 never reaches the lexer. This makes S14 N1's guarantee testable at the lexer boundary before any parser exists.
 4. Trivia *attachment* (which token a comment belongs to) is a tree-construction concern owned by G1-S; the lexer guarantees presence, order, exact bytes, and no gaps or overlaps.
 
 **Testable expected outcomes.**
@@ -403,7 +404,7 @@ The directive asks explicitly: *does consuming the leading BOM make the required
 
 **Proposed preservation mechanism (PROPOSED).** The BOM is consumed as a *code character* (it never influences parsing) but is represented as a **prefix leaf** of the CST (category: file prefix, not ordinary trivia). The prefix leaf:
 
-* carries the exact three bytes and the byte range `0..3`;
+* has a byte span covering the original three bytes (`0..3`) and contributes no language token;
 * is emitted at most once, only at offset 0;
 * participates in the D-L10 byte partition and the reprint identity;
 * is what the grammar production `bom` in `source = [ bom ] , { lexical-element }` (grammar §2.1) corresponds to — **no grammar change is required**;
@@ -429,7 +430,7 @@ Refusing-with-a-name is the only non-choice this project permits; it is also wha
 
 | # | Decision | ☐ Accept as proposed | ☐ Accept with amendments (state) | ☐ Decline (lexical gate) |
 |---|---|---|---|---|
-| D-L1 | UTF-8 + BOM prefix (incl. §4 refinement) | ☐ | ☐ | ☐ |
+| D-L1 | UTF-8 + BOM prefix (incl. §4 refinement and the input boundary) | ☐ | ☐ | ☐ |
 | D-L2 | Byte spans + scalar columns | ☐ | ☐ | ☐ |
 | D-L3 | Identifier classes | ☐ | ☐ | ☐ |
 | D-L4 | Whitespace / comments / terminators | ☐ | ☐ | ☐ |

@@ -56,7 +56,7 @@ docs/
   spec/language-spec.md                      Phase 1 language specification (PROPOSED)
   spec/grammar.ebnf                          formal grammar (block-level evidence)
   spec/grammar-consistency-report.md         machine-checked consistency report (G0-G13)
-  spec/grammar-evidence-map.md               per-production evidence map (119/119, machine-checked)
+  spec/grammar-evidence-map.md               per-production evidence map (122/122, machine-checked)
   spec/g1-l-lexical-decision-package.md      G1-L lexical entry decision package (READY FOR OWNER DECISION)
   spec/g1-s-syntax-decision-package.md       G1-S syntax entry decision package (READY FOR OWNER DECISION)
   spec/phase-2-entry-readiness.md            Phase 2 entry readiness + owner decision matrix
