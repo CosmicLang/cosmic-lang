@@ -101,7 +101,7 @@ explicitly: the absence of an attribution file is not an omission.
 |---|---|
 | **Option A (GPL-3.0)** | Certain legacy materials **may become reusable if legal rights and GPL conditions permit**, which would make S3 (PortuKof) and S4 (KofScript) substantially cheaper — their vocabulary tables and wrapping semantics could be derived directly instead of reverse-engineered. The specification work already done remains valid; nothing would need to be redone. **But** the project would then be copyleft, and the permissive-adoption argument in §2.1 is lost |
 | **Option C (another copyleft)** | The same reuse becomes possible only if the chosen licence is GPL-3.0-compatible. MPL-2.0 and LGPL-3.0 are compatible in one direction but impose different file-level or library-level obligations. **This option requires legal advice before it can be evaluated**, because the compatibility direction matters |
-| **Option D (stay unlicensed)** | The repository cannot be published, distributed, or contributed to in any normal sense, and the "all rights reserved" statement must stay prominent. **Phase 2 can still proceed** (it is internal work), but Phase 5 cannot, and no external contributor can be accepted |
+| **Option D (stay unlicensed)** | The repository cannot be published, distributed, or contributed to in any normal sense, and the "all rights reserved" statement must stay prominent. **Phase 2 work in this public repository would itself be public** — a pushed branch or PR publishes source even without a release — so under this option Phase 2 can proceed only in a genuinely private environment (the public/private choice is documented in `docs/spec/phase-2-entry-readiness.md` §3); Phase 5 cannot proceed, and no external contributor can be accepted |
 
 ---
 

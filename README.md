@@ -57,6 +57,9 @@ docs/
   spec/grammar.ebnf                          formal grammar (block-level evidence)
   spec/grammar-consistency-report.md         machine-checked consistency report (G0-G13)
   spec/grammar-evidence-map.md               per-production evidence map (119/119, machine-checked)
+  spec/g1-l-lexical-decision-package.md      G1-L lexical entry decision package (READY FOR OWNER DECISION)
+  spec/g1-s-syntax-decision-package.md       G1-S syntax entry decision package (READY FOR OWNER DECISION)
+  spec/phase-2-entry-readiness.md            Phase 2 entry readiness + owner decision matrix
   spec/typing-contracts.md                   type-system contracts
   spec/diagnostic-codes.md                   diagnostic code registry + stability policy
   spec/compatibility-matrix.md               language-construct evidence ledger
@@ -67,7 +70,7 @@ docs/
   development/measurement-plan.md            reproducible measurement specifications
   development/test-strategy.md               test ladder + differential harness design
   directives/directive-002-proposal.md       proposed Phase 1 (specification-only)
-  directives/directive-003-proposal.md       proposed Phase 2 frontend (NOT AUTHORISED)
+  directives/directive-003-proposal.md       proposed Phase 2 frontend, staged (NOT AUTHORISED; revised 002-R4)
 ```
 
 ## Phase 1 status (specification)
@@ -89,7 +92,11 @@ specific `GATE` diagnostic; unrelated syntax remains recognizable when evidenced
 **No record claims owner acceptance.**
 
 **Phase 2 is not authorised.** The proposed Directive 003 is
-`docs/directives/directive-003-proposal.md`.
+`docs/directives/directive-003-proposal.md` (revised, staged); the
+owner-reviewable entry package is `docs/spec/phase-2-entry-readiness.md`, with
+`docs/spec/g1-l-lexical-decision-package.md` and
+`docs/spec/g1-s-syntax-decision-package.md`. **Nothing in those documents is
+approved.**
 
 ## Phase 0 review status
 
