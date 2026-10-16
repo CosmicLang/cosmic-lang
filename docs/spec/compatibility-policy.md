@@ -2,10 +2,11 @@
 
 | | |
 |---|---|
-| **Date** | 2026-10-16 |
-| **Directive** | ENGINEERING DIRECTIVE 001-R1 §8 |
+| **Date** | 2026-10-16 (round 1) · 2026-10-16 (round 2, Directive 002) |
+| **Directive** | ENGINEERING DIRECTIVE 001-R1 §8 (round 1) · ENGINEERING DIRECTIVE 002 §4/D5 (round 2) |
 | **Status** | **Proposed.** Nothing here is a decision, a grammar, or a compatibility promise. |
-| **Related** | `docs/adr/0001-language-identity.md`, `docs/spec/compatibility-matrix.md`, `docs/audits/phase-0-design-conformance.md`, `docs/audits/phase-0-licensing-matrix.md` |
+| **Priority order** | **Confirmed by Directive 002 §4**: `.csmx` primary → `.kf`/`.kof` priority legacy → `.ptkf` separately specified → `.ks` separately specified |
+| **Related** | `docs/adr/0001-language-identity.md`, `docs/spec/extension-assessment.md`, `docs/spec/compatibility-matrix.md`, `docs/spec/decisions/` (S3, S4), `docs/audits/phase-0-design-conformance.md` |
 | **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
 
 This document proposes a *decision framework* for source-format compatibility.
@@ -14,6 +15,9 @@ migration plan assigns grammar freezing to Phase 1 and this review is not
 authorised to perform Phase 1 work.
 
 ---
+
+> **Path convention.** A path prefixed `cosmcc:` refers to the **legacy repository** `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
+
 
 ## 1. What "compatibility" can mean here
 
@@ -39,22 +43,41 @@ C0 alone is never presented as compatibility.
 
 ### 2.1 `.csmx` — proposed primary Cosmic-Lang source format
 
+**Priority 1.** Confirmed as the intended primary surface by Directive 002 §4.
+
 | Item | Proposal |
 |---|---|
 | Role | **Primary** source format for the new toolchain |
 | Current state | Proposed in ADR-0001 §2.2 and already used consistently by Phase 0 code, documentation and test fixtures |
-| Uniqueness | **Not established.** The design report (page 12) requires registry/GitHub/editor searches before formalising; ADR-0001 §3 records two web queries and states explicitly that exhaustive GitHub code search and trademark/registry queries were **not** performed |
-| MIME type | `text/x-cosmic-lang` is proposed by the report (page 12) but **not registered**; `x-` prefixed types are non-standard by construction |
-| Editor association | Not created. ADR-0001 §3 recommends a tree-sitter grammar plus editor associations in the phase that introduces the lexer |
+| Uniqueness | **NOT established — and round 2 found a real collision.** See `docs/spec/extension-assessment.md`. GitHub code search (`extension:csmx`, 2026-10-16) returns **10 hits**, dominated by `akeit0/csharp-markup-extension`: an MIT-licensed C# project using `.csmx` as a **language source extension**, shipping a **language server**. It is a stale PoC (last push 2026-06-15, 16 stars), and there is **no file-format-registry entry** for either project. Residual risk is **MODERATE at the tooling level** (editor/LSP association), **LOW at the registry level** |
+| Round 1 vs round 2 | Round 1 ran only generic web queries and concluded "low risk for the registry view, moderate for tooling". Round 2's code search **confirms and sharpens** the tooling risk into a named competitor. Round 1's explicit limitation ("exhaustive GitHub code search not performed") is now closed |
+| MIME type | `text/x-cosmic-lang` is proposed by the design report (page 12) but is a **`x-` prefixed, by-definition unregistered** type. IANA registers no `text/x-*` name and no `cosmic`/`csmx`/`kof`/`csm` subtype. A registered type would need the vendor or personal tree |
+| Editor association | Not created. A tree-sitter grammar plus editor associations are recommended for the phase that introduces the lexer — they also *mitigate* the tooling risk, because tooling is what creates the association |
 | Compatibility level | N/A — this is the native format, not a legacy format |
-| Owner decision needed | Approve the extension after the exhaustive search; approve the MIME type and editor-association plan |
+| Owner decision needed | Approve the extension **after** (a) a direct file-extension-database query and (b) a package-registry query for the language identifier. Both are named as gaps in `extension-assessment.md` §6 |
 | Target phase | Phase 1 (search + approval) → Phase 2 (tooling) |
 
-**Non-promise:** `.csmx` is not claimed to be globally unique. The design
-report itself says this cannot be demonstrated, and this review found no
-evidence to contradict it.
+**Non-promise:** `.csmx` is not claimed to be globally unique. The design report
+itself says this cannot be demonstrated, and round 2 found evidence that it is
+in fact **occupied by a competing language project**.
+
+**Risk-mitigating observation.** Because the parser is **extension-independent**
+(§3 rule 1), the extension is a discovery convenience rather than a semantic
+marker. A wrong choice therefore costs a rename, not a migration — which
+materially lowers the stakes of the decision and is an argument for not
+over-investing in the search.
+
+**Alternative to evaluate:** `.cosmic`. GitHub code search finds 58 hits, but
+every sampled one is a derived/variant file (`Dockerfile.cosmic`,
+`Xresources.cosmic`, `pdb.cosmic`), and **no project claims it as a language
+extension**. If "no competing language claim" is the criterion that matters, it
+is the stronger candidate; if "fewest existing files" is the criterion, `.csmx`
+wins. The trade-off is recorded, not resolved.
 
 ### 2.2 `.kf` / `.kof` — high-priority legacy syntax compatibility candidates
+
+**Priority 2.** Confirmed as the priority legacy compatibility target by
+Directive 002 §4.
 
 | Item | Proposal |
 |---|---|
@@ -72,6 +95,10 @@ analyzed", never "unsupported"* — and equally never "supported".
 
 ### 2.3 `.ptkf` — PortuKof, separately specified
 
+**Priority 3.** Confirmed as a separately specified compatibility surface by
+Directive 002 §4. Decision record:
+`docs/spec/decisions/S3-portukof.md`.
+
 | Item | Proposal |
 |---|---|
 | Role | **Separately specified** compatibility surface. Not a priority-1 target |
@@ -87,6 +114,10 @@ PortuKof as a distinct surface requiring its own analysis, and this review
 confirms the legacy evidence is too thin to specify it.
 
 ### 2.4 `.ks` — KofScript, separately specified wrapping and execution semantics
+
+**Priority 4.** Confirmed as a separately specified compatibility surface by
+Directive 002 §4. Decision record:
+`docs/spec/decisions/S4-kofscript.md`.
 
 | Item | Proposal |
 |---|---|
@@ -120,7 +151,7 @@ count means it cannot be validated against the golden corpus.
    §5). Until then the claim stays at "legacy evidence" level.
 6. **Legacy defects are not part of the contract.** The maintainers' own open
    items (e.g. nested-generic mis-resolution, JS loop/return miscompiles, the
-   cross-target shift divergence recorded in `docs/status.md` §698) are inputs
+   cross-target shift divergence recorded in `cosmcc:docs/status.md` §698) are inputs
    to the specification, not behaviours to reproduce. The specification must
    decide each one explicitly.
 7. **No artefact copying.** Legacy fixtures and documentation are not vendored
@@ -160,10 +191,11 @@ semantics; the stdlib/language boundary; the reserved keywords `entity`,
 
 | Format | Proposed role | Compatibility level promised | Priority | Phase 1 deliverable | Owner decision required |
 |---|---|---|---|---|---|
-| `.csmx` | Primary Cosmic-Lang source | N/A (native) | — | Exhaustive uniqueness search + approval | **Yes** |
-| `.kf` / `.kof` | Legacy syntax compatibility | **C1 + C2**, scoped to evidenced constructs | **Highest** | Freeze the evidenced construct set | **Yes** |
-| `.ptkf` | PortuKof, separately specified | None yet | Separate | Dedicated specification (if in scope) | **Yes** |
-| `.ks` | KofScript wrapping/execution, separately specified | None yet | Separate | Dedicated specification (if in scope) | **Yes** |
+| `.csmx` | Primary Cosmic-Lang source | N/A (native) | **1** | Round-2 collision assessment + the two named search gaps closed | **Yes** |
+| `.kf` / `.kof` | Legacy syntax compatibility | **C1 + C2**, scoped to evidenced constructs | **2** | Freeze the evidenced construct set (D1/D2) | **Yes** |
+| `.ptkf` | PortuKof, separately specified | None yet | **3** | Dedicated specification (if in scope) — S3 | **Yes** |
+| `.ks` | KofScript wrapping/execution, separately specified | None yet | **4** | Dedicated specification (if in scope) — S4 | **Yes** |
 
 **No full compatibility is promised for any format**, and no grammar is
-invented by this document.
+invented by this document. **No extension or MIME decision is accepted** — both
+remain pending formal owner acceptance.
