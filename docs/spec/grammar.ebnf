@@ -1,0 +1,559 @@
+# Cosmic-Lang Formal Grammar (EBNF)
+
+| | |
+|---|---|
+| **Status** | **Proposed — Phase 1 draft.** Not approved. |
+| **Phase** | 1 (formal specification) |
+| **Directive** | ENGINEERING DIRECTIVE 002, deliverable D2 |
+| **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
+| **Companion documents** | `docs/spec/language-spec.md` (D1), `docs/spec/typing-contracts.md` (D3), `docs/spec/decisions/` (D4) |
+
+## 0. Evidence policy
+
+**Evidence is inherited from the surrounding production block.** Individual
+productions do not have unique evidence markers. The machine checker verifies
+block coverage, but this alone does not establish each rule as normative.
+
+| Marker | Meaning |
+|---|---|
+| `[E1:path]` | Derived directly from the legacy source at the frozen SHA. The path is given relative to `kof-compiler/src/main/java/dev/kof/compiler/`. |
+| `[E1:case]` | Witnessed by an executed golden case (`tests/golden/<case>/`), executed 222/222 for jvm/js/script per `docs/audits/phase-0-baseline.md` §5.2. |
+| `[E2]` | Inferred from E1 material; the inference is stated. |
+| `[OPEN:Sn]` | Deliberately not decided. Owned by decision record `Sn`. The production is **provisional** and must not be implemented as if settled. |
+
+**No legacy code or fixture text is reproduced.** Where a form is illustrated,
+the example is written for this document; the evidence marker names the source
+of the *form*, not of the example.
+
+**This grammar is not yet a contract.** Productions marked `[OPEN]` are
+placeholders that record the shape observed in the legacy parser so that Phase 2
+can be held to a decision rather than to an accident.
+
+---
+
+## 1. Notation
+
+ISO-style EBNF: `=` definition · `,` concatenation · `|` alternation ·
+`[ ]` optional · `{ }` zero or more · `( )` grouping · `"…"` terminal ·
+`(* … *)` comment.
+
+`(*§n*)` cross-references `docs/spec/language-spec.md` section *n*.
+
+---
+
+## 2. Lexical grammar
+
+### 2.1 Source characters and layout
+
+```ebnf
+(*§1.1*) source        = [ bom ] , { lexical-element } ;
+          bom           = "\uFEFF" ;
+
+(*§1.2*) line-terminator = "\n" | "\r\n" | "\r" ;
+(*§1.4*) whitespace      = " " | "\t" | "\f" ;            (* E1:parser/Lexer.java tokenize *)
+
+(*§2.1*) comment         = line-comment | block-comment ;
+          line-comment  = "//" , { any-char - line-terminator } ;
+          block-comment = "/*" , { any-char } , "*/" ;    (* non-nesting: E1:parser/Lexer.java skipBlockComment; OPEN:S14 *)
+
+(* Layout and tokens are the elements a source is a sequence of. Listing them
+   here is what makes the layout productions reachable rather than orphaned. *)
+          lexical-element = whitespace | line-terminator | comment | token ;
+          token           = identifier | literal | operator | delimiter | separator ;
+```
+
+### 2.2 Identifiers
+
+```ebnf
+(*§2.2*) identifier      = identifier-name - ( keyword | reserved-invalid ) ;
+          identifier-name = identifier-start , { identifier-part } ;
+          identifier-start = unicode-letter | "_" | "$" ;  (* E1:parser/Lexer.java tokenize *)
+          identifier-part  = unicode-letter | unicode-digit | "_" | "$" ;
+                                                           (* E1:parser/Lexer.java readIdentifier *)
+          unicode-letter   = (* Unicode general category L*) ;
+          unicode-digit    = (* Unicode general category Nd *) ;
+          any-char         = (* any Unicode scalar value, except where a production excludes it *) ;
+```
+
+`identifier` excludes the keyword and reserved-invalid sets, which is what makes
+a keyword a keyword rather than a name. Contextual words (`test`,
+`application`, `infra`, `foreign`, `module`, `sealed`) are **not** in `keyword`
+and therefore remain usable as identifiers — see `§3.2`.
+
+`unicode-letter` / `unicode-digit` follow the Unicode general categories used by
+the legacy lexer (`Character.isLetter` / `isLetterOrDigit`), i.e. they are
+**Unicode-aware, not ASCII-only**. This was **verified by execution** for
+non-ASCII letters (`docs/audits/phase-1-legacy-probes.md` §5.1). `[OPEN:S13]`
+owns the exact class set, the treatment of combining marks, and normalisation.
+
+### 2.3 Keywords
+
+```ebnf
+(*§2.3*) keyword = "class" | "interface" | "record" | "enum" | "entity"
+                 | "extern" | "generated" | "audited" | "unique"
+                 | "extends" | "implements"
+                 | "package" | "import"
+                 | "public" | "private" | "protected" | "static" | "final"
+                 | "abstract" | "transient" | "volatile" | "synchronized"
+                 | "native" | "default" | "override"
+                 | "void" | "new" | "this" | "super"
+                 | "return" | "throw" | "if" | "else" | "for" | "while" | "do"
+                 | "switch" | "case" | "break" | "continue"
+                 | "try" | "catch" | "finally"
+                 | "spawn" | "await" | "assert" | "instanceof" | "var" | "val" | "as"
+                 | "bool" | "byte" | "short" | "int" | "long"
+                 | "float" | "double" | "char" | "string"
+                 | "true" | "false" | "null" ;             (* E1:lang/KofKeywords.java *)
+
+(*§2.3*) reserved-invalid = "fun" | "fn" | "func" ;        (* E1:lang/KofKeywords.java (SG-001); parser rejects *)
+```
+
+`reserved-invalid` tokens are lexed and then **rejected by the parser**; they
+must never be accepted as identifiers. `[E1:parser/Parser.java parse()]`
+
+### 2.4 Literals
+
+```ebnf
+(*§2.4*) literal        = int-literal | long-literal | float-literal
+                        | double-literal | string-literal | char-literal
+                        | boolean-literal | null-literal ;
+
+          int-literal    = decimal-int | hex-int ;
+          long-literal   = ( decimal-int | hex-int ) , ( "l" | "L" ) ;
+          decimal-int    = digit , { digit } ;
+          hex-int        = ( "0x" | "0X" ) , hex-digit , { hex-digit } ;
+          digit          = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+          hex-digit      = digit | "a" | "b" | "c" | "d" | "e" | "f"
+                                 | "A" | "B" | "C" | "D" | "E" | "F" ;
+                                                           (* E1:parser/Lexer.java readNumber, isHexDigit *)
+
+          float-literal  = number-body , ( "f" | "F" ) ;
+          double-literal = number-body , [ ( "d" | "D" ) ] ;
+          number-body    = decimal-int ,
+                           [ "." , digit , { digit } ] ,   (* fraction only if a digit follows the "." *)
+                           [ ( "e" | "E" ) , [ "+" | "-" ] , digit , { digit } ] ;
+                                                           (* E1:parser/Lexer.java readNumber *)
+(*§2.4*)  (* NOT part of the language: binary/octal literals, digit separators,
+             trailing ".", hex floats, leading-"." floats, "~" operator.       *)
+                                                           (* E1: negative evidence, Lexer.java + TokenType.java *)
+
+(*§2.4*) string-literal = "\"" , { string-char | escape } , "\"" ;
+          string-char    = any-char - ( "\"" | "\\" ) ;
+          char-literal   = "'" , ( char-value ) , "'" ;
+          char-value     = escape | ( any-char - ( "'" | "\\" | line-terminator ) ) ;
+
+(*§2.4*) escape         = "\\" , ( "n" | "t" | "r" | "\\" | "'" | "\"" | "0" | unicode-escape )
+                        | "\\" , any-char ;                (* unknown escape yields the character itself,
+                                                              with NO diagnostic: E1:parser/Lexer.java readEscape;
+                                                              VERIFIED by execution: docs/audits/phase-1-legacy-probes.md §4.1 *)
+          unicode-escape = "u" , hex-digit , hex-digit , hex-digit , hex-digit ;
+                                                           (* E1:parser/Lexer.java readUnicodeEscape *)
+
+(*§2.4*) boolean-literal = "true" | "false" ;               (* E1:lang/KofKeywords.java *)
+(*§2.4*) null-literal    = "null" ;
+
+(*§2.4*) (* EXPLICITLY ABSENT: triple-quoted strings. The legacy lexer recognises
+           '"""' only to reject it with LEX008. There is no raw/multiline string
+           literal and no interpolation. [E1:parser/Lexer.java skipTripleQuoted]
+           VERIFIED by execution: docs/audits/phase-1-legacy-probes.md §4.2.
+           NOTE: a raw newline inside "\"" ... "\"" IS accepted (same record §4.3),
+           so `char-value` excludes `line-terminator`, but `string-char` admits it.
+           This records VERIFIED LEGACY BEHAVIOR; S8's normative policy is OPEN. *)
+```
+
+> **Terminal escaping convention.** Inside a terminal, `\` escapes the next
+> character (ISO EBNF). So `"\""` is the double-quote terminal, `"\\"` the
+> backslash terminal, and `"\n"` the line-feed terminal. This convention exists
+> so that the grammar is machine-parseable; `tools/spec-consistency.py` relies
+> on it.
+
+### 2.5 Operators and delimiters
+
+```ebnf
+(*§2.5*) operator   = "+" | "-" | "*" | "/" | "%"
+                   | "==" | "!=" | "<" | "<=" | ">" | ">="
+                   | "&&" | "||" | "!"
+                   | "&" | "|" | "^" | "<<" | ">>" | ">>>"
+                   | "=" | "+=" | "-=" | "*=" | "/=" | "%="
+                   | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>="
+                   | "++" | "--" | "->" ;
+                                                           (* E1:parser/Lexer.java readOperatorOrDelimiter *)
+
+(*§2.5*) delimiter  = "(" | ")" | "{" | "}" | "[" | "]" ;
+(*§2.5*) separator  = ";" | "," | "." | ":" | "?" | "@" ;
+```
+
+Longest-match applies: `>>>` before `>>` before `>`, `>>>=` before `>>>`.
+`[E1:parser/Lexer.java readOperatorOrDelimiter]`
+
+---
+
+## 3. Syntactic grammar
+
+### 3.1 Compilation unit
+
+```ebnf
+(*§4.1*) compilation-unit = [ package-decl ] , { import-decl } , { top-level-decl } ;
+                                                           (* E1:parser/Parser.java parse() *)
+(*§4.1*) package-decl     = "package" , qualified-name ;   (* OPEN:S9 — optionality and placement *)
+(*§4.1*) import-decl      = "import" , qualified-name ;    (* OPEN:S9 — wildcards, aliases, static imports *)
+          qualified-name   = identifier , { "." , identifier } ;
+```
+
+### 3.2 Top-level declarations
+
+The dispatch order is significant: each alternative is tested in sequence and
+the first match wins. `[E1:parser/Parser.java parse()]`
+
+```ebnf
+(*§4.2*) top-level-decl = { annotation } , top-level-body ;
+
+(*§4.2*) top-level-body =
+              test-decl                 (* contextual: word "test" + STRING_LITERAL *)
+            | application-decl          (* contextual: word "application" + "{" *)
+            | infra-decl                (* contextual: word "infra" + STRING_LITERAL *)
+            | extern-decl               (* "extern" *)
+            | foreign-module-decl       (* contextual: "foreign" "module" *)
+            | type-decl                 (* includes the contextual "sealed" prefix *)
+            | function-decl             (* identifier | "void" | primitive-type | "(" *)
+            ;
+
+(*§2.3*) (* "fun" | "fn" | "func" at this position is REJECTED, not parsed. *)
+```
+
+`test`, `application`, `infra`, `foreign`, `module` and `sealed` are
+**contextual** keywords recognised by word plus one-token lookahead. `[E1]`
+Consequence `[E2]`: they remain valid identifiers in every other position, so
+the grammar must encode the lookahead rather than reserving them.
+
+```ebnf
+(*§4.2*) test-decl          = "test" , string-literal , block ;      (* OPEN:S10 *)
+(*§4.2*) application-decl   = "application" , block ;                (* OPEN:S10 *)
+(*§4.2*) infra-decl         = "infra" , string-literal , block ;      (* OPEN:S10 *)
+(*§4.2*) extern-decl        = "extern" , function-signature ;         (* OPEN:S10 *)
+          function-signature = [ return-type ] , identifier , parameter-list ;
+                                                                    (* E1:parser/Parser.java parseExternDeclaration;
+                                                                       semantics OPEN:S10 *)
+(*§4.2*) foreign-module-decl = "foreign" , "module" , string-literal , block ;
+                                                                    (* OPEN:S10; desugars to extern-decls *)
+```
+
+### 3.3 Functions
+
+```ebnf
+(*§4.3*) function-decl   = [ return-type ] , identifier , parameter-list , function-body ;
+          return-type   = type-ref ;                        (* omitted for a void/no-result function *)
+          parameter-list = "(" , [ parameter , { "," , parameter } ] , ")" ;
+          parameter     = identifier , ":" , type-ref ;
+          function-body = block | ( "=" , expression ) ;
+                                                           (* E1:parser/Parser.java parseFunctionDeclaration;
+                                                              E1:cases hello (no return type, block body),
+                                                              functions (block and "=" bodies) *)
+(*§4.3*) nested-function-decl = function-decl ;             (* E1:parser/StatementParser.java parseNestedFunction
+                                                              OPEN:S11 — capture semantics *)
+```
+
+`[OPEN:S1]` — whether a parameter type may be omitted, and what the
+return-type default is when absent (S1 owns the inference boundary). The corpus
+shows the *absence* of a return type for `main`, but not the rule.
+
+### 3.4 Types
+
+```ebnf
+(*§4.4*) type-ref        = ( primitive-type | nominal-type ) , [ "?" ] , { array-suffix } ;
+          nominal-type  = qualified-name , [ type-arguments ] ;
+          type-arguments = "<" , type-ref , { "," , type-ref } , ">" ;
+          array-suffix  = "[" , "]" ;
+                                                           (* E1:parser/TypeParser.java;
+                                                              E1:cases nullable-suffix-leading-return-type,
+                                                              nullable-soft-cast, nested-generic-leading-return-type *)
+
+(*§4.4*) primitive-type  = "bool" | "byte" | "short" | "int" | "long"
+                        | "float" | "double" | "char" | "string" ;
+                                                           (* E1:lang/KofKeywords.java *)
+```
+
+`type-ref` accepts a `primitive-type` **or** a `nominal-type`. Without the
+explicit alternative, a primitive type name would only be reachable as an
+identifier, which would conflate two different things — a consistency defect
+found by `tools/spec-consistency.py` and corrected here.
+
+`[OPEN:S1]` — nested type-argument resolution
+(`Box<Box<Int>>`) is a known legacy defect area and is **not** specified. It was
+**reproduced by execution** (`docs/audits/phase-1-legacy-probes.md` §6.1): the
+program compiles and then fails at run time with `NoSuchMethodError`, and
+inference inside an enclosing generic call **drops a nested type argument**
+(§6.2). Both are **defects**, not rules.
+`[OPEN:S2]` — the meaning of `?` beyond the suffix position. The
+**soft cast** `expr as T?` is now **VERIFIED** to yield `null` on failure
+(same record §8).
+`[E2]` — the `?` suffix is evidenced by the corpus; a *prefix* `?` is not.
+
+### 3.5 Type declarations
+
+```ebnf
+(*§4.4*) type-decl       = [ "sealed" ] , ( class-decl | interface-decl
+                        | record-decl | enum-decl | entity-decl ) ;
+
+          class-decl     = "class" , identifier , [ supertypes ] , class-body ;
+          interface-decl = "interface" , identifier , [ supertypes ] , class-body ;
+          entity-decl    = "entity" , identifier , [ supertypes ] , class-body ;
+                                                           (* OPEN:S10 — entity semantics *)
+
+          supertypes     = [ "extends" , type-ref ] ,
+                           [ "implements" , type-ref , { "," , type-ref } ] ;
+
+(*§4.4*) record-decl     = "record" , identifier , ( positional-record | record-body ) ;
+          positional-record = "(" , [ record-component , { "," , record-component } ] , ")" ;
+          record-body    = "{" , { member } , "}" ;
+          record-component  = type-ref , identifier ;
+                                                           (* E1:case records — positional form has no braces,
+                                                              accessors are called as value.x() *)
+
+(*§4.4*) enum-decl       = "enum" , identifier , "{" ,
+                            [ enum-constant , { "," , enum-constant } ] , "}" ;
+          enum-constant  = identifier , [ "(" , [ expression , { "," , expression } ] , ")" ] ;
+                                                           (* E1:cases enum, enum-methods, enum-switch-expr *)
+
+(*§4.4*) class-body      = "{" , { member } , "}" ;
+(*§4.4*) member          = { annotation } , { modifier } ,
+                          ( constructor-decl | field-decl | function-decl | type-decl ) ;
+          constructor-decl = [ "public" ] , "constructor" , parameter-list , block ;
+                                                           (* E1:case classes — "public constructor(...)" with
+                                                              "super(...)" as the first statement *)
+(*§4.4*) field-decl      = type-ref , identifier , [ "=" , expression ] ;
+          modifier        = "public" | "private" | "protected" | "static" | "final"
+                          | "abstract" | "transient" | "volatile" | "synchronized"
+                          | "native" | "default" | "override" ;
+                                                           (* OPEN:S10 — legal combinations unknown *)
+(*§4.4*) annotation      = "@" , qualified-name , [ "(" , [ annotation-args ] , ")" ] ;
+          annotation-args = expression , { "," , expression } ;
+                                                           (* OPEN:S10 — vocabulary and semantics *)
+```
+
+### 3.6 Statements
+
+```ebnf
+(*§5*) statement = block
+                 | return-stmt | throw-stmt
+                 | if-stmt | while-stmt | do-while-stmt | for-stmt
+                 | try-stmt | switch-stmt
+                 | var-decl-stmt | nested-function-decl
+                 | expression-stmt
+                 | ";" ;                                   (* E1:parser/StatementParser.java parseStatement *)
+
+          block        = "{" , { statement } , "}" ;
+
+          return-stmt  = "return" , [ expression ] ;
+          throw-stmt   = "throw" , expression ;
+                                                           (* E1:case exceptions — "throw \"…\"" throws a string *)
+
+          if-stmt      = "if" , "(" , expression , ")" , statement ,
+                         [ "else" , statement ] ;
+          while-stmt   = "while" , "(" , expression , ")" , statement ;
+          do-while-stmt = "do" , statement , "while" , "(" , expression , ")" ;
+          for-stmt     = "for" , "(" , [ for-init ] , ";" , [ expression ] , ";"
+                         , [ expression ] , ")" , statement
+                       | "for" , "(" , [ "var" | "val" ] , identifier , "in"
+                         , expression , ")" , statement ;
+          for-init     = ( "var" | "val" ) , identifier , [ ":" , type-ref ] , "=" , expression
+                       | expression ;
+                                                           (* E1:case interfaces — "for (var a in animals)".
+                                                              The three-clause form is E1 from the parser but is
+                                                              NOT exercised by the corpus: [OPEN:S5] *)
+
+          try-stmt     = "try" , block , { catch-clause } , [ finally-clause ] ;
+          catch-clause = "catch" , "(" , type-ref , identifier , ")" , block ;
+          finally-clause = "finally" , block ;
+                                                           (* E1:cases exceptions, finally-control-flow,
+                                                              finally-return *)
+
+          switch-stmt  = "switch" , "(" , expression , ")" , "{" , { switch-arm } , "}" ;
+          switch-arm   = "case" , switch-label , [ guard ] , "->" , switch-body ;
+          switch-label = expression | type-ref | "default" ;
+          guard        = "if" , expression ;
+          switch-body  = expression | block | statement ;
+                                                           (* E1:parser/StatementParser.java
+                                                              parseSwitchStatement, parseSwitchCasePatternOrValue,
+                                                              parseGuardIfPresent; E1:cases enum-switch-expr,
+                                                              switch-expr, switch-break-in-loop, sealed-switch *)
+
+          var-decl-stmt = ( "var" | "val" ) , identifier , [ ":" , type-ref ] , "=" , expression ;
+                                                           (* E1:parser/StatementParser.java parseVarDecl;
+                                                              E1:case concurrency-spawn-await *)
+          expression-stmt = expression ;
+```
+
+`[OPEN:S5]` — exhaustiveness, whether arms may fall through, and whether
+`break`/`continue` accept labels.
+
+### 3.7 Expressions
+
+```ebnf
+(*§6.1*) expression   = assignment-expr ;
+          assignment-expr = binary-expr ,
+                            [ assignment-op , assignment-expr ] ;
+          assignment-op  = "=" | "+=" | "-=" | "*=" | "/=" | "%="
+                         | "&=" | "|=" | "^=" | "<<=" | ">>=" | ">>>=" ;
+                                                           (* E1:parser/ExpressionParser.java parseAssignment;
+                                                              assignment is a STATEMENT, not an expression:
+                                                              VERIFIED, docs/audits/phase-1-legacy-probes.md §2.5 *)
+          (* NOTE: because assignment is a statement, the `assignment-expr`
+             production is reachable only from a statement position. A chained
+             assignment such as `a = b = 1` is rejected with SEM027. *)
+
+(*§6.1*) (* The precedence table below is E1, read from
+             ExpressionParser.precedence(). It is encoded here as one flat
+             production plus the table, because EBNF cannot express a
+             precedence-climbing parameter; the precedence table is proposed and the
+             `binary-op` alternatives are ordered from lowest to highest. *)
+          binary-expr    = unary-expr , { binary-op , binary-rhs } ;
+          binary-op      = "||"                      (* level 1, lowest *)
+                         | "&&"                      (* level 2 *)
+                         | "|" | "^"                 (* level 3 *)
+                         | "&"                       (* level 4 *)
+                         | "==" | "!=" | "<" | "<=" | ">" | ">=" | "instanceof" | "as"   (* level 5 *)
+                         | "<<" | ">>" | ">>>"       (* level 6 *)
+                         | "+" | "-"                 (* level 7 *)
+                         | "*" | "/" | "%" ;         (* level 8, highest *)
+          binary-rhs     = type-ref                   (* only for "as" and "instanceof" *)
+                         | unary-expr ;
+                                                           (* E1:parser/ExpressionParser.java parseBinary.
+                                                              All binary operators are LEFT-associative:
+                                                              VERIFIED for `<`/`>` by execution,
+                                                              docs/audits/phase-1-legacy-probes.md §6.3 *)
+
+(*§6.1*) unary-expr   = ( "!" | "-" | "++" | "--" ) , unary-expr
+                     | "spawn" , unary-expr
+                     | "await" , unary-expr
+                     | postfix-expr ;
+                                                           (* E1:parser/ExpressionParser.java parseUnary *)
+
+(*§6.1*) postfix-expr = primary , { postfix-op } ;
+          postfix-op = "(" , [ argument-list ] , ")"
+                     | "." , identifier , [ "(" , [ argument-list ] , ")" ]   (* method or property *)
+                     | "[" , expression , "]"
+                     | "++" | "--"
+                     | type-arguments , "(" , [ argument-list ] , ")" ;        (* generic call *)
+                                                           (* E1:parser/ExpressionParser.java parsePostfix,
+                                                              parseCallTypeArguments *)
+          argument-list = expression , { "," , expression } ;
+
+(*§6.1*) primary      = literal
+                     | identifier
+                     | "this" | "super"
+                     | "(" , expression , ")"
+                     | lambda
+                     | switch-expr
+                     | if-expr
+                     | new-expr
+                     | array-literal ;                     (* E2 — array syntax not exercised by the corpus *)
+                                                           (* E1:parser/ExpressionParser.java parsePrimary *)
+
+(*§6.1*) if-expr      = "if" , "(" , expression , ")" , expression ,
+                       [ "else" , expression ] ;
+                                                           (* E1:parser/ExpressionParser.java parseIfExprBranch;
+                                                              no golden case exercises the if-EXPRESSION form,
+                                                              so the surface is [OPEN:S5] *)
+(*§6.1*) array-literal = "{" , [ expression , { "," , expression } ] , "}" ;  (* E2 *)
+                                                           (* NOT evidenced: the corpus contains no array
+                                                              literal. The brace form is a placeholder and
+                                                              is [OPEN:S9]; it must not be implemented
+                                                              as if settled. *)
+
+(*§6.1*) lambda       = "(" , [ lambda-params ] , ")" , "->" , lambda-body
+                     | "{" , [ lambda-params ] , "->" , { statement } , "}" ;
+          lambda-params = parameter , { "," , parameter } ;
+          lambda-body  = expression | block ;
+                                                           (* E1:case functions — "(x: Int) -> x * 2";
+                                                              E1:parser/LambdaParser.java,
+                                                              ExpressionParser.parseTrailingLambdaBlock *)
+
+(*§6.1*) switch-expr  = "switch" , "(" , expression , ")" , "{" , { switch-arm } , "}" ;
+                                                           (* E1:cases enum-switch-expr, switch-expr *)
+
+(*§6.1*) new-expr     = "new" , type-ref , "(" , [ argument-list ] , ")" ;
+                                                           (* E1:parser/ExpressionParser.java parseNewExpression *)
+```
+
+**Line-sensitive observed legacy rule (PROPOSED NORMATIVE RULE).** A trailing lambda
+block is attached only when its `{` starts on the **same line** as the token
+closing the preceding call. `[E1:parser/ExpressionParser.java
+trailingLambdaSameLine]` This is the single place where the legacy grammar
+depends on line structure beyond statement separation; a line-insensitive
+grammar would silently re-interpret existing programs.
+
+---
+
+## 4. Deliberately absent productions
+
+These are **not** in the grammar. Their absence is a finding, not an omission.
+
+| Absent | Why | Owner |
+|---|---|---|
+| Triple-quoted / raw / multiline strings | The legacy lexer recognises `"""` only to reject it (`LEX008`) | S8 |
+| String interpolation | Explicitly absent per the `LEX008` message; concatenation is `+` | S8 |
+| Bitwise complement `~` | Not in the legacy token set; lexes as `LEX005` | S7 |
+| Binary, octal, digit-separator and hex-float literals | Not produced by the legacy lexer | S7 |
+| `fun` / `fn` / `func` declarations | Reserved-invalid by design (`SG-001`) | settled |
+| Package/import wildcards, aliases, static imports | Not observed; the legacy parser reads a plain qualified name | S9 |
+| An ownership / borrowing / lifetime syntax | Not evidenced anywhere in the legacy surface | S16 |
+| Generics declarations and bounds syntax | Only *use* is evidenced; the declaration form is not derived here | S1 |
+
+---
+
+## 5. Provisional productions register
+
+Directive 002-R1 §5 requires, for every provisional production: the exact
+unresolved dependency, whether **recognition** is separable from **semantic
+acceptance**, whether the lexer/parser can implement it independently, and what
+evidence would close it. That classification is
+`docs/spec/grammar-consistency-report.md` §4; this table is its index.
+
+**Recognition is separable for every production below except where stated.** A
+production is *recognised* by the parser regardless of whether its semantics are
+settled; the semantic stage then **gates** the unsupported operation
+(`docs/spec/implementation-gates.md` §3.1–3.2). No production below requires the
+parser to guess.
+
+| Production | Unresolved dependency | Recognition separable? | Record | Status |
+|---|---|---|---|---|
+| `package-decl`, `import-decl` | Optionality, placement, wildcards, aliases | Yes | S9 | **OPEN** |
+| `test-decl`, `application-decl`, `infra-decl` | Outside the corpus; semantics unknown | Yes | S10 | **OPEN** |
+| `extern-decl`, `foreign-module-decl` | FFI semantics unknown | Yes | S10 | **OPEN** |
+| `entity-decl` | Keyword reserved; semantics unknown | Yes | S10 | **OPEN** |
+| `annotation` | Vocabulary and semantics unknown | Yes | S10 | **OPEN** |
+| `modifier` combinations | Legal combinations unknown | Yes | S10 | **OPEN** |
+| `type-ref` with nested arguments | **Verified defect**, not a missing rule | Yes | S1 | **OPEN** (gated) |
+| `type-ref` `?` semantics | Conversion rules beyond `T → T?` | Yes | S2 | **OPEN** (gated) |
+| `parameter` type optionality, default return type | Not evidenced | Yes | S1 | **OPEN** |
+| `for-stmt` three-clause form | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
+| `switch-arm` exhaustiveness, fallthrough, labelled `break`/`continue` | Not evidenced | Yes | S5 | **OPEN** (gated) |
+| `if-expr` | Parser-evidenced, corpus-unevidenced | Yes | S5 | **OPEN** |
+| `array-literal`, array indexing details | Not exercised by the corpus | Yes | S9 | **OPEN** |
+| Identifier class set, normalisation, confusables | Combining marks; normalisation policy | Yes | S13 | **PARTLY CLOSED** — letters, `_`, `$` verified by probe |
+| Trivia and terminator normalisation | Formatter/LSP policy | Yes (CST layer) | S14 | **OPEN** |
+| Feature-gate syntax | — | — | S15 | **CLOSED** — `implementation-gates.md` §3.2 |
+| ~~`assignment-expr` associativity~~ | — | — | S11 | **CLOSED** — assignment is a statement (`SEM027`), so associativity does not exist |
+| ~~`nested-function-decl` capture~~ | Intent only | Yes | S11 | **CLOSED** — capture is rejected (`SEM011`); *intent* remains OPEN |
+| ~~`expression` evaluation order~~ | — | — | S11 | **CLOSED** — measured left-to-right at every position |
+
+Struck-through rows are retained deliberately: a register that silently deletes
+a resolved question loses the record that it was ever asked.
+
+---
+
+## 6. Evidence index
+
+| Grammar area | Primary evidence |
+|---|---|
+| Layout, comments, BOM, terminators, identifiers, literals, operators | `parser/Lexer.java` (`tokenize`, `readString`, `readChar`, `readEscape`, `readUnicodeEscape`, `readNumber`, `readIdentifier`, `readOperatorOrDelimiter`, `skipLineComment`, `skipBlockComment`, `skipTripleQuoted`) |
+| Token vocabulary | `TokenType.java` |
+| Keyword table, reserved-invalid set | `lang/KofKeywords.java` |
+| Compilation unit and top-level dispatch | `parser/Parser.java` (`parse`, `parseTestDeclaration`, `parseApplicationDeclaration`, `parseInfraDeclaration`, `parseFunctionDeclaration`, `parseExternDeclaration`, `parseForeignModule`, `parsePackage`, `parseImports`) |
+| Statements | `parser/StatementParser.java` |
+| Expressions, precedence | `parser/ExpressionParser.java` |
+| Types | `parser/TypeParser.java` |
+| Type declarations, members | `parser/TypeDeclarations.java`, `parser/ClassMemberParser.java`, `parser/AnnotationParser.java` |
+| Lambdas | `parser/LambdaParser.java` |
+| Executed behaviour | `tests/golden/<case>/` — 74 cases, 222/222 executed checks (jvm/js/script) |

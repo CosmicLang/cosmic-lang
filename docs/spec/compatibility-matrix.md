@@ -71,9 +71,14 @@ limitation, not a defect claim).
 7. **Numeric semantics** — overflow behavior (`signed-division-overflow`
    case exists), float formatting (`double-formatting` case exists); the
    normative reference must be pinned per operation.
-8. **Strings** — escape and indent semantics (`strings-escape-indent` case),
-   triple-quoted form (lexer supports it; golden corpus not yet analyzed for
-   it).
+8. **Strings** — escape and indent semantics (`strings-escape-indent` case).
+   **CORRECTED (Directive 002):** this row previously claimed "triple-quoted
+   form (lexer supports it)". That was **wrong**. The legacy lexer recognises
+   `"""` **only to reject it** with `LEX008`, stating that Kof has no
+   raw/multiline string literal and no interpolation. The lexer also
+   **silently reinterprets an unrecognised escape** as the escaped character.
+   Both are resolved in `docs/spec/decisions/S8-string-semantics.md`, and the
+   verified escape set is in `docs/spec/language-spec.md` §2.4.
 9. **Standard library boundary** — what is language vs runtime (`math.*`,
    `json.*`, `listOf`, …); the legacy project itself ships boundary checks
    (`check_stdlib_boundary.sh`), i.e. this split was already recognized as

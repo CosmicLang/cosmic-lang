@@ -13,6 +13,9 @@ Findings are tagged: **E1** directly verified fact · **E2** evidence-supported 
 
 ---
 
+> **Path convention.** A path prefixed `cosmcc:` refers to the **legacy repository** `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
+
+
 ## 1. Scope and method
 
 1. Cloned `cosmcc` into an isolated temporary directory and checked out the reference SHA. The original repository was used read-only (`git clone` + `git checkout` only).
@@ -66,7 +69,7 @@ Build facts (E1): `maven.compiler.release=25`; reproducible-jar property `projec
 * Hand-written lexer (`parser/Lexer.java`, 449 lines): `//` and `/* */` comments, triple-quoted strings, char literals, a leading UTF-8 BOM is tolerated, CRLF and lone CR count as line breaks, identifiers may start with `_` or `$`.
 * Hand-written parser (`parser/Parser.java` + 11 cooperating sub-parsers). No parser generator.
 * Keywords (`lang/KofKeywords.java`) are Java-like (`class`, `interface`, `record`, `enum`, `entity`, `extern`, `static`, `val`, `var`, `spawn`, `await`, …) **plus the reserved-but-invalid tokens `fun`/`fn`/`func`** — reserved deliberately so they cannot return as identifiers (documented in-source).
-* AST: ~55 record types implementing non-sealed marker interfaces (`AstNode`, `ExpressionNode`, `StatementNode`, `MemberNode`, `TypeDeclarationNode`). `AstNodes.java` contains only orphan Javadoc — the file-name claim in `docs/architecture/compiler-architecture.md` is stale (E1).
+* AST: ~55 record types implementing non-sealed marker interfaces (`AstNode`, `ExpressionNode`, `StatementNode`, `MemberNode`, `TypeDeclarationNode`). `AstNodes.java` contains only orphan Javadoc — the file-name claim in `cosmcc:docs/architecture/compiler-architecture.md` is stale (E1).
 * No typed AST: expression types are resolved in analyzer-side maps and re-inferred during lowering (E2, consistent with the doc's own §8 item 4).
 
 ### 3.4 IR and optimization (E1)
@@ -91,7 +94,7 @@ Build facts (E1): `maven.compiler.release=25`; reproducible-jar property `projec
 * **JS** (`js/JsBackend`, 66 files): stack IR → JS IR tree → ES2022 ESM + `kof-runtime.mjs` + source maps; executed in-process by a GraalJS host.
 * **WASM/WASI** (`wasm/WasmBackend`, 14 files): binary wasm for a scalar subset with documented honest refusals (`WASM001`/`WASM002`). The Javadoc in `Target.java` still claims "SEM EMISSÃO AINDA" while tests assert emission since 15.2/15.3 — stale docs (E1).
 * **Android**: JVM backend with `AndroidProjectWriter`; **SCRIPT**: direct IR interpretation (`KofInterpreter`), no artifact; **vk/GPU**: FFI stubs to `libvkchain` (x86-64) plus JVM FFN path — not a backend implementation (E1).
-* ABI: JVM mapping to `java/lang/String`, `ArrayList`, `HashSet`, `Map`, `LinkedBlockingQueue`, `CompletableFuture` (E1, `JvmTypeMapper`); native runtime ABI documented in `docs/runtime/RUNTIME_ABI.md`; FFI surface in `docs/ffi-abi-structs.md` with per-backend status codes.
+* ABI: JVM mapping to `java/lang/String`, `ArrayList`, `HashSet`, `Map`, `LinkedBlockingQueue`, `CompletableFuture` (E1, `JvmTypeMapper`); native runtime ABI documented in `cosmcc:docs/runtime/RUNTIME_ABI.md`; FFI surface in `cosmcc:docs/ffi-abi-structs.md` with per-backend status codes.
 
 ### 3.7 Language surface files and project files (E1)
 
@@ -198,10 +201,10 @@ mvn -B -ntp test -pl kof-script …
 Only behaviors verified first-hand are listed; maintainer-documented open bugs are quoted as such and not re-verified.
 
 1. `kof --version` prints `unknown: --version` + usage and **exits 0** (executed; §3.8). Unknown flags should not look like success.
-2. Version stamps disagree: `VERSION` = `0.6.5` vs `README.md` "0.6.1" vs `docs/status.md`/`docs/backend-parity.md` "0.6.4".
+2. Version stamps disagree: `VERSION` = `0.6.5` vs `README.md` "0.6.1" vs `cosmcc:docs/status.md`/`cosmcc:docs/backend-parity.md` "0.6.4".
 3. Architecture docs drift from code: `compiler-architecture.md` claims a sealed `AstNodes.java` and "30 sealed IR ops" (reality: Javadoc-only file; 37 records, not sealed), claims `WildcardType` is never constructed (it is), and `Target.java` still says WASM emits nothing (it emits).
 4. Committed build artifacts at the repository root (§3.9).
-5. Known open defects in the maintainers' own ledger at this SHA (`docs/status.md`, 13/10/2026): §705 native x86 hang (AVIF slice, OPEN), §706 `Box<Box<Int>>` nested-generics mis-resolution (OPEN), §703/§704 JS loop/return miscompiles (reverted/OPEN). These are **not** independent findings of this audit; they are the project's documented state and matter to the compatibility baseline because the new compiler must eventually decide how to treat them.
+5. Known open defects in the maintainers' own ledger at this SHA (`cosmcc:docs/status.md`, 13/10/2026): §705 native x86 hang (AVIF slice, OPEN), §706 `Box<Box<Int>>` nested-generics mis-resolution (OPEN), §703/§704 JS loop/return miscompiles (reverted/OPEN). These are **not** independent findings of this audit; they are the project's documented state and matter to the compatibility baseline because the new compiler must eventually decide how to treat them.
 
 ---
 

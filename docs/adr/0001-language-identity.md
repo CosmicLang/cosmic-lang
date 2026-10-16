@@ -3,9 +3,10 @@
 | | |
 |---|---|
 | **Status** | **Proposed** — awaiting owner approval. Nothing in this ADR is final except where marked *(decided)*. |
-| **Date** | 2026-10-16 |
+| **Date** | 2026-10-16 (round 1) · 2026-10-16 (round 2, Directive 002) |
 | **Deciders** | Project owner (final authority); engineering (author of the proposal) |
-| **Related** | `docs/audits/phase-0-baseline.md` §3.7/§6, `docs/audits/phase-0-design-conformance.md` §3, `docs/audits/phase-0-licensing-matrix.md`, `docs/spec/compatibility-matrix.md`, `docs/spec/compatibility-policy.md` |
+| **Related** | `docs/audits/phase-0-baseline.md` §3.7/§6, `docs/audits/phase-0-design-conformance.md` §3, `docs/audits/phase-0-licensing-matrix.md`, `docs/spec/compatibility-matrix.md`, `docs/spec/compatibility-policy.md`, `docs/spec/extension-assessment.md`, ADR-0002, ADR-0003, ADR-0004, ADR-0005 |
+| **Superseded in part** | §2.2 (extension) is developed further by **ADR-0002**; §2.4 (project files) and the `cosmic-std` gap are developed by **ADR-0003**. This ADR remains the parent identity record. |
 
 ---
 
@@ -66,17 +67,37 @@ authenticated search beyond the session) and trademark/registry queries.
   backups, Autodesk 3ds Max, CASL compiled programs, C++ precompiled headers
   via Micro Focus). Editors and OS "open with" heuristics often fall back to
   `*.csm` handling; this is a **tooling risk, not a claimed collision**.
-* No existing editor grammar or language tooling claims `.csmx`.
+* ~~No existing editor grammar or language tooling claims `.csmx`.~~
+  **CORRECTED in round 2 — this finding was wrong.**
 
-**Conclusion:** `.csmx` appears usable but **worldwide uniqueness is not
-established** — matching the directive's own wording. Residual risk is low
-for the format registry view and moderate for tooling heuristics near `.csm`.
+> **Round-2 correction (Directive 002, 2026-10-16).** The limitation above
+> ("exhaustive GitHub code search … not performed") has now been closed, and it
+> **changed the conclusion**. Authenticated GitHub code search
+> (`extension:csmx`) returns 10 hits, dominated by
+> **`akeit0/csharp-markup-extension`** — an MIT-licensed C# project using
+> `.csmx` as a **programming-language source extension**, shipping a
+> **language server**. It is a stale PoC (last push 2026-06-15, 16 stars) and
+> there is no file-format-registry entry for either project, but the claim that
+> "no existing language tooling claims `.csmx`" is **false**. The full record,
+> including the search coverage, the control measurements (`.cosmic`: 58 hits,
+> none a language claim; `.kf`: 7,056 hits) and the MIME findings, is in
+> `docs/spec/extension-assessment.md`; the decision is developed in
+> **ADR-0002**.
 
-**Recommendation:** keep `.csmx` proposed; commission a tree-sitter grammar
-and editor associations in the phase that introduces the lexer (they also
-mitigate the heuristic risk, since tooling creates the association). If the
-owner prefers a stronger signal, alternatives to evaluate at approval time:
-`.cosmic`, `.csm` (rejected: heavily used), `.cx`.
+**Conclusion (revised):** `.csmx` **worldwide uniqueness is not established**,
+and round 2 found a real competing language claim. Residual risk is **low for
+the format-registry view** and **moderate for the tooling view** (editor and
+language-server association) — not "low" as round 1 assessed. Round 1's own
+recommendation to evaluate alternatives at approval time stands and is now
+material: **`.cosmic`** has more raw file occupation but **no competing
+language claim**, which is the property that actually matters for tooling.
+
+**Recommendation:** keep `.csmx` **proposed**; close the two named search gaps
+(direct extension-database query, package-registry query) before acceptance;
+choose between `.csmx` and `.cosmic` on a **stated criterion**; `.csm` remains
+rejected. Because the parser is **extension-independent**
+(`docs/spec/compatibility-policy.md` §3 rule 1), a wrong choice costs a rename,
+not a migration — so the investigation should be time-boxed. See ADR-0002.
 
 ## 4. Compatibility policy (proposed)
 
@@ -104,15 +125,28 @@ owner prefers a stronger signal, alternatives to evaluate at approval time:
   chosen by this ADR or by that document.**
 * Owner confirmation of language/compiler/binary names.
 * A per-construct compatibility analysis of `.kf` semantics against the
-  legacy suite (the matrix now contains the seed).
+  legacy suite (the matrix now contains the seed; the evidenced construct set
+  is recorded as a PROPOSED NORMATIVE RULE in `docs/spec/language-spec.md` and `docs/spec/grammar.ebnf`; no owner acceptance is implied).
 * A decision on `.ptkf` and `.ks` handling in the new toolchain — the proposed
-  per-format framework is in `docs/spec/compatibility-policy.md` §2.
-* Approval of the extension after the lexer-phase tooling work in §3, and after
-  the exhaustive uniqueness search the design report requires (page 12), which
-  §3 records as **not yet performed**.
-* A `cosmic-std` / stdlib naming decision: the design report (page 3) names
-  `cosmic-std`, and this ADR does not yet cover it
-  (`docs/audits/phase-0-design-conformance.md`, row P3-1).
+  per-format framework is in `docs/spec/compatibility-policy.md` §2, with
+  decision records `S3-portukof.md` and `S4-kofscript.md`.
+* **Approval of the extension** — now owned by **ADR-0002**. Round 2 closed the
+  code-search gap and found a competing language claim
+  (`docs/spec/extension-assessment.md`); two search gaps remain open (a direct
+  extension-database query and a package-registry query).
+* **A `cosmic-std` / stdlib naming decision** — now owned by **ADR-0003**,
+  which reconciles the design report's two conflicting namings (page 3's
+  `cosmic-std` versus page 17's `cosmic.core`/`cosmic.io`/`cosmic.time`/
+  `cosmic.net`). This closes conformance-audit row P3-1.
+* **Per-module ownership** — now owned by **ADR-0004**, which also proposes the
+  crate layering and closes conformance-audit rows P13-2 and P19-3.
+* **The memory strategy** — owned by **ADR-0005**, whose decision is
+  deliberately **withheld** pending the study the design report requires
+  (page 17).
+
+**Of these, four are owner acts that engineering cannot perform:** the licence,
+the names, the extension, and the ownership/memory decisions. The remaining
+items are engineering deliverables that are now complete.
 
 ## 6. Consequences
 
