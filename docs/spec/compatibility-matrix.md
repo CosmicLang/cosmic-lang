@@ -5,6 +5,7 @@
 | **Status** | Working document — Phase 0 seed. Every row cites evidence; absence of a row means *not yet analyzed*, never "unsupported". |
 | **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
 | **Executed baseline** | 2026-10-16, macOS host, isolated checkout — see `docs/audits/phase-0-baseline.md` §5 |
+| **Related** | `docs/spec/compatibility-policy.md` (per-format decision proposal), `docs/audits/phase-0-design-conformance.md` §3 (verified legacy facts) |
 | **Rule** | This document is **not a grammar**. Constructs are recorded only with a source-example path; semantics are recorded only when witnessed by an executed check or explicit legacy source. |
 
 Legend for **Legacy evidence** — `G` golden corpus case (executed for the

@@ -5,7 +5,7 @@
 | **Status** | **Proposed** — awaiting owner approval. Nothing in this ADR is final except where marked *(decided)*. |
 | **Date** | 2026-10-16 |
 | **Deciders** | Project owner (final authority); engineering (author of the proposal) |
-| **Related** | `docs/audits/phase-0-baseline.md` §3.7/§6, `docs/spec/compatibility-matrix.md` |
+| **Related** | `docs/audits/phase-0-baseline.md` §3.7/§6, `docs/audits/phase-0-design-conformance.md` §3, `docs/audits/phase-0-licensing-matrix.md`, `docs/spec/compatibility-matrix.md`, `docs/spec/compatibility-policy.md` |
 
 ---
 
@@ -99,12 +99,20 @@ owner prefers a stronger signal, alternatives to evaluate at approval time:
 ## 5. Work required before this ADR can move from Proposed to Accepted
 
 * Owner decision on the repository license (independent of legacy GPL code
-  vs GPL-3.0 inheritance).
+  vs GPL-3.0 inheritance) — the options, obligations and open legal questions
+  are laid out in `docs/audits/phase-0-licensing-matrix.md`. **No licence is
+  chosen by this ADR or by that document.**
 * Owner confirmation of language/compiler/binary names.
 * A per-construct compatibility analysis of `.kf` semantics against the
   legacy suite (the matrix now contains the seed).
-* A decision on `.ptkf` and `.ks` handling in the new toolchain.
-* Approval of the extension after the lexer-phase tooling work in §3.
+* A decision on `.ptkf` and `.ks` handling in the new toolchain — the proposed
+  per-format framework is in `docs/spec/compatibility-policy.md` §2.
+* Approval of the extension after the lexer-phase tooling work in §3, and after
+  the exhaustive uniqueness search the design report requires (page 12), which
+  §3 records as **not yet performed**.
+* A `cosmic-std` / stdlib naming decision: the design report (page 3) names
+  `cosmic-std`, and this ADR does not yet cover it
+  (`docs/audits/phase-0-design-conformance.md`, row P3-1).
 
 ## 6. Consequences
 

@@ -22,6 +22,8 @@ Findings are tagged: **E1** directly verified fact · **E2** evidence-supported 
 
 **Note on the design report:** the 20-page document "Cosmic-Lang — Projeto do Compilador Rust" referenced by the directive was **not provided in the execution session**. The architecture planning in this repository therefore follows the pipeline and component list stated in directive §5, and this audit never cites the report as evidence. This limitation is restated in §8.
 
+> **Update (Directive 001-R1, 2026-10-16):** the design report has since been supplied and read in full. The gap is closed by `docs/audits/phase-0-design-conformance.md`, which maps all 20 pages to the implementation. Two consequences for this audit: (a) the report's factual claims were re-derived from the legacy source, and six of them are **stale** (Java release, ASM version, IR operation count, and the Lexer/Parser/Sema line counts) — see that document's §3; (b) this audit's own figures (`maven.compiler.release=25`, 37 IR operation records) are confirmed correct, because they came from inspected code rather than from the legacy documentation. Nothing in §3–§9 below changes.
+
 ---
 
 ## 2. Execution environment (E1)
