@@ -1,0 +1,29 @@
+# Cosmic-Lang compiler workspace (cosmcc-rs).
+#
+# Phase 0 — Foundation: only components with a concrete contract, tests and
+# justified responsibilities exist. See docs/architecture/compiler-pipeline.md
+# for what is and is not implemented, and docs/development/toolchain-policy.md
+# for the Rust toolchain policy.
+[workspace]
+resolver = "3"
+members = [
+    "crates/cosmic-cli",
+    "crates/cosmic-diagnostics",
+    "crates/cosmic-source",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+repository = "https://github.com/CosmicLang/cosmic-lang"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+dbg_macro = "deny"
+todo = "deny"
+unimplemented = "deny"
