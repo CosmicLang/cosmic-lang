@@ -47,7 +47,7 @@ limitation, not a defect claim).
 | `.kof` | accepted alias by CLI discovery | S (`KofCliSupport.isKofSource`) | recorded; decision pending |
 | `.ptkf` | PortuKof — Portuguese keyword surface (4 files) | S (`D-PORTUKOF` profile) | recorded; decision pending |
 | `.ks` | KofScript — statement scripts wrapped into `main()` for the pure-Kof frontend | S (`KofScript.wrapPureKof`) | recorded; semantic analysis required |
-| `.csmx` | **proposed** new primary extension | ADR-0001 §3 (investigated, not yet approved) | proposed only |
+| `.cmic` | **owner-selected** new primary extension (2026-10-16) | ADR-0002 §4.1 (`extension:cmic`: zero indexed matches; registry check: no entry; historical `.csmx`/`.cosmic` investigations retained in `docs/spec/extension-assessment.md`) | primary; MIME + tooling pending |
 | `kof.toml` | project config; forgiving INI-subset parser; unknown keys → warning | S (`KofProjectConfig`) + `examples/fullstack/kof.toml` | `Cosmic.toml` proposed, **not implemented** |
 | `kofdeps.lock` | generated dependency lock (gitignored); `kof.lock` does not exist | S | `Cosmic.lock` proposed, **not implemented** |
 

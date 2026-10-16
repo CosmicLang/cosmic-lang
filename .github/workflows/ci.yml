@@ -37,6 +37,14 @@ jobs:
         # mutable ref.
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Specification consistency
+        # Documentation-only check; no Rust toolchain is required, so it runs
+        # first and fails fast. Verifies the Phase 1 specification documents:
+        # grammar consistency, the decision register, cross-references and the
+        # 117-production evidence map. See docs/spec/grammar-consistency-report.md
+        # and docs/spec/grammar-evidence-map.md.
+        run: python3 tools/spec-consistency.py
+
       - name: Install Rust toolchain
         # Version pinned here as well as in rust-toolchain.toml so a workflow
         # edit cannot drift from the documented policy

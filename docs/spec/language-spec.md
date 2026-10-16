@@ -6,6 +6,7 @@
 | **Phase** | 1 (formal specification) |
 | **Directive** | ENGINEERING DIRECTIVE 002, deliverable D1 |
 | **Legacy reference** | `CosmicLang/cosmcc` @ `284358f43db885ccd8b52b11f897ac0defec10de` (v0.6.5) |
+| **Source extension** | `.cmic` — selected by the project owner (2026-10-16, recorded in `docs/adr/0002-source-extension.md`). The MIME type and editor tooling remain separate, undecided matters; the parser is extension-independent (`docs/spec/compatibility-policy.md` §3) |
 | **Evidence basis** | Legacy source inspection at the frozen SHA (read-only) and the executed golden corpus recorded in `docs/audits/phase-0-baseline.md` §5 |
 | **Companion documents** | `docs/spec/grammar.ebnf` (D2), `docs/spec/typing-contracts.md` (D3), `docs/spec/decisions/` (D4), `docs/spec/compatibility-policy.md` (D5), `docs/spec/diagnostic-codes.md` (D9) |
 | **Provenance rule** | No legacy implementation code, documentation prose or test fixture is reproduced here. Behaviour and facts are cited by file path and SHA; every example is written for this document. See `docs/audits/phase-0-licensing-matrix.md` §4. |
@@ -21,8 +22,6 @@
 
 Every claim carries two orthogonal tags: an **evidence** tag (how we know) and a
 **status** tag (what the claim is worth as a rule).
-
-### 0.1 Evidence tags
 
 | Tag | Meaning |
 |---|---|
@@ -362,12 +361,21 @@ The verified keyword set (E1) is:
   `StatementParser.java` `parseNestedFunction`.
 * **[OPEN]** Whether nested functions capture enclosing locals, and how
   (record S11).
-* **[VERIFIED LEGACY BEHAVIOR]** Parameters carry a type: `name: Type`. Evidence: the lambda
-  parameter form `(x: Int) -> …` in corpus case `functions`, and
-  `LambdaParser.parseLambdaBlockParams`.
-* **[OPEN]** Whether parameter types may be omitted in a function
-  declaration, and what the return type defaults to (record S1, which owns the
-  inference boundary).
+* **[VERIFIED LEGACY BEHAVIOR]** Parameters carry a type in **either of two orders**
+  the parser accepts: `name: Type` — idiomatic in lambdas, `(x: Int) -> …`,
+  corpus case `functions` — and `Type name` — the order used by every
+  parameterised declaration in the corpus (`functions`, `classes`
+  constructors). Either order may carry a default value:
+  `String fallback = "unknown"` (`string-switch-defaults`: five defaults
+  exercised, two call sites omitting them). Evidence:
+  `TypeParser.parseFormalParameter` (one-token lookahead: an identifier directly
+  followed by `:` selects `name: Type`); grammar finding F4 (corrected in
+  002-R3).
+* **[OPEN]** Default-expression **evaluation** semantics (evaluation point, scope,
+  interaction with inference) are not evidenced (record S1 owns the
+  parameter/inference boundary). Parameter types may not be omitted: whether
+  omission is ever legal, and what the return type defaults to, remain
+  unevidenced (record S1).
 
 ### 4.4 Type declarations
 
@@ -402,22 +410,42 @@ The verified keyword set (E1) is:
 
 * **[VERIFIED LEGACY BEHAVIOR]** Verified statement forms (E1, `StatementParser.java`):
   block `{ … }`; `return [expr]`; `if`/`else`; `while`; `do`/`while`; `for`;
-  `throw`; `try`/`catch`/`finally`; `switch` with `case` labels; `var`/`val`
-  declarations; nested function declarations; expression statements.
-* **[VERIFIED LEGACY BEHAVIOR]** `for` supports at least the `for (var x in collection)` form.
-  Evidence: corpus cases `interfaces`, `list-higher-order`.
+  `throw`; `break`; `continue`; `try`/`catch`/`finally`; `switch` with `case`
+  labels; `var`/`val` declarations; nested function declarations; expression
+  statements.
+* **[VERIFIED LEGACY BEHAVIOR]** `for` supports the `for (var x in collection)` form
+  (corpus cases `interfaces`, `list-higher-order`) and the three-clause form
+  `for (init; cond; step)` (corpus case `loops-control`, executed). Finding F3
+  corrected an annotation that had called the three-clause form
+  corpus-unevidenced.
+* **[VERIFIED LEGACY BEHAVIOR]** `break` and `continue` are **unlabelled** statements
+  (`TokenType.BREAK`/`CONTINUE`; `StatementParser.java` advances and then expects
+  only the separator — no label form). Semantics read from the executed corpus:
+  `break` inside a `switch` arm exits the **switch**, not the enclosing loop
+  (`switch-break-in-loop` prints 208/21, which is only derivable if the loop
+  continues after each arm); `continue` proceeds to the next loop iteration
+  (`loops-control` prints 9/ac). Grammar finding F1 (corrected in 002-R3); any
+  broader control-flow rule remains owned by record S5.
 * **[VERIFIED LEGACY BEHAVIOR]** `catch` binds a typed variable: `catch (String e)`. Evidence:
   corpus case `exceptions`; `throw "boom"` throws a **string**, so throwables
   are not restricted to a class hierarchy.
-* **[VERIFIED LEGACY BEHAVIOR]** `switch` supports both statement and expression forms with
-  `case <pattern-or-value> -> <result>` arms, and arms may carry guards.
-  Evidence: `StatementParser.parseSwitchCasePatternOrValue`,
-  `parseGuardIfPresent`, `ExpressionParser.parseSwitchExpression`; corpus cases
-  `enum-switch-expr`, `switch-expr`, `switch-break-in-loop`,
-  `switch-defaults`, `sealed-switch`.
+* **[VERIFIED LEGACY BEHAVIOR]** `switch` supports both statement and expression forms:
+  statement switches use `case <pattern-or-value> :` arms with statement lists
+  and `default :`; expression switches use `case <pattern-or-value> -> <expression>`
+  arms with `default ->` also evidenced, and a block body is rejected there
+  (`PARSE094`). Arms may carry guards (`case … if cond :` / `case … if cond ->`).
+  No fallthrough was observed (`switch-expr` output stops at the matched arm).
+  Evidence: `StatementParser.parseSwitchStatement` (PARSE073/PARSE074),
+  `StatementParser.parseSwitchCasePatternOrValue`,
+  `parseGuardIfPresent`, `ExpressionParser.parseSwitchExpression`
+  (PARSE076/PARSE077); corpus cases `enum-switch-expr`, `switch-expr`,
+  `switch-break-in-loop`, `string-switch-defaults`, `sealed-switch`.
+  Grammar finding F2 (corrected in 002-R3). Whether the observed no-fallthrough
+  behavior becomes a normative rule remains owned by record S5.
 * **[OPEN]** Exhaustiveness requirements for `switch` over sealed types
   (record S5).
-* **[OPEN]** Whether `break`/`continue` may carry labels (record S5).
+* **[OPEN]** Whether `break`/`continue` may carry labels (record S5). Labelled
+  forms are NOT VERIFIED and must be refused until this is decided.
 
 ---
 

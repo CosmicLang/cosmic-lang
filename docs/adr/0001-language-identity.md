@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Proposed** — awaiting owner approval. Nothing in this ADR is final except where marked *(decided)*. |
-| **Date** | 2026-10-16 (round 1) · 2026-10-16 (round 2, Directive 002) |
+| **Status** | **Proposed** — awaiting owner approval. Nothing in this ADR is final except where marked *(decided)*; the primary source extension is one such owner decision. |
+| **Date** | 2026-10-16 (round 1) · 2026-10-16 (round 2, Directive 002) · 2026-10-16 (post-merge Directive 002-R2: owner extension decision recorded) |
 | **Deciders** | Project owner (final authority); engineering (author of the proposal) |
 | **Related** | `docs/audits/phase-0-baseline.md` §3.7/§6, `docs/audits/phase-0-design-conformance.md` §3, `docs/audits/phase-0-licensing-matrix.md`, `docs/spec/compatibility-matrix.md`, `docs/spec/compatibility-policy.md`, `docs/spec/extension-assessment.md`, ADR-0002, ADR-0003, ADR-0004, ADR-0005 |
 | **Superseded in part** | §2.2 (extension) is developed further by **ADR-0002**; §2.4 (project files) and the `cosmic-std` gap are developed by **ADR-0003**. This ADR remains the parent identity record. |
@@ -31,8 +31,11 @@ must not be abandoned without a compatibility analysis.
 
 1. **Language name:** Cosmic-Lang. **Compiler:** `cosmcc-rs`. **Executable:**
    `cosmic`. *(follows the directive; adopted by the Phase 0 workspace)*
-2. **Primary source extension:** `.csmx`, **proposed** pending the collision
-   investigation in §3 and owner approval.
+2. **Primary source extension:** `.cmic` — *(decided)* selected by the project
+   owner on 2026-10-16 (post-merge Directive 002-R2) and recorded in **ADR-0002**
+   §4 with the collision evidence. The `.csmx`/`.cosmic` investigations in §3 and
+   `docs/spec/extension-assessment.md` are retained **as historical evidence**.
+   The MIME type and editor integration remain separate, undecided matters.
 3. **Legacy compatibility:** `.kf` (Kof), `.kof`, `.ptkf` (PortuKof) and
    `.ks` (KofScript) remain *recognized legacy formats* for the purpose of a
    future compatibility analysis. **No decision is taken now** on whether,
@@ -50,7 +53,7 @@ must not be abandoned without a compatibility analysis.
    no code translated from it (see audit §6). This blocks any decision that
    would require copying legacy implementation code.
 
-## 3. `.csmx` collision investigation (performed 2026-10-16)
+## 3. `.csmx` collision investigation (rounds 1–2, 2026-10-16 — historical; owner selected `.cmic`)
 
 **Method:** web searches against general file-extension databases and editor-
 tooling results (two independent queries), plus direct reasoning from the
@@ -99,6 +102,16 @@ rejected. Because the parser is **extension-independent**
 (`docs/spec/compatibility-policy.md` §3 rule 1), a wrong choice costs a rename,
 not a migration — so the investigation should be time-boxed. See ADR-0002.
 
+> **Owner decision (post-merge Directive 002-R2, 2026-10-16).** The owner
+> selected **`.cmic`** as the primary source extension; the decision and its
+> evidence record are in **ADR-0002** §4. The round-1 and round-2 investigations
+> above remain the historical record of why `.csmx` was not accepted and why
+> `.cosmic` was the leading alternative. The selection carries the limitations
+> the investigations recorded: it rests on indexed code search and public
+> sources, **not** on a worldwide-uniqueness claim, and it does not publish
+> anything — no MIME registration, no editor association. Those remain separate
+> matters.
+
 ## 4. Compatibility policy (proposed)
 
 1. The **behavioral contract** is the legacy language as evidenced by the
@@ -130,10 +143,11 @@ not a migration — so the investigation should be time-boxed. See ADR-0002.
 * A decision on `.ptkf` and `.ks` handling in the new toolchain — the proposed
   per-format framework is in `docs/spec/compatibility-policy.md` §2, with
   decision records `S3-portukof.md` and `S4-kofscript.md`.
-* **Approval of the extension** — now owned by **ADR-0002**. Round 2 closed the
-  code-search gap and found a competing language claim
-  (`docs/spec/extension-assessment.md`); two search gaps remain open (a direct
-  extension-database query and a package-registry query).
+* **Approval of the extension** — **decided by the owner: `.cmic`**
+  (2026-10-16, ADR-0002 §4). A direct extension-database check was performed
+  during R2 (FileInfo: no entry for `.cmic`); a package-registry query remains
+  open, and MIME type and editor/registry publication are separate matters that
+  this ADR does not decide.
 * **A `cosmic-std` / stdlib naming decision** — now owned by **ADR-0003**,
   which reconciles the design report's two conflicting namings (page 3's
   `cosmic-std` versus page 17's `cosmic.core`/`cosmic.io`/`cosmic.time`/
@@ -144,15 +158,25 @@ not a migration — so the investigation should be time-boxed. See ADR-0002.
   deliberately **withheld** pending the study the design report requires
   (page 17).
 
-**Of these, four are owner acts that engineering cannot perform:** the licence,
-the names, the extension, and the ownership/memory decisions. The remaining
-items are engineering deliverables that are now complete.
+**Of these, three remain owner acts that engineering cannot perform:** the
+licence, the names, and the ownership/memory decisions. The extension was an
+owner act and **has been performed** (`.cmic`, 2026-10-16); its MIME and
+publication follow-ups remain open. The remaining items are engineering
+deliverables that are now complete.
 
 ## 6. Consequences
 
 * Phase 0 code and docs already use the proposed names (`cosmic`,
   `cosmcc-rs`, `Cosmic-Lang`) — renaming is cheap now and expensive later;
   hence this ADR is requested at the earliest possible gate.
+* The owner selected `.cmic` as the primary source extension (2026-10-16).
+  Current normative documents and examples use it; historical `.csmx`/`.cosmic`
+  references are retained only where they document previous proposals and the
+  collision investigations. **The Rust crates are deliberately not modified**:
+  43 `.csmx` filename strings remain in test fixtures and doc/runtime examples
+  across `crates/cosmic-source`, `crates/cosmic-diagnostics` and
+  `crates/cosmic-cli`; updating them is Phase 2 implementation work, recorded
+  here so the extension-migration inventory is complete.
 * No compatibility claims are made anywhere until the matrix rows carrying
   evidence graduate from "verified in legacy run" to "verified in cosmcc-rs".
 * The workspace contains no `LICENSE` file and no legacy-derived code; this

@@ -1,10 +1,10 @@
-# Source-Extension Assessment (`.csmx`) — Collision Investigation, Round 2
+# Source-Extension Assessment (`.csmx`, `.cosmic`, `.cmic`) — Collision Investigations, Rounds 1–2, and the Owner Selection
 
 | | |
 |---|---|
-| **Status** | **Pending formal acceptance.** The extension remains **proposed**, not decided. |
+| **Status** | **Updated.** Rounds 1–2 are retained as the historical collision investigations. **Post-round update (2026-10-16): the owner selected `.cmic`** — see §9. The MIME type and editor/package checks remain NOT VERIFIED. |
 | **Phase** | 1 (directive §5) |
-| **Directive** | ENGINEERING DIRECTIVE 002 §5 |
+| **Directive** | ENGINEERING DIRECTIVE 002 §5 · 002-R2 (post-merge) §2/§7 |
 | **Predecessor** | `docs/adr/0001-language-identity.md` §3 (round 1, two generic web queries) |
 | **Search date** | 2026-10-16 |
 | **Verdict** | **Worldwide uniqueness is NOT established — and round 2 found a real collision that round 1 missed.** |
@@ -261,3 +261,37 @@ Remaining decision evidence: direct editor Marketplace/Open VSX extension
 manifest searches; direct package registry API searches; OS file association
 tests; another code forge; legal trademark review. These are bounded follow-ups,
 not conditions for treating absence of evidence as proof of uniqueness.
+
+---
+
+## 9. Post-round update — owner selection (post-merge Directive 002-R2, 2026-10-16)
+
+Rounds 1–2 above remain the **historical collision investigations** and are not
+rewritten. After the Phase 1 merge (PR #2, merge commit `c52c56d`), the owner
+selected the primary source extension:
+
+**The primary source extension is `.cmic`** (recorded in
+`docs/adr/0002-source-extension.md` §4.1; the normative documents, examples and
+compatibility tables are migrated in the same change).
+
+**Evidence re-verified for this selection:**
+
+| Channel | Result | Reading |
+|---|---|---|
+| GitHub authenticated code search, `extension:cmic` | **0** indexed matches | The only round-2 candidate with zero indexed occupation at decision time |
+| GitHub authenticated code search, `filename:.cmic` | **109** substring-artifact hits (`.cmic2`, `.cmico`, crawler-saved `*.cmic-holdings.co.jp.*` files, `constant.CMIC_*.html`) | Not files of a competing format; recorded as artifacts, **not** as "zero occupation" |
+| Direct extension-database query (FileInfo, `/extension/cmic`) | No entry (404) | Registry view clean at the one database queried |
+| General web search | Dominated by the **"CMiC" construction-ERP brand** | A discoverability consideration; not a format claim |
+
+**What remains NOT VERIFIED** (unchanged from §6): package-registry queries
+(direct API listings were not completed), direct editor Marketplace/Open VSX
+manifest enumeration, OS file-association tests, other code forges, legal
+trademark review. The selection therefore carries **no worldwide-uniqueness
+claim**; it is an indexed-search-based choice under the time-boxed criterion
+this document recommended.
+
+**MIME type:** `text/x-cosmic-lang` remains a provisional, unregistered
+convention; **not approved**, and no registration is performed.
+
+**Publication and editor integration:** not performed; separate matters for the
+phase that introduces the lexer and for release.

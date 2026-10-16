@@ -60,13 +60,16 @@ decision. JVM probes do not establish cross-target portability.
 
 ## Gate mapping
 
-The revised gates are proposals. They do not authorize Phase 2 or approve any language rule.
+The component gate framework (G1-L/G1-S/G1-T/G1-M/G1-R) was **accepted by the
+owner** in Directive 002-R3 (2026-10-16) and replaces the flat `G1b`. Acceptance
+of the framework approves no language rule and does not authorize Phase 2;
+S1–S18 remain individually authoritative.
 
 
 | Gate | Requirement | Covered by |
 |---|---|---|
 | **G1** | Grammar and specification evidence complete | D1, D2 |
-| **G1b (original, supersession PROPOSED)** | Flat all-decisions prerequisite is cyclic; use component entry gates G1-L/G1-S/G1-T/G1-M/G1-R upon owner acceptance | `docs/spec/implementation-gates.md` |
+| **G1b (superseded)** | Flat all-decisions prerequisite was cyclic; **superseded by the owner-accepted component entry gates** G1-L/G1-S/G1-T/G1-M/G1-R (002-R3) | `docs/spec/implementation-gates.md` |
 | **G1c** | Language identity, extension and compatibility decisions prepared for approval | ADR-0001, ADR-0002, D5 |
 | **G1d** | Licensing decision presented, not falsely resolved | `docs/audits/phase-0-licensing-matrix.md`, `docs/audits/phase-1-licensing-recommendation.md` |
 | **G1e** | CI green and governance protections verified | `docs/audits/phase-1-specification-report.md` |

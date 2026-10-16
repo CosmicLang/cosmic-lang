@@ -1,15 +1,18 @@
 # ENGINEERING DIRECTIVE 003 — Proposed Phase 2 Frontend
 
 > **Status: PROPOSED NORMATIVE RULE / NOT AUTHORIZED.** Draft for owner
-> consideration under Directive 002-R1. No implementation may begin from this
+> consideration under Directives 002-R1, 002-R2 (post-merge) and 002-R3. No
+> implementation may begin from this
 > document alone. Historic Directive 002 gate language (G1/G1b/G1c/G1d/G1e)
-> remains an archival record; this proposal requires an explicit owner decision
-> on the revised component gates in `docs/spec/implementation-gates.md`.
+> remains an archival record; the revised component gates in
+> `docs/spec/implementation-gates.md` were **accepted by the owner in Directive
+> 002-R3**, which still does not authorize this directive or any Phase 2 work.
 
 **Role:** Principal Rust Compiler Engineer
 **Repository:** `CosmicLang/cosmic-lang`
-**Proposed branch:** `phase/2-frontend`, based on `main` only after an
-authorized disposition of draft PR #2.
+**Proposed branch:** `phase/2-frontend`, based on `main` only after the Phase 1
+merge (PR #2, merge commit `c52c56d`) and an explicit owner authorization of
+this directive.
 **Pinned legacy reference:** `CosmicLang/cosmcc` @
 `284358f43db885ccd8b52b11f897ac0defec10de` (read-only oracle).
 
@@ -26,12 +29,14 @@ Directive 003 with the following scoped conditions:
 | **G1-L** | Owner accepts lexical recognition and invalid-token contract; byte spans, Unicode class boundaries, raw-newline policy, unknown-escape diagnostic and recovery behavior have testable expected outcomes. |
 | **G1-S** | Owner approves concrete parser recognition subset and ambiguous cases (especially lambda lookahead); syntax with no evidenced form is explicitly rejected with PARSE diagnostics, while evidenced syntax with open semantics remains parsable. |
 | **G1-T** | Before type checker / typed HIR: every implemented semantic operation must have an ACCEPTED NORMATIVE RULE or owner-authorized narrow provisional contract. All others have operation-specific, tested GATE diagnostics. |
-| **G1c** | Owner accepts identity/extension decision **or explicitly defers** the choice for frontend-only work; never hardcode `.csmx`, `.cosmic` or any extension in the grammar. |
+| **G1c** | Owner accepts the identity decision **or explicitly defers** it for frontend-only work — the source extension is already selected (`.cmic`, 2026-10-16, ADR-0002 §4.1). Never hardcode `.cmic` or any extension in the grammar. |
 | **G1d** | Owner chooses licensing **or explicitly approves internal-only independent work without legacy imports or publication** while legal review is pending. |
 | **G1e** | CI green for exact branch SHA, governance/protection revalidated. |
 | **G0-B** | Remains PARTIAL; documented Phase 0 exception is not reported as a pass. |
 
-**G1b is replaced only if the owner approves the revised gate model.** The
+**G1b is replaced by the owner-accepted component gate model**
+(002-R3, 2026-10-16): G1-L/G1-S/G1-T/G1-M/G1-R in
+`docs/spec/implementation-gates.md`. The
 underlying unresolved semantic questions remain OPEN. Approval of lexer/parser
 recognition does not imply approval of the language's semantics, product
 identity, extension, license, or runtime architecture.

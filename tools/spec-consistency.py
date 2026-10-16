@@ -21,6 +21,11 @@ Checks performed:
   G11 every repository path referenced in backticks resolves, unless it is a
       legacy path (prefixed `cosmcc:`), a declared future deliverable, or an
       explicitly-allowed external path
+  G12 the six normative statuses are defined in the specification
+  G13 the production evidence map covers every production exactly once: one
+      entry per production, numbered and sequenced in grammar definition order,
+      with well-formed evidence/class/decision/status/residual cells and
+      resolvable decision references (docs/spec/grammar-evidence-map.md)
 
 Exit status is non-zero if any check fails.
 """
@@ -193,9 +198,10 @@ def check_grammar(path: pathlib.Path | None = None) -> None:
 
     # G4 — evidence coverage. The grammar states evidence per *group* of
     # productions (a fenced block cites the source it was derived from), so the
-    # checkable requirement is: every block that defines productions carries at
-    # least one evidence or unresolved marker. Per-production markers are
-    # counted and reported as a statistic.
+    # checkable requirement here is: every block that defines productions
+    # carries at least one evidence or unresolved marker. Per-production
+    # traceability is provided by docs/spec/grammar-evidence-map.md and
+    # enforced by G13.
     marker_re = re.compile(r"\[(E1:[^\]]+|E2|UNRESOLVED:S\d+)\]")
     per_production = sum(1 for n in order if marker_re.search(bodies[n]))
     blocks_with_prods = 0
@@ -211,7 +217,8 @@ def check_grammar(path: pathlib.Path | None = None) -> None:
             fail(f"G4 grammar block has no evidence marker: `{b}`")
     else:
         print(f"G4 evidence: {blocks_with_prods} production blocks, all carry a marker; "
-              f"{per_production}/{len(order)} productions carry their own inline marker")
+              f"inline per-production markers: {per_production}/{len(order)} "
+              "(per-production traceability: docs/spec/grammar-evidence-map.md, G13)")
 
     # G5 — OPEN markers name existing records
     recs = sorted((DOCS / "spec" / "decisions").glob("S*-*.md"))
@@ -372,6 +379,108 @@ def check_normative_vocabulary() -> None:
         print(f"G12 normative vocabulary: {len(required)} terms defined")
 
 
+def check_evidence_map() -> None:
+    """G13 — per-production evidence map covers the whole grammar.
+
+    The map in docs/spec/grammar-evidence-map.md must contain exactly one row
+    per production in grammar definition order. Rows are checked for
+    well-formed evidence classes, recognition statuses, resolvable decision
+    references and non-empty evidence/residual cells. Missing or unknown
+    productions fail the check.
+    """
+    map_path = DOCS / "spec" / "grammar-evidence-map.md"
+    if not map_path.exists():
+        fail(f"G13 evidence map missing: {map_path.relative_to(ROOT)}")
+        return
+
+    text = map_path.read_text(encoding="utf-8")
+    row_re = re.compile(
+        r"^\|\s*(\d+)\s*\|\s*`([a-z][a-z0-9-]*)`\s*\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|\s*$",
+        re.M,
+    )
+    rows = row_re.findall(text)
+
+    _, order, _, _ = parse_grammar(DOCS / "spec" / "grammar.ebnf")
+    known = set(order)
+
+    class_re = re.compile(
+        r"^(?:E1-source|E1-case|E1-probe|E2)"
+        r"(?:\+(?:E1-source|E1-case|E1-probe|E2))*$"
+    )
+    status_re = re.compile(r"^(?:RECOGNISED|UNSUPPORTED|REJECTED)$")
+    decision_re = re.compile(r"^S\d+$")
+    rec_ids = {
+        re.match(r"(S\d+)-", p.name).group(1)
+        for p in (DOCS / "spec" / "decisions").glob("S*-*.md")
+    }
+
+    seen: dict[str, int] = {}
+    problems = 0
+    for position, (number, production, evidence, klass, decision, status, residual) in enumerate(
+        rows, start=1
+    ):
+        n = int(number)
+        if n != position:
+            fail(f"G13 evidence map row {n} appears at position {position} (rows must be numbered 1..N in order)")
+            problems += 1
+        if production in seen:
+            fail(f"G13 duplicate evidence-map entry for `{production}` (rows {seen[production]} and {n})")
+            problems += 1
+        seen[production] = n
+
+        if not evidence.strip():
+            fail(f"G13 row {n} (`{production}`) has an empty evidence cell")
+            problems += 1
+        if not class_re.match(klass.strip()):
+            fail(f"G13 row {n} (`{production}`) has an invalid evidence class: `{klass.strip()}`")
+            problems += 1
+        decision = decision.strip()
+        if decision and decision != "\u2014":
+            for token in re.split(r"[,\s]+", decision):
+                if not token:
+                    continue
+                if not decision_re.match(token):
+                    fail(f"G13 row {n} (`{production}`) has a malformed decision reference: `{token}`")
+                    problems += 1
+                elif token not in rec_ids:
+                    fail(f"G13 row {n} (`{production}`) references unknown decision record {token}")
+                    problems += 1
+        if not status_re.match(status.strip()):
+            fail(f"G13 row {n} (`{production}`) has an invalid recognition status: `{status.strip()}`")
+            problems += 1
+        if not residual.strip():
+            fail(f"G13 row {n} (`{production}`) has an empty residual cell")
+            problems += 1
+
+    missing = [name for name in order if name not in seen]
+    unknown = [name for name in seen if name not in known]
+    for name in missing:
+        fail(f"G13 production `{name}` has no evidence-map entry")
+    for name in unknown:
+        fail(f"G13 evidence map lists unknown production `{name}`")
+
+    # The rows must *follow the grammar's definition order*, not merely be
+    # numbered sequentially: compare position by position.
+    sequence = [row[1] for row in rows]
+    in_order = sequence == order
+    if len(sequence) == len(order) and not in_order:
+        first = next(
+            i for i, (actual, expected) in enumerate(zip(sequence, order), start=1)
+            if actual != expected
+        )
+        fail(
+            f"G13 evidence map is not in grammar definition order "
+            f"(row {first}: `{sequence[first - 1]}` listed where `{order[first - 1]}` is defined)"
+        )
+        problems += 1
+
+    if not problems and not missing and not unknown and len(rows) == len(order) and in_order:
+        print(
+            f"G13 evidence map: {len(rows)}/{len(order)} productions mapped, "
+            "rows in grammar definition order, cells well-formed"
+        )
+
+
 def main() -> int:
     args = sys.argv[1:]
     if args:
@@ -399,6 +508,8 @@ def main() -> int:
     check_cross_refs()
     print()
     check_normative_vocabulary()
+    print()
+    check_evidence_map()
     print()
 
     if notes:

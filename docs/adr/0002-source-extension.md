@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Proposed** — awaiting owner approval. No extension or MIME type is accepted by this ADR. |
-| **Date** | 2026-10-16 |
+| **Status** | **Proposed** — awaiting owner approval of the MIME type. **The extension is decided:** `.cmic` (owner, 2026-10-16, §4.1). |
+| **Date** | 2026-10-16 (round 1: R1) · 2026-10-16 (post-merge Directive 002-R2: owner selection recorded) |
 | **Deciders** | Project owner (final authority); engineering (author of the proposal) |
 | **Phase** | 1 |
 | **Related** | ADR-0001 §2.2/§3, `docs/spec/extension-assessment.md`, `docs/spec/compatibility-policy.md` §2.1 |
@@ -67,14 +67,51 @@ which is what round 1's web searches surfaced.
 The six-candidate, registry/editor/package-coverage matrix in
 `docs/spec/extension-assessment.md` §8 supersedes this initial ranking:
 `.cosmic` (1), `.cmic` (2), `.ccos` (3), `.csmx` (4),
-`.cos` (5), `.csm` (6). The owner has approved **none**. Registry and
-package checks remain incomplete; zero GitHub hits do not establish uniqueness.
+`.cos` (5), `.csm` (6). At R1 the owner had approved **none**, registry and
+package checks were incomplete, and zero GitHub hits did not establish
+uniqueness. **The owner's subsequent selection of `.cmic` — the ranked-second
+candidate — is recorded in §4.1.**
 
 ## 4. Decision
 
-**Not taken.** This ADR deliberately does not choose.
+### 4.1 Owner decision (post-merge Directive 002-R2, 2026-10-16)
 
-Engineering's **recommendation** to the owner is:
+**Taken: the primary source extension is `.cmic`.** The project owner selected
+it; the selection is recorded here with its evidence and its limits.
+
+* **Code search.** Authenticated GitHub code search for `extension:cmic`
+  returns **zero indexed matches** (2026-10-16), the only candidate in the
+  round-2 matrix with zero *indexed* occupation at decision time.
+* **Filename search.** `filename:.cmic` returns hits that are **substring
+  artifacts** (`.cmic2`, `.cmico`, crawler-saved `*.cmic-holdings.co.jp.*`
+  files), not files of a competing format — recorded as such, not as "zero
+  occupation".
+* **Registry view.** A direct extension-database query (FileInfo) returns no
+  entry for `.cmic`.
+* **Brand overlap.** The "CMiC" construction-ERP brand dominates web results
+  for the string — a discoverability consideration, not a format claim.
+* **Not claimed: worldwide uniqueness.** The evidence rests on indexed search
+  and public sources; unindexed tooling, package registries and editor
+  association stores were not exhaustively queried, and a package-registry
+  query remains open.
+
+**Consequences:**
+
+* Current normative documents, examples and compatibility tables use `.cmic`
+  as the primary extension.
+* The parser remains **extension-independent** (§5): this is a surface
+  decision, never a grammar change.
+* The **MIME type is still not decided** (§6). Editor integration and any
+  registry or package publication are separate matters and are **not**
+  performed by this decision.
+* The historical `.csmx`/`.cosmic` investigations are preserved in
+  `docs/spec/extension-assessment.md` and ADR-0001 §3 — they document why
+  `.csmx` was not accepted and why `.cosmic` was the leading alternative.
+
+### 4.2 Historical: engineering recommendation (Directive 002-R1, retained)
+
+**Not taken by engineering — the decision required the owner.** Engineering's
+recommendation at R1 was:
 
 1. **Do not accept `.csmx` yet.** The evidence does not support a confident
    acceptance, and the directive requires the extension decision to remain
@@ -106,6 +143,11 @@ argument for a time-boxed investigation and a prompt decision rather than an
 exhaustive one — and it is the strongest reason not to over-engineer this
 choice.
 
+The owner's selection of `.cmic` (2026-10-16, §4.1) converts this into a
+decision. The documentation part of the migration is performed in this
+repository; the tooling and publication parts remain out of scope until
+Phase 5.
+
 ---
 
 ## 6. MIME type
@@ -117,15 +159,20 @@ choice.
 | Coverage caveat | The IANA registry page is large and was truncated during retrieval, so the `text` tree and the late `application` range were not fully enumerated | The negative result is strong for `cosmic`/`csmx` (they sort early) and **weaker for `kof`**. Recorded, not glossed over |
 
 **Decision: not taken.** Treat the MIME type as provisional and unregistered.
+The `.cmic` extension selection changes none of this: no MIME registration is
+performed or promised, and the extension decision is explicitly separate from
+the MIME question.
 
 ---
 
 ## 7. Status of this ADR
 
-* **Proposed.** Owner approval required for both the extension and the MIME type.
+* **Extension — decided.** The owner selected `.cmic` (2026-10-16, §4.1).
+* **MIME type — proposed only.** `text/x-cosmic-lang` remains provisional and
+  unregistered; owner approval of a MIME type is still required if one is ever
+  published.
 * **Not blocking Phase 2.** Because the parser is extension-independent, the
-  lexer and parser can be built before the extension is accepted; they simply
-  must not hard-code the extension anywhere.
-* **Blocking Phase 5 (release).** An extension is part of a released identity.
-* **The recommendation is time-boxed**: close the two search gaps, choose
-  between A1 and A2 on a stated criterion, accept.
+  lexer and parser can be built before any MIME or publication decision; they
+  simply must not hard-code the extension anywhere.
+* **Blocking Phase 5 (release).** The remaining open items — the MIME type and
+  publication/editor association — are part of a released identity.

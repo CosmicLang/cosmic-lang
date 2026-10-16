@@ -136,3 +136,14 @@ order in all cases (one ordering was probed); generic bounds and variance syntax
 **Gating.** Nested type arguments (depth ≥ 2) and ambiguous overloads are
 **GATED**: `Box<Int>` and unambiguous calls compile normally; only the
 unsupported operation is refused. See `docs/spec/implementation-gates.md` §3.2.
+
+## 002-R3 update (2026-10-16)
+
+* The grammar correction of finding F4 (owner-authorized, 002-R3) is
+  **recognition-level only**: parameters are now derived in both evidenced
+  orders (`name : Type`, `Type name`) with an optional `= default`. It changes
+  no rule this record owns.
+* Default-expression **evaluation** semantics (evaluation point, scope,
+  interaction with inference) remain NOT VERIFIED; parameter-type omission and
+  the default return type remain unevidenced. Q1–Q5 and the gating above are
+  unchanged; the record stays **OPEN**.
