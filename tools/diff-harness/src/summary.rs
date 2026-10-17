@@ -48,7 +48,7 @@ pub struct FixtureResult {
 /// The complete result of one differential run.
 #[derive(Clone, Debug)]
 pub struct Summary {
-    /// Schema identifier (always [`SCHEMA`]).
+    /// Schema identifier (always the fixed `cosmic-diff-harness/summary/1`).
     pub schema: &'static str,
     /// Whether an oracle was configured for this run.
     pub oracle_configured: bool,

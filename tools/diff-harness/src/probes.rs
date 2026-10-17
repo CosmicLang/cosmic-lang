@@ -61,9 +61,10 @@ pub struct ProbeOutcome {
 /// The complete probe measurement report.
 #[derive(Clone, Debug)]
 pub struct ProbeReport {
-    /// Schema identifier (always [`PROBE_SCHEMA`]).
+    /// Schema identifier (always the fixed `cosmic-diff-harness/probes/1`).
     pub schema: &'static str,
-    /// The oracle cross-check note (always [`ORACLE_NOTE`]).
+    /// The oracle cross-check note (fixed text; the oracle comparison is
+    /// NOT MEASURED in this environment).
     pub oracle_note: &'static str,
     /// Evaluated outcomes, in case order.
     pub outcomes: Vec<ProbeOutcome>,
