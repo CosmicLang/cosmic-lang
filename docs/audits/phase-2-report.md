@@ -364,3 +364,15 @@ SHA; the report and register updates are the final change set.
 7. **Stage B** — remains **NOT AUTHORIZED**; G1-T entry and a separate owner
    directive are required. No semantic component, typed HIR/MIR, codegen,
    runtime or standard library work was started.
+
+---
+
+## Verification addendum (appended after CI)
+
+- **Report commit (evidence head):**
+  `167e1186a3a8f98b4db7a9399838369f3b5c680b` — CI runs `39077657912`
+  (push) and `39077660867` (pull request for #10) both completed **success**
+  on that exact SHA.
+- This addendum commit is docs-only and changes no evidence; it records the
+  observed run ids. The head of PR #10 after this commit is the live
+  verification subject, and its checks page is the authoritative record.
