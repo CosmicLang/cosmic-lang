@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) **Stage A entry gates:** G1, G1-L and G1-S accepted and the G1c Stage A-limited deferral approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d remains PENDING**; gate acceptance does not authorize implementation. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 · 003-G1 §2–§6 |
+| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) **Stage A entry gates:** G1, G1-L and G1-S accepted and the G1c Stage A-limited deferral approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — amended owner risk-acceptance procedure approved, licensing implementation pending** (003-L3); gate acceptance does not authorize implementation. |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 · 003-G1 §2–§6 · 003-L3 §1–§5 |
 | **Supersedes** | the single `G1b` gate defined in `docs/spec/decisions/README.md` and `docs/directives/directive-003-proposal.md` |
 | **Related** | `docs/spec/decisions/` (S1–S18), `docs/audits/phase-1-legacy-probes.md`, `docs/spec/grammar-consistency-report.md`, `docs/directives/directive-003-proposal.md` |
 
@@ -250,7 +250,7 @@ already existed.
 | **G1-M** | **Middle-end readiness** — unlocks `cosmic-mir` / `cosmic-opt` | Every Tier-M operation has an ACCEPTED NORMATIVE RULE and mechanically specified verifier obligations; otherwise defer that operation |
 | **G1-R** | **Backend readiness** — unlocks `cosmic-runtime` / codegen | S16 and S17 decided; the per-target capability table schema exists |
 | **G1c** | Owner: identity, compatibility | **Extension decided: `.cmic`** (2026-10-16, ADR-0002 §4.1). Identity naming and compatibility still require owner approval or explicit component-limited deferral; the parser is independent of filename extension. No release, announcement or MIME registration is authorized; source publication in this public repository is governed by G1d |
-| **G1d** | Owner: licence and publication | Owner licensing decision **and** the public/private development choice: **L-A** (public development under an established licensing and contribution policy after legal/provenance review) or **L-B** (development exclusively in a genuinely private repository or local environment) — see `docs/spec/phase-2-entry-readiness.md` §3. No legacy artifacts imported. A branch or PR in this public repository publishes source even without a release |
+| **G1d** | Owner: licence and publication | Owner licensing decision **and** the public/private development choice: **L-A** (public development under an established licensing and contribution policy; the review requirement is governed by the amended G1d procedure — mandatory qualified-counsel review replaced by owner risk acceptance, 003-L3) or **L-B** (development exclusively in a genuinely private repository or local environment) — see `docs/spec/phase-2-entry-readiness.md` §3. No legacy artifacts imported. A branch or PR in this public repository publishes source even without a release |
 | **G1e** | CI and governance | CI green on the branch; protection verified |
 
 > **002-R4 correction (2026-10-16).** The G1c and G1d rows previously said
@@ -271,6 +271,10 @@ already existed.
 >
 > **None of these acceptances authorizes implementation.** Stage A additionally requires this gate-acceptance record on `main` (merged via its reviewed PR, post-merge CI green), **G1d clearance**, and a separate owner authorization of the Stage A scope; Stage B remains separate and requires G1-T.
 
+> **003-L3 owner risk-acceptance record (2026-10-16).** The owner accepted Option B of Directive 003-L2 §F and amended the internal G1d governance procedure: mandatory qualified-counsel review is replaced by the recorded owner risk acceptance — (1) the owner's documented copyright ownership self-declaration; (2) acceptance of the verified technical provenance findings (003-L1/003-L2); (3) explicit acknowledgment of unresolved legal uncertainty; (4) express acceptance of the documented residual risks; (5) explicit acknowledgment that no qualified lawyer has reviewed or cleared the project; (6) retention of the GPL-3.0-material and external-contribution restrictions. The full record is `docs/spec/phase-2-entry-readiness.md` §9. This is an owner governance decision — **not** a legal opinion, copyright determination or waiver of third-party rights.
+>
+> **G1d status: AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING.** Reserved future result (not assigned): **G1d — CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** — the transition requires the owner-authorized Apache-2.0 licensing and contribution package to be applied and validated, with any unresolved technical or ownership blocker reported. The original qualified-counsel requirement remains preserved in the dated 003-G1 record above and in the 003-L1/003-L2 reports; nothing here claims a legal clearance.
+
 ### 5.1 The cycle, resolved
 
 | Gate | Status after Directive 002-R3 |
@@ -281,14 +285,16 @@ already existed.
 | G1-T | **FRAMEWORK ACCEPTED · ENTRY PENDING** — every Tier-T record is closed or gated; the per-operation gates are specified in §4.1; acceptance outstanding |
 | G1-M | **FRAMEWORK ACCEPTED · ENTRY PENDING** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
 | G1-R | **FRAMEWORK ACCEPTED · ENTRY PENDING (OWNER)** — S16/S17 undecided. Does not gate Phase 2 or Phase 3 |
-| G1c / G1d | **G1c SATISFIED via Stage A-limited deferral** (owner, 003-G1 §5) — extension `.cmic`; parser extension-independent; MIME/editor/release-level decisions deferred. **G1d PENDING** — L-A selected; intended licence Apache-2.0, conditional and not applied; rights verification and qualified legal review outstanding (`docs/spec/phase-2-entry-readiness.md` §5 item 6) |
+| G1c / G1d | **G1c SATISFIED via Stage A-limited deferral** (owner, 003-G1 §5) — extension `.cmic`; parser extension-independent; MIME/editor/release-level decisions deferred. **G1d — AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING** (owner risk acceptance, 003-L3 §1–§3) — L-A selected; intended licence Apache-2.0, **not applied**; mandatory qualified-counsel review replaced by the recorded owner risk acceptance; no licence grant is in effect (`docs/spec/phase-2-entry-readiness.md` §5 item 6, §9) |
 | G1e | **PRIOR SHA PASSED** — verify protection details and CI on the final SHA |
 
 **Therefore: the gate framework is accepted (002-R3), and the Stage A entry
-gates G1, G1-L and G1-S are accepted with the G1c deferral approved (003-G1); a
-component-scoped Phase 2 authorization still requires G1d clearance and a
-separate owner authorization of Directive 003-A, and Stage B additionally
-requires G1-T entry.** The dependency chain
+gates G1, G1-L and G1-S are accepted with the G1c deferral approved (003-G1);
+the internal G1d procedure is amended under the owner's risk acceptance
+(003-L3). A component-scoped Phase 2 authorization still requires the
+owner-authorized Apache-2.0 licensing and contribution package to be applied and
+validated under the amended G1d procedure and a separate owner authorization of
+Directive 003-A; Stage B additionally requires G1-T entry.** The dependency chain
 that made authorization impossible is gone, and it was removed by (a) measuring what
 could be measured, and (b) scoping each gate to the component that consumes the
 decision — not by relaxing any standard.
@@ -304,8 +310,9 @@ decision — not by relaxing any standard.
 * **The owner-blocked decisions are still owner-blocked** (S3, S4, S16, S17,
   the MIME type, the naming) — with completions now recorded: the source
   extension is `.cmic` and the G1c Stage A-limited deferral is approved
-  (003-G1 §5); the licence/publication hold remains under G1d (L-A selected;
-  Apache-2.0 intended conditionally, not applied).
+  (003-G1 §5); the licence/publication hold is governed by the amended G1d
+  procedure (owner risk acceptance, 003-L3) — L-A selected; Apache-2.0
+  intended, **not applied**; the licensing package remains unauthorized.
 * **Phase 3 and Phase 4 remain blocked** on G1-M and G1-R respectively.
 * **G0-B remains PARTIAL.**
 

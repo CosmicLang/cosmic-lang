@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **PARTIALLY DECIDED — items 1–5 are OWNER APPROVED (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); item 2 was merged (PR #4, post-merge CI green); item 6 (G1d) remains PENDING; item 7 (Stage A authorization) remains NOT AUTHORIZED.** Directives: ENGINEERING DIRECTIVE 002-R4 (entry-gate preparation and public-repository licensing reconciliation) · 002-R5 (S-G1S-1 correction and lexical-contract corrections) · 003-G1 (Stage A gate acceptances). |
-| **Baseline** | `main` @ `e3451e45d914491aedeaa1a76e84478c84c992cc` — PR #4 merged by the owner (2026-10-16); post-merge `Validate` green. (§1 below is the historical 002-R4 preflight record.) |
+| **Status** | **PARTIALLY DECIDED — items 1–5 are OWNER APPROVED (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); items 2 and the Stage A gate-acceptance record were merged (PR #4, PR #5; post-merge CI green); item 6 (G1d) is governed by the amended owner risk-acceptance procedure — licensing implementation pending (003-L3, 2026-10-16); item 7 (Stage A authorization) remains NOT AUTHORIZED.** Directives: ENGINEERING DIRECTIVE 002-R4 (entry-gate preparation and public-repository licensing reconciliation) · 002-R5 (S-G1S-1 correction and lexical-contract corrections) · 003-G1 (Stage A gate acceptances) · 003-L3 (owner risk acceptance and G1d governance amendment). |
+| **Baseline** | `main` @ `001ff543fe7851df3fbec2a60f4eedb6725c58c9` — PR #5 (the Stage A gate-acceptance record) merged by the owner (2026-10-17T00:04Z); post-merge `Validate` run `38984643359` green. (PR #4 merged `e3451e45d914491aedeaa1a76e84478c84c992cc` earlier; §1 below is the historical 002-R4 preflight record.) |
 | **Related** | `docs/spec/g1-l-lexical-decision-package.md` · `docs/spec/g1-s-syntax-decision-package.md` · `docs/spec/implementation-gates.md` · `docs/directives/directive-003-proposal.md` (revised, still NOT AUTHORIZED) · `docs/audits/phase-1-002-r1-reconciliation.md` §J · `docs/audits/phase-1-licensing-recommendation.md` · `docs/adr/0001-language-identity.md` · `docs/adr/0002-source-extension.md` |
 
 > **Path convention.** A path prefixed `cosmcc:` refers to the legacy repository `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
@@ -54,13 +54,13 @@ Preflight for Directive 002-R4, re-verified before any change:
 
 **Option L-B — Private development.** Implementation remains **exclusively in a genuinely private repository or local working environment** until the owner resolves publication and licensing. Consequences: no implementation branches or PRs in this public repository; the specification and decision documents already public here remain as they are; the work returns to public view only by a later explicit owner action.
 
-**Engineering takes no position between L-A and L-B** — the choice is the owner's. **Owner decision (2026-10-16): ☑ L-A** — public development selected; the intended outbound licence is Apache-2.0, conditional on rights verification and qualified legal review, with G1d still PENDING (§5 item 6; ENGINEERING DIRECTIVE 003-G1 §6). ☐ L-B ☐ defer.
+**Engineering takes no position between L-A and L-B** — the choice is the owner's. **Owner decision (2026-10-16): ☑ L-A** — public development selected; the intended outbound licence is Apache-2.0. By explicit owner decision the internal G1d procedure was amended (003-L3, 2026-10-16): mandatory qualified-counsel review is replaced by the owner risk-acceptance record in §9, and **licensing implementation is pending** (§5 item 6). ☐ L-B ☐ defer.
 
 ## 4. Staged Phase 2 proposal (summary)
 
 `docs/directives/directive-003-proposal.md` has been revised (still **NOT AUTHORIZED**) to a two-stage structure:
 
-* **Stage A — lexical and syntactic frontend:** `cosmic-lexer`, lossless CST, recovering parser, recognition and diagnostic tests, property/fuzz suite, differential recognition harness. Entry requires G1, G1-L and G1-S acceptance and resolution of the applicable G1c/G1d conditions. G1, G1-L and G1-S are accepted and the G1c Stage A-limited deferral is approved (003-G1); **G1d remains PENDING**.
+* **Stage A — lexical and syntactic frontend:** `cosmic-lexer`, lossless CST, recovering parser, recognition and diagnostic tests, property/fuzz suite, differential recognition harness. Entry requires G1, G1-L and G1-S acceptance and resolution of the applicable G1c/G1d conditions. G1, G1-L and G1-S are accepted and the G1c Stage A-limited deferral is approved (003-G1); **G1d — amended owner risk-acceptance procedure approved; licensing implementation pending** (003-L3).
 * **Stage B — semantic frontend:** name resolution, type checking, typed HIR, per-operation feature gates, `cosmic check`. Requires Stage A **and** G1-T entry **and** a separate owner authorization of its scope. **Stage A approval must not silently authorize Stage B.**
 
 Prohibited by the proposal: MIR, optimizer, backend, runtime and standard-library implementation. `.cmic` remains the primary source extension and the parser stays independent of filename extensions; the documented Rust `.csmx` literal migration inventory (`docs/adr/0001-language-identity.md` §6) is preserved for future authorized implementation.
@@ -76,7 +76,7 @@ Prohibited by the proposal: MIR, optimizer, backend, runtime and standard-librar
 | **AUTHORIZED TO IMPLEMENT** | The owner approved **and** authorized the scoped implementation work. |
 | **DEFERRED (recommended)** | Engineering recommends deferral now; the owner may still act. |
 
-**Current ledger.** *OWNER APPROVED:* the component gate framework (002-R3); the `.cmic` source extension (2026-10-16); the F1/F2/F4 recognition corrections (authorized and applied); the S-G1S-1 pattern-header correction (002-R5 §3, conditional on direct verification — performed; applied as F5); **G1 (003-G1 §2), G1-L (003-G1 §3), G1-S (003-G1 §4) and the G1c Stage A-limited deferral (003-G1 §5)**; **L-A and the intended outbound licence Apache-2.0 (conditional, not applied — owner decision 2026-10-16, re-affirmed in 003-G1 §6)**. *MERGED:* PR #4 (owner merge; post-merge CI green). *AUTHORIZED TO IMPLEMENT:* **nothing** — no Phase 2 component is authorized; G1d remains PENDING.
+**Current ledger.** *OWNER APPROVED:* the component gate framework (002-R3); the `.cmic` source extension (2026-10-16); the F1/F2/F4 recognition corrections (authorized and applied); the S-G1S-1 pattern-header correction (002-R5 §3, conditional on direct verification — performed; applied as F5); **G1 (003-G1 §2), G1-L (003-G1 §3), G1-S (003-G1 §4) and the G1c Stage A-limited deferral (003-G1 §5)**; **L-A and the intended outbound licence Apache-2.0 (not applied — owner decision 2026-10-16)**; **the G1d governance amendment — owner risk acceptance replacing mandatory qualified-counsel review (003-L3 §1–§3, 2026-10-16)**. *MERGED:* PR #4 and PR #5 (owner merges; post-merge CI green). *AUTHORIZED TO IMPLEMENT:* **nothing** — no Phase 2 component is authorized; licensing implementation and the Stage A authorization remain outstanding.
 
 | # | Owner decision | Engineering recommendation | Key evidence | Consequence if deferred | Component blocked | Status |
 |---|---|---|---|---|---|---|
@@ -85,8 +85,8 @@ Prohibited by the proposal: MIR, optimizer, backend, runtime and standard-librar
 | 3 | **G1-L** — accept the lexical contract (D-L1…D-L10) and the LEX allocation plan | Accept as proposed in the package | `docs/spec/g1-l-lexical-decision-package.md`; S8/S13/S14 records + probes; Phase 0 `crates/cosmic-source` tests | `cosmic-lexer` cannot start | `cosmic-lexer` | **OWNER APPROVED — G1-L ENTERED** (003-G1 §3) |
 | 4 | **G1-S** — accept the recognized subset, refusal contract, lambda rule, recovery and CST obligations | Accept (item 2 is resolved; no further engineering action) | `docs/spec/g1-s-syntax-decision-package.md`; report §4/§5; map statuses | `cosmic-syntax` cannot start | `cosmic-syntax` | **OWNER APPROVED — G1-S ENTERED** (003-G1 §4) |
 | 5 | **G1c** — identity/compatibility handling | Grant the component-limited deferral for Stage A: extension already `.cmic`; parser extension-independent; **no** MIME registration, naming or release decision now | ADR-0001, ADR-0002 §4.1; grammar carries no extension | Without deferral, Stage A stays blocked on release-level decisions it does not need | none for Stage A if deferred; identity work otherwise | **OWNER APPROVED — Stage A-limited deferral** (003-G1 §5) |
-| 6 | **G1d** — public vs private development and licensing | Choose **L-A** or **L-B** (no engineering preference); licensing options A–D + counsel review for L-A per the licensing recommendation | §3 of this document; `docs/audits/phase-1-licensing-recommendation.md` §5 (L1–L10) | No implementation in this repository | Stage A (this repository) | **L-A SELECTED · Apache-2.0 INTENDED (CONDITIONAL, NOT APPLIED) · G1d PENDING** — rights verification and qualified legal review outstanding (owner decision 2026-10-16; 003-G1 §6) |
-| 7 | **Stage A authorization** — authorize the lexical/syntactic frontend per the revised Directive 003 | Authorize explicitly after items 1–6 are decided | `docs/directives/directive-003-proposal.md` §2.1 | No implementation | `cosmic-lexer`, `cosmic-syntax`, CST | **NOT AUTHORIZED** — requires the gate-acceptance record merged, G1d cleared and a separate directive (003-G1 §7–§8) |
+| 6 | **G1d** — public vs private development and licensing | Choose **L-A** or **L-B** (no engineering preference); licensing options A–D per the licensing recommendation, with the review requirement now governed by the 003-L3 amendment | §3 and §9 of this document; `docs/audits/phase-1-licensing-recommendation.md` §5 (L1–L10) | No implementation in this repository | Stage A (this repository) | **L-A SELECTED · Apache-2.0 INTENDED (NOT APPLIED) · G1d — AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING** — mandatory qualified-counsel review replaced by the owner risk-acceptance record (§9; 003-L3 §1–§3); no licence grant in effect |
+| 7 | **Stage A authorization** — authorize the lexical/syntactic frontend per the revised Directive 003 | Authorize explicitly after items 1–6 are decided and the licensing package is applied | `docs/directives/directive-003-proposal.md` §2.1 | No implementation | `cosmic-lexer`, `cosmic-syntax`, CST | **NOT AUTHORIZED** — the gate-acceptance record is merged (PR #5); requires the amended G1d transition (licensing package applied and validated; 003-L3 §3) and a separate directive (003-G1 §7–§8) |
 | 8 | **G1-T and Stage B** — semantic frontend (resolution, typing, typed HIR, `cosmic check`) | **Defer**: requires Stage A plus its own acceptance and a separate authorization | `docs/spec/implementation-gates.md` §5 (G1-T row); directive-003 §2.2 | No semantic work; semantic gates remain the enforcement | `cosmic-sema` | DEFERRED (recommended) |
 | 9 | **G1-M / G1-R** — middle-end and backend readiness | **Defer** to Phase 3/4 consumers | gates §5; S16/S17 undecided | No MIR/backend work | `cosmic-mir`, `cosmic-opt`, codegen | DEFERRED (recommended) |
 | 10 | **S5 normative adoptions** (pattern breadth incl. destructuring *semantics*, guards, exhaustiveness, fallthrough, labels, three-clause acceptance) | Decide per S5's own options; **not a Stage A blocker** — recognition is separate and semantics stay gated meanwhile | `docs/spec/decisions/S5-pattern-matching.md` incl. the 002-R4 update | Semantic operations stay gated (correct non-implementation) | Tier-T operations only | READY FOR OWNER DECISION (can be deferred) |
@@ -99,9 +99,11 @@ Prohibited by the proposal: MIR, optimizer, backend, runtime and standard-librar
 
 **003-G1 update (2026-10-16).** Items 1, 3, 4 and 5 were decided as accepted (G1; G1-L entered; G1-S entered; G1c Stage A-limited deferral); item 2 was merged by the owner (PR #4; post-merge CI green); item 6 records L-A selected with the intended licence Apache-2.0 (conditional, **not applied**) and **remains PENDING**; item 7 therefore remains **NOT AUTHORIZED**. Item 10 is untouched — no S5 semantics were decided. The acceptance records live in `docs/spec/implementation-gates.md` §5.1, the two entry packages and the affected S records (003-G1 updates).
 
+**003-L3 update (2026-10-16).** The owner accepted Option B of Directive 003-L2 §F and amended the internal G1d governance procedure: mandatory qualified-counsel review is replaced by the owner risk-acceptance record in §9. Current result: **G1d — AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING**; reserved, not assigned: **G1d — CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)**, reachable only when the owner-authorized Apache-2.0 licensing and contribution package is applied and validated, with any unresolved technical or ownership blocker reported. Item 7 remains **NOT AUTHORIZED**; items 1–5, the merge records and every deferral are unchanged; no licence, metadata or repository setting was changed by this record. The identified minimal scope of the next licensing PR is in §9.
+
 ## 6. Staged authorization semantics
 
-* **Stage A approval is one decision** (matrix item 7) that becomes available when items 1–6 are decided — items 1–5 are now decided; **item 6 (G1d) remains PENDING**, so item 7 is not yet available. It would authorize exactly the Stage A components and no others.
+* **Stage A approval is one decision** (matrix item 7) that becomes available when items 1–6 are decided — items 1–6 are now decided (item 6 under the amended owner risk-acceptance procedure, with the licensing package still to be applied and validated); item 7 additionally requires that transition and remains **NOT AUTHORIZED**. It would authorize exactly the Stage A components and no others.
 * **Stage B approval is a separate future decision** (matrix item 8): it additionally requires G1-T entry (per-operation rules or gates accepted) and its own authorization; Stage A artifacts do not imply it.
 * **No stage authorizes** MIR, optimizer, backend, runtime or standard library; those remain Phase 3/4 and gate on G1-M/G1-R and S16/S17.
 * If the owner chooses **L-B**, items 1–6 and the packages remain valid decisions for the private workstream; only the *venue* changes (no branches or PRs in this public repository).
@@ -124,6 +126,31 @@ The captured checker output is refreshed in `docs/spec/grammar-consistency-repor
 
 It is not itself an authorization to implement, a licensing grant, a merge, or a
 release. It records the owner's decisions where the owner acted; the open
-checkboxes above mark decisions not yet taken (item 6 G1d and the deferrals).
-The 003-G1 acceptances record G1/G1-L/G1-S/G1c; Directive 003-A authorization
-remains outstanding — **no Phase 2 implementation is authorized**.
+checkboxes above mark decisions not yet taken (the licensing implementation
+under item 6 and the deferrals). The 003-G1 acceptances record G1/G1-L/G1-S/G1c;
+the 003-L3 decision amended the internal G1d procedure (owner risk acceptance,
+no qualified-counsel review) without applying any licence; Directive 003-A
+authorization remains outstanding — **no Phase 2 implementation is authorized**.
+
+## 9. Owner risk-acceptance record (003-L3, 2026-10-16)
+
+The owner expressly accepted **Option B** of Directive 003-L2 §F and amended the project's internal G1d governance procedure: mandatory qualified-counsel review is replaced by this record. The following is recorded accurately. This is an owner governance decision — **not** a legal opinion, copyright determination or waiver of third-party rights — and it creates no signature, certification, identity proof or professional clearance.
+
+* **Ownership.** The owner declares holding the necessary rights over the Cosmic-Lang code and documentation and no known employment or contractual obligations transferring those rights. **This remains a self-declaration, not an independently proven chain of title.**
+* **Provenance.** The owner accepts the verified technical findings of 003-L1/003-L2: no imported legacy implementation or fixtures were identified, while acknowledging that **a complete similarity comparison was not performed**.
+* **Legacy inspection.** The owner acknowledges that the legacy Java source was directly inspected and that **the project cannot claim formal clean-room separation**.
+* **Legal uncertainty.** The owner accepts the documented residual risks relating to derivative works, GPL-3.0, AI-assisted authorship, copyright ownership, trademarks, patents and future third-party claims.
+* **Professional advice.** The owner acknowledges that neither the Claude preliminary report nor the engineering audits constitute qualified legal advice; **no qualified lawyer has reviewed or cleared the project**.
+* **Continuing safeguards.** The ban on importing or mechanically translating GPL-3.0 legacy material is retained; **external contributions remain restricted** until an approved licensing and contribution policy is in force.
+
+**Current result: G1d — AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING.** Reserved, not assigned: **G1d — CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** — the transition requires the owner-authorized Apache-2.0 licensing and contribution package to be applied and validated, with any unresolved technical or ownership blocker reported. For the historical record: the original G1d procedure required a dated written qualified-counsel assessment (003-G1 §6; matrix item 6 as recorded 2026-10-16); that requirement was replaced by this explicit owner decision and is preserved in the dated gate-register records, not falsified.
+
+**Next licensing PR — identified minimal scope (prepared, not applied).** None of the following is applied or authorized by this record; each item remains part of a separate, owner-authorized licensing pull request:
+
+* official, unmodified Apache License 2.0 text as `LICENSE`;
+* copyright-holder attribution verified against the owner's declaration (no copyright notice is changed by 003-L3);
+* `license = "Apache-2.0"` in `[workspace.package]`, inherited by the three crates;
+* README licensing declaration;
+* `CONTRIBUTING.md` inbound-contribution policy (DCO or CLA — not interchangeable; owner choice) and provenance controls;
+* `NOTICE` only if applicable notices exist;
+* dependency-review requirement (licence recording for any new dependency; tooling when the first dependency is added).
