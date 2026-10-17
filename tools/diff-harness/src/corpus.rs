@@ -309,8 +309,8 @@ const EMBEDDED: &[(&str, &str, &str, &str, &str)] = &[
         "lex_unexpected_character",
         "lexical",
         "error",
-        "an unexpected character becomes one error region (LEX005)",
-        "main() {\n    val a = b ? c\n}\n",
+        "an unexpected character (`~`) becomes one error region (LEX005)",
+        "main() {\n    val a = b ~ c\n}\n",
     ),
     (
         "lex_strict_escape",
@@ -475,6 +475,13 @@ const EMBEDDED: &[(&str, &str, &str, &str, &str)] = &[
         "main() {\n    if (c) x /*\n*/ else y\n}\n",
     ),
     (
+        "syn_boolean_null_literals",
+        "syntax",
+        "recognised",
+        "boolean and null literals are accepted in expression position",
+        "main() {\n    val a = true\n    val b = false\n    val c = null\n}\n",
+    ),
+    (
         "syn_untyped_lambda",
         "syntax",
         "error",
@@ -571,7 +578,7 @@ const EMBEDDED: &[(&str, &str, &str, &str, &str)] = &[
         "mal_multiple_errors",
         "malformed",
         "error",
-        "three independent unexpected tokens produce three bounded diagnostics",
-        "main() {\n    ?\n    ?\n    ?\n}\n",
+        "three independent unexpected `~` tokens produce bounded diagnostics",
+        "main() {\n    ~\n    ~\n    ~\n}\n",
     ),
 ];
