@@ -14,5 +14,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-lexer"
+version = "0.1.0"
+dependencies = [
+ "cosmic-diagnostics",
+ "cosmic-source",
+]
+
+[[package]]
 name = "cosmic-source"
 version = "0.1.0"

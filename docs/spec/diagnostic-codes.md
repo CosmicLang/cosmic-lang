@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Status** | **Proposed — Phase 1 draft.** The namespaces below are allocations, not yet used by any code. |
+| **Status** | **Registry in force.** Phase 1 draft for the remaining namespaces; the `LEX` namespace is implemented and `LEX001`–`LEX010` are minted with evidence in §6.2 (Phase 2 Stage A, 2026-10-17). |
 | **Phase** | 1 (registry); used from Phase 2 |
-| **Directive** | ENGINEERING DIRECTIVE 002, deliverable D9 |
+| **Directive** | ENGINEERING DIRECTIVE 002, deliverable D9 · 003-A (minting of `LEX001`–`LEX010`, 2026-10-17) |
 | **Related** | `docs/spec/decisions/S15-feature-gates.md`, `docs/spec/decisions/S18-mir-invariants.md`, `crates/cosmic-diagnostics/src/code.rs`, `docs/spec/compatibility-matrix.md` §4 |
 
 ---
@@ -90,7 +90,7 @@ Two to eight letters, so the namespace is the letter run before the digits.
 | Namespace | Owner | Scope | Status |
 |---|---|---|---|
 | `SRC` | `cosmic-source` | File registry, spans, offsets, line/column mapping, size limits, UTF-8 | **Allocated** |
-| `LEX` | `cosmic-lexer` (Phase 2) | Lexical errors: malformed tokens, unterminated literals, invalid escapes, unexpected characters | **Allocated** |
+| `LEX` | `cosmic-lexer` (Phase 2) | Lexical errors: malformed tokens, unterminated literals, invalid escapes, unexpected characters | **Implemented** — `LEX001`–`LEX010` minted (§6.2, Phase 2 Stage A) |
 | `PARSE` | `cosmic-syntax` (Phase 2) | Syntax errors and error recovery | **Allocated** |
 | `RES` | `cosmic-sema` (Phase 2) | Name resolution: unresolved names, duplicate declarations, scope errors | **Allocated** |
 | `TYPE` | `cosmic-sema` (Phase 2) | Typing: mismatch, arity, nullability, inference failure, ambiguity | **Allocated** |
@@ -98,7 +98,7 @@ Two to eight letters, so the namespace is the letter run before the digits.
 | `PAT` | `cosmic-sema` (Phase 2) | Pattern matching: non-exhaustive switch, unreachable arm, invalid pattern | **Allocated** |
 | `CONC` | `cosmic-sema` (Phase 2) | Concurrency: spawn capture, await misuse, unsupported concurrency on a target | **Allocated** |
 | `NUM` | `cosmic-sema` (Phase 2) | Numeric: literal out of range, division by zero, narrowing without a cast | **Allocated** |
-| `UNI` | `cosmic-sema` (Phase 2) | Unicode: confusable identifier, lone surrogate escape, invalid identifier character | **Allocated** |
+| `UNI` | `cosmic-sema` (Phase 2) | Unicode: confusable identifier, invalid identifier character (lexical lone-surrogate escapes are minted as `LEX010`) | **Allocated** |
 | `GATE` | consuming component; `cosmic-sema` for semantic operations (Phase 2) | Feature gates: `refused` on this target, construct not yet specified (S15); a gate names the (construct, decision, operation) triple and produces no artifact, per `docs/spec/implementation-gates.md` §7 | **Allocated** |
 | `MIR` | `cosmic-mir` (Phase 3) | MIR construction and verification failures | **Allocated** |
 | `OPT` | `cosmic-opt` (Phase 3) | Optimization-pass verification failures | **Allocated** |
@@ -163,9 +163,10 @@ compiler itself must uphold (S18 Q4). Rules:
 
 ## 6. Registry format
 
-This section defines the table that each namespace maintains. **No codes are
-listed yet**, because no component emits any — listing invented codes would
-create a stability obligation for a meaning nobody has implemented.
+This section defines the table that each namespace maintains. Except for the
+minted `LEX` namespace (§6.2 — the first component to emit diagnostics), no
+codes are listed yet, because no other component emits any — listing invented
+codes would create a stability obligation for a meaning nobody has implemented.
 
 | Column | Meaning |
 |---|---|
@@ -205,6 +206,40 @@ specified" error, which is the mechanism that turns every OPEN decision record
 into a hard error instead of an accidental language choice. It is the most
 important code family in the registry, because it is what keeps Phase 2 honest.
 
+### 6.2 The first minted namespace: `LEX` (Phase 2 Stage A, 2026-10-17)
+
+`cosmic-lexer` is the first component to emit diagnostics, so `LEX001`–`LEX010`
+are the first minted codes. The conditions are the accepted allocation of
+`docs/spec/g1-l-lexical-decision-package.md` §6 (D-L decisions); all ten are
+`Error` severity. `Introduced` is `unreleased`: no toolchain release exists yet,
+so §2.2 pre-release freedom applies to rewording and renumbering, while this
+allocation is frozen for review purposes.
+
+| Code | Condition | Severity | Introduced | Retired | Decision record | Evidence |
+|---|---|---|---|---|---|---|
+| `LEX001` | unterminated block comment | Error | unreleased | — | S14 | `lex001_unterminated_block_comment_is_reported_once` |
+| `LEX002` | unterminated string literal | Error | unreleased | — | S8 | `lex002_unterminated_string_is_reported_once` |
+| `LEX003` | empty character literal | Error | unreleased | — | S8 | `lex003_empty_character_literal` |
+| `LEX004` | character literal that does not contain exactly one character value (unterminated or multi-character, D-L5) | Error | unreleased | — | S8 | `lex004_unterminated_and_multi_character_literals` |
+| `LEX005` | unexpected character (misplaced U+FEFF, NBSP, U+3000, U+2028/U+2029, `~`, combining mark outside an identifier, any other) | Error | unreleased | — | S13, S14 | `lex005_unexpected_characters_are_reported` |
+| `LEX006` | incomplete `\u` escape | Error | unreleased | — | S8, S13 | `lex006_incomplete_unicode_escape` |
+| `LEX007` | invalid `\u` escape (non-hex digit) | Error | unreleased | — | S8, S13 | `lex007_invalid_unicode_escape` |
+| `LEX008` | unknown escape sequence (D-L8 strict rule) | Error | unreleased | — | S8 Q2 | `lex008_unknown_escape_is_an_error` |
+| `LEX009` | triple-quoted string rejected (D-L6) | Error | unreleased | — | S8 Q1 | `lex009_triple_quoted_strings_are_refused` |
+| `LEX010` | lone-surrogate escape (D-L9) | Error | unreleased | — | S13 Q5, S8 Q5 | `lex010_lone_surrogate_escapes_are_errors` |
+
+Notes:
+
+* `LEX004`'s minted condition extends the legacy-name "unterminated character
+  literal" with the closed multi-character literal (D-L5); both share the defect
+  — not exactly one character value — and produce one diagnostic per literal.
+* `LEX008` and `LEX010` have no legacy code: the legacy lexer was silent on
+  both. They are the two intentional strictness divergences accepted with G1-L.
+* The evidence test names are frozen with the registry: the integration test
+  file `crates/cosmic-lexer/tests/lex_diagnostics.rs` carries one named test per
+  code, and `lex_codes_are_stable` asserts that the ten allocations are
+  contiguous and that every emitted code is one of the ten.
+
 ---
 
 ## 7. Versioning of the registry itself
@@ -223,9 +258,10 @@ important code family in the registry, because it is what keeps Phase 2 honest.
 
 ## 8. What this document does not do
 
-* **It does not list codes.** §6 defines the format and §6.1 the planned
-  conditions; the codes themselves are minted when the component that emits them
-  is written, with a test as evidence.
+* **It does not list codes** beyond the minted `LEX001`–`LEX010` (§6.2). §6
+  defines the format and §6.1 the planned conditions for the remaining
+  namespaces; their codes are minted when the component that emits them is
+  written, with a test as evidence.
 * **It does not adopt legacy numbers.** Explicitly prohibited by §2.3.
 * **It does not decide severities for unresolved conditions.** A condition whose
   decision record is OPEN cannot have a severity, because its severity depends on
