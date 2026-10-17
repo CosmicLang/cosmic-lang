@@ -80,7 +80,7 @@ fn adversarial_statement_soup_is_deterministic_and_lossless() {
     assert_eq!(parsed.reprint(source).as_deref(), Some(text.as_str()));
     let codes = all_codes(&parsed);
     assert!(
-        codes.iter().any(|code| *code == "LEX005"),
+        codes.contains(&"LEX005"),
         "the `~` lines must produce unexpected-character regions"
     );
     assert!(
