@@ -124,6 +124,10 @@ impl Parser<'_> {
     /// optional `assignment-op assignment-expr` tail. Used by expression
     /// statements, `var`/`val` right-hand sides and `for`-header slots.
     pub(super) fn parse_statement_expr(&mut self) {
+        if !self.enter_nesting() {
+            self.over_nesting_limit();
+            return;
+        }
         let left_start = self.events.len();
         let hint = self
             .current()
@@ -151,9 +155,14 @@ impl Parser<'_> {
             }
             self.finish();
         }
+        self.exit_nesting();
     }
 
     fn parse_binary(&mut self, min_level: u8) {
+        if !self.enter_nesting() {
+            self.over_nesting_limit();
+            return;
+        }
         let left_start = self.events.len();
         let hint = self
             .current()
@@ -191,6 +200,7 @@ impl Parser<'_> {
             }
             self.finish();
         }
+        self.exit_nesting();
     }
 
     fn peek_binary_op(&self) -> Option<BinOp> {
@@ -270,6 +280,10 @@ impl Parser<'_> {
     // --- Unary, postfix, primary ----------------------------------------
 
     fn parse_unary(&mut self) {
+        if !self.enter_nesting() {
+            self.over_nesting_limit();
+            return;
+        }
         if matches!(
             self.cur_kind(),
             Some(
@@ -288,6 +302,7 @@ impl Parser<'_> {
         } else {
             self.parse_postfix();
         }
+        self.exit_nesting();
     }
 
     fn parse_postfix(&mut self) {

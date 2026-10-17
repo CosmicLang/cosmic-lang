@@ -33,6 +33,13 @@
 //!   statement position) or an array-literal refusal (in other expression
 //!   positions).
 //!
+//! Both rules judge "same line" by the **physical line breaks** written in
+//! the source: a `CR`, `LF` or `CRLF` counts wherever it occurs between two
+//! significant tokens, including inside a multiline block comment or a
+//! recoverable lexical-error region (A2-R1-01). Non-terminator whitespace and
+//! Unicode line-separator lookalikes (U+2028, U+2029, NEL, NBSP, …) are not
+//! physical terminators.
+//!
 //! # Determinism, recovery, termination
 //!
 //! Every disambiguation uses bounded speculative parsing over the token
@@ -42,13 +49,19 @@
 //! panics on malformed input. Each failure path reports at most one
 //! diagnostic per construct; recovery preserves the skipped bytes in `Error`
 //! nodes.
+//!
+//! The recursive-descent paths are additionally bounded by
+//! [`NESTING_LIMIT`] (A2-R1-02): reaching the limit reports one `PARSE005`
+//! and preserves the balanced region iteratively, so no input — however
+//! deeply nested — can exhaust the stack. The limit is an implementation
+//! resource bound, not a syntax rule.
 
 mod decl;
 mod expr;
 mod stmt;
 
 use cosmic_diagnostics::{Diagnostic, DiagnosticBag, Label};
-use cosmic_lexer::{ElementKind, LexedFile, TokenKind};
+use cosmic_lexer::{ElementKind, LexElement, LexedFile, TokenKind};
 use cosmic_source::{SourceFile, Span};
 
 use crate::codes::ParseErrorCode;
@@ -85,13 +98,32 @@ struct Tok {
     span: Span,
     /// Index of the lexer element this token (part) mirrors.
     elem: u32,
-    /// Whether a line terminator element separates this token from the
-    /// previous significant token.
+    /// Whether a physical line break separates this token from the previous
+    /// significant token: a line-terminator element, or a raw `CR`/`LF` byte
+    /// inside the trivia or the recoverable lexical-error region between the
+    /// two tokens (A2-R1-01).
     preceded_by_lt: bool,
     /// Whether this is the first part of its lexer element (the part that
     /// carries the element's lexical errors).
     is_first_part: bool,
 }
+
+/// The implementation nesting limit for the recursive-descent paths
+/// (A2-R1-02).
+///
+/// Measured on the development machine with a stack-limited probe: the
+/// deepest recursive chain (a parenthesised expression, i.e. `parse_binary`
+/// through `parse_unary`/`parse_postfix`/`parse_primary`/paren-lambda and
+/// back) uses ≈ 604 bytes of stack per nesting level; a 2 MiB stack (the
+/// Rust thread default) overflows at ≈ 3 460 levels and a 1 MiB stack at
+/// ≈ 1 736 levels — with or without closing brackets, so valid and
+/// malformed input fail alike. The limit is 512 levels: ≈ 0.3 MiB of the
+/// worst-case chain, more than 6× headroom on a 2 MiB thread and 3× on a
+/// 1 MiB thread, while no hand-written or realistic generated program
+/// nests anywhere near it. Reaching the limit is an **implementation
+/// resource limit, not a syntax rule**: the balanced region is reported
+/// with `PARSE005` and preserved as an error region, and parsing continues.
+const NESTING_LIMIT: u32 = 512;
 
 /// A full parser checkpoint for speculative parsing and rollback.
 #[derive(Clone, Copy, Debug)]
@@ -101,6 +133,7 @@ struct Checkpoint {
     diagnostics: usize,
     next_element: usize,
     depth: u32,
+    nesting: u32,
 }
 
 /// The parser state: token stream, output events, diagnostics.
@@ -116,6 +149,9 @@ struct Parser<'s> {
     /// Depth of enclosing `( … )` / `[ … ]` regions; lifts the line gate for
     /// expression continuations inside them.
     depth: u32,
+    /// Active nesting of the recursive-descent paths, bounded by
+    /// [`NESTING_LIMIT`] so no input can exhaust the stack (A2-R1-02).
+    nesting: u32,
 }
 
 impl<'s> Parser<'s> {
@@ -192,7 +228,18 @@ impl<'s> Parser<'s> {
                 | ElementKind::Whitespace
                 | ElementKind::LineComment
                 | ElementKind::BlockComment
-                | ElementKind::Error => {}
+                | ElementKind::Error => {
+                    // A2-R1-01: a line-terminator element is not the only
+                    // carrier of a physical line break. Block comments may
+                    // span lines, and recoverable lexical-error regions (an
+                    // unterminated comment, a refused triple-quoted string)
+                    // may hold raw CR/LF bytes. A significant token after
+                    // such an element is separated from the previous one by
+                    // a physical line, exactly like after a terminator.
+                    if element_carries_line_break(source, element) {
+                        pending_lt = true;
+                    }
+                }
             }
         }
         Self {
@@ -204,6 +251,7 @@ impl<'s> Parser<'s> {
             diagnostics: Vec::new(),
             next_element: 0,
             depth: 0,
+            nesting: 0,
         }
     }
 
@@ -446,6 +494,7 @@ impl<'s> Parser<'s> {
             diagnostics: self.diagnostics.len(),
             next_element: self.next_element,
             depth: self.depth,
+            nesting: self.nesting,
         }
     }
 
@@ -455,6 +504,7 @@ impl<'s> Parser<'s> {
         self.diagnostics.truncate(cp.diagnostics);
         self.next_element = cp.next_element;
         self.depth = cp.depth;
+        self.nesting = cp.nesting;
     }
 
     /// Runs `probe` speculatively; commits its events **iff** it succeeds and
@@ -469,6 +519,76 @@ impl<'s> Parser<'s> {
             self.rollback(cp);
             false
         }
+    }
+
+    // --- Nesting bound (A2-R1-02) ---------------------------------------
+
+    /// Enters one guarded nesting level. Returns `false` (consuming nothing)
+    /// when [`NESTING_LIMIT`] levels are already active: the caller reports
+    /// the implementation limit with [`Parser::over_nesting_limit`] instead
+    /// of recursing further.
+    fn enter_nesting(&mut self) -> bool {
+        if self.nesting >= NESTING_LIMIT {
+            false
+        } else {
+            self.nesting += 1;
+            true
+        }
+    }
+
+    /// Leaves one guarded nesting level. Every caller of
+    /// [`Parser::enter_nesting`] that received `true` must call this exactly
+    /// once, on every exit path.
+    fn exit_nesting(&mut self) {
+        self.nesting -= 1;
+    }
+
+    /// The recursion reached [`NESTING_LIMIT`] levels (A2-R1-02): report
+    /// `PARSE005` once and consume, iteratively and without further
+    /// recursion, the balanced region that starts at the current token into
+    /// an `Error` node. The region ends at the first token that closes a
+    /// bracket opened before the region, at `case`/`default`, at a token on
+    /// a new line that can start a statement, or at the end of input. At
+    /// least one token is always consumed when any remain, so every caller
+    /// makes progress; no byte of the region is dropped or fabricated.
+    fn over_nesting_limit(&mut self) {
+        self.diag(
+            ParseErrorCode::Parse005,
+            self.cur_span(),
+            format!(
+                "nesting exceeds the parser's implementation limit of {NESTING_LIMIT} levels: the balanced region is preserved without interpretation (an implementation resource limit, not a syntax rule)"
+            ),
+            "implementation nesting limit",
+        );
+        self.start(NodeKind::Error);
+        let mut local: i64 = 0;
+        let mut first = true;
+        while let Some(kind) = self.cur_kind() {
+            let opener = matches!(
+                kind,
+                TokenKind::LParen | TokenKind::LBracket | TokenKind::LBrace
+            );
+            let closer = matches!(
+                kind,
+                TokenKind::RParen | TokenKind::RBracket | TokenKind::RBrace
+            );
+            if !first
+                && local <= 0
+                && (closer
+                    || matches!(kind, TokenKind::Case | TokenKind::Default)
+                    || (self.preceded_by_lt() && Self::can_start_statement(kind)))
+            {
+                break;
+            }
+            first = false;
+            if opener {
+                local += 1;
+            } else if closer {
+                local -= 1;
+            }
+            self.bump();
+        }
+        self.finish();
     }
 
     // --- Expectations and recovery --------------------------------------
@@ -743,6 +863,21 @@ fn reserved_message(text: &str) -> String {
     format!(
         "`{text}` is reserved-invalid (SG-001): it is refused at parse entry and is never a declaration keyword"
     )
+}
+
+/// Whether a non-token element's text contains a physical `CR` or `LF` byte.
+///
+/// This is the A2-R1-01 correction: a physical line break inside trivia (a
+/// `/* … */` comment may span lines) or inside a recoverable lexical-error
+/// region still separates the surrounding significant tokens, exactly like a
+/// line-terminator element. Only raw `CR`/`LF` bytes count: multi-byte
+/// Unicode whitespace and line-separator lookalikes (U+2028, U+2029, NEL,
+/// NBSP, …) never encode `0x0A`/`0x0D`, so they are not accepted physical
+/// terminators.
+fn element_carries_line_break(source: &SourceFile, element: &LexElement) -> bool {
+    source
+        .text_of(element.span())
+        .is_some_and(|text| text.contains(['\n', '\r']))
 }
 
 /// A short printable preview of a token's text for diagnostics.

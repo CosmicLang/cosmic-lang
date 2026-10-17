@@ -476,6 +476,10 @@ impl Parser<'_> {
     /// `member = { annotation } { modifier } ( constructor-decl | field-decl
     /// | function-decl | type-decl )`.
     fn parse_member(&mut self) {
+        if !self.enter_nesting() {
+            self.over_nesting_limit();
+            return;
+        }
         self.start(NodeKind::Member);
         self.parse_annotations();
         while self.cur_kind().is_some_and(Self::is_modifier) {
@@ -506,6 +510,7 @@ impl Parser<'_> {
             }
         }
         self.finish();
+        self.exit_nesting();
     }
 
     fn can_start_member(&self) -> bool {
@@ -712,28 +717,31 @@ impl Parser<'_> {
     /// characters come from the pre-split `>>`/`>>>` tokens when nested
     /// arguments close together.
     pub(super) fn parse_type_arguments(&mut self) {
-        let diags_at_start = self.diagnostics.len();
-        self.start(NodeKind::TypeArguments);
-        if !self.expect(TokenKind::Lt, "`<` opening the type arguments") {
-            self.finish();
+        if !self.enter_nesting() {
+            self.over_nesting_limit();
             return;
         }
-        self.parse_type_ref();
-        while self.at(TokenKind::Comma) {
-            self.bump();
-            if self.cur_kind().is_some_and(Self::can_start_type) {
-                self.parse_type_ref();
-            } else {
-                self.diag_unexpected("a type argument after `,`");
-                break;
+        let diags_at_start = self.diagnostics.len();
+        self.start(NodeKind::TypeArguments);
+        if self.expect(TokenKind::Lt, "`<` opening the type arguments") {
+            self.parse_type_ref();
+            while self.at(TokenKind::Comma) {
+                self.bump();
+                if self.cur_kind().is_some_and(Self::can_start_type) {
+                    self.parse_type_ref();
+                } else {
+                    self.diag_unexpected("a type argument after `,`");
+                    break;
+                }
             }
+            self.close_token(
+                TokenKind::Gt,
+                "`>` closing the type arguments",
+                diags_at_start,
+            );
         }
-        self.close_token(
-            TokenKind::Gt,
-            "`>` closing the type arguments",
-            diags_at_start,
-        );
         self.finish();
+        self.exit_nesting();
     }
 
     // --- Recovery ---------------------------------------------------------

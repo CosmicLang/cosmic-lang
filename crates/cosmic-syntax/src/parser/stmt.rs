@@ -42,6 +42,10 @@ impl Parser<'_> {
     }
 
     fn parse_statement(&mut self) {
+        if !self.enter_nesting() {
+            self.over_nesting_limit();
+            return;
+        }
         match self.cur_kind() {
             Some(TokenKind::LBrace) => self.parse_block(),
             Some(TokenKind::Return) => self.parse_return(),
@@ -80,6 +84,7 @@ impl Parser<'_> {
             }
             _ => self.recover_statement_region(),
         }
+        self.exit_nesting();
     }
 
     fn parse_return(&mut self) {

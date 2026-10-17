@@ -1,5 +1,5 @@
 //! The `PARSE` namespace registry evidence (`docs/spec/diagnostic-codes.md`
-//! §6.3). The five test names below are frozen with the registry: one per
+//! §6.3). The six test names below are frozen with the registry: one per
 //! minted code, plus the namespace-stability test.
 
 mod common;
@@ -101,23 +101,52 @@ fn parse004_labelled_jumps_are_refused() {
     }
 }
 
+/// `PARSE005` — nesting exceeds the parser's implementation limit (an
+/// implementation resource limit, not a syntax rule; A2-R1-02).
+#[test]
+fn parse005_nesting_beyond_the_implementation_limit_is_reported() {
+    let text = format!(
+        "main() {{\n  val x = {}1{}\n}}\n",
+        "(".repeat(400),
+        ")".repeat(400)
+    );
+    let (sources, parsed) = parse_text(&text);
+    let source = common::source_of(&sources, &parsed);
+    assert_eq!(parse_codes(&parsed), vec!["PARSE005"]);
+    let diagnostic = parsed.diagnostics().iter().next().expect("one diagnostic");
+    assert_eq!(diagnostic.severity(), Severity::Error);
+    let message = diagnostic.message();
+    assert!(message.contains("implementation limit"), "{message}");
+    assert!(message.contains("not a syntax rule"), "{message}");
+    // The diagnostic points at the parenthesis where the bound was reached;
+    // the region is preserved and parsing continues.
+    assert_eq!(source.text_of(diagnostic.primary().span()), Some("("));
+    assert!(parsed.is_lossless(source));
+    assert_eq!(parsed.reprint(source).as_deref(), Some(text.as_str()));
+}
+
 /// The `PARSE` namespace is contiguous, frozen for review, and nothing else
 /// is emitted.
 #[test]
 fn parse_codes_are_stable() {
-    let expected = ["PARSE001", "PARSE002", "PARSE003", "PARSE004"];
+    let expected = ["PARSE001", "PARSE002", "PARSE003", "PARSE004", "PARSE005"];
     for (index, code) in ParseErrorCode::ALL.into_iter().enumerate() {
         assert_eq!(code.as_str(), expected[index]);
         assert!(!code.condition().is_empty());
     }
 
     let fixtures = [
-        "test \"t\" {\n}\n",
-        "main() { ? }\n",
-        "main() {\n",
-        "main() { break outer }\n",
+        "test \"t\" {\n}\n".to_owned(),
+        "main() { ? }\n".to_owned(),
+        "main() {\n".to_owned(),
+        "main() { break outer }\n".to_owned(),
+        format!(
+            "main() {{\n  val x = {}1{}\n}}\n",
+            "(".repeat(400),
+            ")".repeat(400)
+        ),
     ];
-    for text in fixtures {
+    for text in &fixtures {
         let (_, parsed) = parse_text(text);
         let codes = all_codes(&parsed);
         assert!(
