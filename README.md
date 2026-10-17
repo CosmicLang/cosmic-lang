@@ -83,9 +83,11 @@ crates.
 The authoritative register is `docs/spec/decisions/README.md`; the component
 entry gates are `docs/spec/implementation-gates.md`. The Stage A gates G1, G1-L
 and G1-S were accepted by the owner and the G1c Stage A-limited deferral
-approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — amended owner
-risk-acceptance procedure approved; licensing implementation pending** (003-L3;
-no licence applied, no legal clearance). The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
+approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — the Apache-2.0
+licensing and contribution package is authorized and applied; the internal
+CLEARED transition is recorded only after integration and validation**
+(003-L3; owner authorization 003-L4, 2026-10-16 — internal risk-based
+clearance, **not** professional legal clearance). The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
 **PROPOSED NORMATIVE RULE**, **ACCEPTED NORMATIVE RULE**, **OPEN**, **DEFERRED**
 and **NOT VERIFIED**. Their use is per question: a record can contain several.
 The Directive 002-R1 read-only JVM probes (`docs/audits/phase-1-legacy-probes.md`)
@@ -100,8 +102,9 @@ records (S5, S8, S13, S14 — 003-G1 updates).
 AUTHORIZED); the entry ledger is `docs/spec/phase-2-entry-readiness.md`, with
 `docs/spec/g1-l-lexical-decision-package.md` and
 `docs/spec/g1-s-syntax-decision-package.md` now recording the accepted Stage A
-gates. **Stage A implementation remains unauthorised until the licensing package
-is applied under the amended G1d procedure and a separate directive authorizes it.**
+gates. **Stage A implementation remains unauthorised until the licensing
+package is integrated and validated under the amended G1d procedure and a
+separate owner authorization of Directive 003-A is given.**
 
 ## Phase 0 review status
 
@@ -142,12 +145,16 @@ macOS assembler). Full details, including licensing observations, are in
 
 ## License
 
-**Intended: Apache-2.0 (not applied).** The owner selected Apache License 2.0 as
-the intended outbound licence (2026-10-16). The internal G1d procedure was
-amended by owner decision (ENGINEERING DIRECTIVE 003-L3, 2026-10-16) to an owner
-risk-acceptance procedure with no qualified-counsel review; **no LICENSE file
-has been added and no grant is in effect** — the licensing implementation is
-pending owner authorization. Until the licence is formally authorised and
-applied, treat all content as "all rights reserved". The legacy `cosmcc` is
-GPL-3.0; this repository contains no code translated or copied from it
-(ADR-0001 §2.5).
+**Apache License 2.0.** The project is licensed under the
+[Apache License, Version 2.0](LICENSE). Copyright 2026 CosmicLang.
+
+The licence was adopted by the project owner under the amended internal G1d
+governance procedure (ENGINEERING DIRECTIVE 003-L3; owner authorization
+003-L4, 2026-10-16). It is an internal, risk-accepted governance measure:
+**no qualified attorney has reviewed or cleared the project**, and the
+corresponding G1d status is not — and must never be represented as —
+professional legal clearance.
+
+Contributions are accepted under the Developer Certificate of Origin
+(`Signed-off-by`; see `CONTRIBUTING.md`). The legacy `cosmcc` is GPL-3.0; this
+repository contains no code translated or copied from it (ADR-0001 §2.5).

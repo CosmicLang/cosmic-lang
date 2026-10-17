@@ -33,10 +33,15 @@ additions must regenerate and commit the lockfile in the same change.
   deliberate: the foundation must be reviewable byte-for-byte.
 * A new dependency needs, in its pull request: (a) the concrete problem it
   solves, (b) why the standard library cannot solve it, (c) an explicit
-  version requirement, and (d) a note on maintenance/licensing of the crate.
+  version requirement, and (d) a note on maintenance/licensing of the crate —
+  the licence must be recorded and be compatible with this project's outbound
+  licence (**Apache-2.0**; see `CONTRIBUTING.md` §3); GPL/AGPL/SSPL-family or
+  unclear licences require explicit owner review before use.
   `serde` for machine-readable output and a CLI argument framework are the
   expected first candidates **when a command surface exists that needs them**
   — not before.
+* Licence-audit tooling (cargo-deny / cargo-about) is introduced when the
+  first external dependency is added, not before.
 * Do not add dependencies to mirror other compilers' stacks.
 
 ## 4. Lint and code policy
