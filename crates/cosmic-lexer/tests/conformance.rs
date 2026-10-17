@@ -466,6 +466,50 @@ fn dl9_pairing_is_greedy_and_local() {
     assert_codes(&lexed, &[LexErrorCode::Lex010]);
 }
 
+#[test]
+fn dl5_surrogate_pair_inside_a_char_literal_is_refused_as_multi_character() {
+    // A1-R1-02 contract boundary: `char-literal = "'" , ( char-value ) , "'"`
+    // (grammar §2.4) admits exactly one `char-value` occurrence, and D-L5
+    // item 4 refuses a character literal carrying more than one character
+    // value. A surrogate pair is two adjacent `escape` occurrences; D-L9
+    // item 2 decodes them to one scalar in the accepted string spelling
+    // (above), but a character literal carrying both is multi-character:
+    // refused with exactly one LEX004, preserved byte for byte. The
+    // character-literal grammar is deliberately not broadened.
+    let text = r#"var c = '\uD83D\uDE00'"#;
+    let (sources, lexed) = lex_text(text);
+    assert_codes(&lexed, &[LexErrorCode::Lex004]);
+    let source = source_of(&sources, &lexed);
+    let token = lexed.tokens().last().expect("character literal token");
+    assert_eq!(token.kind(), ElementKind::Token(TokenKind::CharLiteral));
+    assert_eq!(token.errors(), [LexErrorCode::Lex004]);
+    assert_eq!(source.text_of(token.span()).unwrap(), r#"'\uD83D\uDE00'"#);
+    assert!(lexed.is_lossless(source));
+    assert_eq!(lexed.reprint(source).as_deref(), Some(text));
+
+    // The admitted single-`char-value` spelling of the same scalar is the
+    // direct astral character.
+    let (_, lexed) = lex_text("var c = '😀'");
+    assert!(lexed.diagnostics().is_empty());
+    assert_eq!(
+        token_kinds(&lexed),
+        [
+            TokenKind::Var,
+            TokenKind::Identifier,
+            TokenKind::Eq,
+            TokenKind::CharLiteral,
+        ]
+    );
+
+    // Each half alone remains the lone-surrogate error, not a
+    // multi-character refusal.
+    for half in [r#"'\uD83D'"#, r#"'\uDC00'"#] {
+        let (_, lexed) = lex_text(&format!("var c = {half}"));
+        assert_codes(&lexed, &[LexErrorCode::Lex010]);
+        assert_eq!(token_kinds(&lexed).last(), Some(&TokenKind::CharLiteral));
+    }
+}
+
 // --- Vocabulary: keywords, operators, numbers ---------------------------
 
 #[test]
@@ -561,6 +605,13 @@ fn numeric_literals_follow_the_grammar_suffix_rules() {
         ("1E+5", TokenKind::DoubleLiteral),
         ("1e-5", TokenKind::DoubleLiteral),
         ("1.5e2", TokenKind::DoubleLiteral),
+        // `f`/`F` and `d`/`D` are valid on every number form (number-body).
+        ("1.2f", TokenKind::FloatLiteral),
+        ("1e3f", TokenKind::FloatLiteral),
+        ("1.2e3f", TokenKind::FloatLiteral),
+        ("1.2d", TokenKind::DoubleLiteral),
+        ("1e3d", TokenKind::DoubleLiteral),
+        ("1.2e3d", TokenKind::DoubleLiteral),
         // No value-based promotion: ranges belong to decision record S7.
         ("99999999999999999999", TokenKind::IntLiteral),
     ];
@@ -621,6 +672,103 @@ fn malformed_number_tails_lex_as_separate_valid_tokens() {
             .collect();
         assert_eq!(tokens, expected, "{text:?}");
     }
+}
+
+#[test]
+fn long_suffix_is_restricted_to_integer_forms() {
+    // A1-R1-01: `long-literal = ( decimal-int | hex-int ) , ( "l" | "L" )`
+    // (grammar §2.4) — a fraction or exponent makes the literal a double
+    // form, so an `l`/`L` there is not part of the numeric token. The
+    // longest valid prefix wins and the letter starts an identifier: no
+    // invented diagnostic, no value-based promotion (S7) and no malformed
+    // literal silently classified as `LongLiteral`.
+    let cases: &[(&str, &[(TokenKind, &str)])] = &[
+        (
+            "1.2L",
+            &[
+                (TokenKind::DoubleLiteral, "1.2"),
+                (TokenKind::Identifier, "L"),
+            ],
+        ),
+        (
+            "1e3L",
+            &[
+                (TokenKind::DoubleLiteral, "1e3"),
+                (TokenKind::Identifier, "L"),
+            ],
+        ),
+        (
+            "1.2e3L",
+            &[
+                (TokenKind::DoubleLiteral, "1.2e3"),
+                (TokenKind::Identifier, "L"),
+            ],
+        ),
+        (
+            "1.2l",
+            &[
+                (TokenKind::DoubleLiteral, "1.2"),
+                (TokenKind::Identifier, "l"),
+            ],
+        ),
+        // Integer forms — decimal and hex — keep the long suffix.
+        ("123L", &[(TokenKind::LongLiteral, "123L")]),
+        ("0x1FL", &[(TokenKind::LongLiteral, "0x1FL")]),
+    ];
+    for (text, expected) in cases {
+        let (_, lexed) = lex_text(text);
+        assert!(lexed.diagnostics().is_empty(), "{text:?}");
+        let tokens = lex_to_tokens(text);
+        let expected: Vec<(TokenKind, String)> = expected
+            .iter()
+            .map(|(kind, spelling)| (*kind, (*spelling).to_owned()))
+            .collect();
+        assert_eq!(tokens, expected, "{text:?}");
+    }
+}
+
+#[test]
+fn long_suffix_boundary_preserves_spans_and_source_bytes() {
+    // Byte spans across the repaired boundary: the number owns exactly its
+    // longest valid prefix and the rejected suffix byte owns the following
+    // token. Source reconstruction stays byte-for-byte complete.
+    let text = "var a = 1.2L\nvar b = 0x1FL\nvar c = 1e3L";
+    let (sources, lexed) = lex_text(text);
+    assert!(lexed.diagnostics().is_empty());
+    let source = source_of(&sources, &lexed);
+
+    let expected: &[(TokenKind, &str)] = &[
+        (TokenKind::Var, "var"),
+        (TokenKind::Identifier, "a"),
+        (TokenKind::Eq, "="),
+        (TokenKind::DoubleLiteral, "1.2"),
+        (TokenKind::Identifier, "L"),
+        (TokenKind::Var, "var"),
+        (TokenKind::Identifier, "b"),
+        (TokenKind::Eq, "="),
+        (TokenKind::LongLiteral, "0x1FL"),
+        (TokenKind::Var, "var"),
+        (TokenKind::Identifier, "c"),
+        (TokenKind::Eq, "="),
+        (TokenKind::DoubleLiteral, "1e3"),
+        (TokenKind::Identifier, "L"),
+    ];
+    let mut cursor = 0;
+    for (element, &(kind, spelling)) in lexed.tokens().zip(expected) {
+        let start = text[cursor..].find(spelling).expect("spelling occurs next") + cursor;
+        assert_eq!(
+            (element.span().start(), element.span().end()),
+            (start as u32, (start + spelling.len()) as u32),
+            "{spelling:?}"
+        );
+        assert_eq!(element.kind(), ElementKind::Token(kind), "{spelling:?}");
+        assert!(!element.has_errors(), "{spelling:?}");
+        assert_eq!(source.text_of(element.span()).unwrap(), spelling);
+        cursor = start + spelling.len();
+    }
+    assert_eq!(lexed.tokens().count(), expected.len());
+    assert!(lexed.is_lossless(source));
+    assert_eq!(lexed.reprint(source).as_deref(), Some(text));
 }
 
 #[test]

@@ -447,14 +447,17 @@ impl<'a> Scanner<'a> {
     /// (grammar §2.4): decimal or `0x` hex integers, an optional fraction
     /// introduced only when a digit follows the `.`, an optional exponent
     /// introduced only when a digit follows `e`/`E` (with an optional sign),
-    /// and the suffix sets `l`/`L`, `f`/`F`, `d`/`D`.
+    /// the `f`/`F` and `d`/`D` suffixes on any number form, and the `l`/`L`
+    /// suffix only on the integer forms (`long-literal = ( decimal-int |
+    /// hex-int ) , ( "l" | "L" )`).
     ///
-    /// A malformed suffix tail is **not** consumed: `0x` without a
-    /// hexadecimal digit lexes as `0` then an identifier, and `1e` without
-    /// exponent digits lexes as `1` then an identifier — the longest valid
-    /// tokenisation under the accepted grammar, with no invented diagnostic
-    /// and no silently accepted malformed form. Value-based promotion is a
-    /// semantic question (S7) and is deliberately not performed.
+    /// A malformed or misplaced suffix tail is **not** consumed: `0x` without
+    /// a hexadecimal digit lexes as `0` then an identifier, `1e` without
+    /// exponent digits lexes as `1` then an identifier, and `1.2L` lexes as a
+    /// double then an identifier — the longest valid tokenisation under the
+    /// accepted grammar, with no invented diagnostic and no silently accepted
+    /// malformed form. Value-based promotion is a semantic question (S7) and
+    /// is deliberately not performed.
     fn number(&mut self) {
         let start = self.pos;
         let mut p = start;
@@ -517,7 +520,10 @@ impl<'a> Scanner<'a> {
                     kind = TokenKind::DoubleLiteral;
                     p += 1;
                 }
-                Some(b'l' | b'L') => {
+                // `long-literal` admits `l`/`L` only after `decimal-int` or
+                // `hex-int`, never after a fraction or exponent: the suffix
+                // is not consumed, so the byte starts an identifier instead.
+                Some(b'l' | b'L') if !is_double => {
                     kind = TokenKind::LongLiteral;
                     p += 1;
                 }
