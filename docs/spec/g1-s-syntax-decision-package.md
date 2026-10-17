@@ -180,6 +180,8 @@ The `PARSE` namespace is allocated to `cosmic-syntax` (`docs/spec/diagnostic-cod
 
 Requirements: each refusal names the construct, the family and the decision record; produces **no artifact**; exits through the compilation-failure path (S15 Q5); and does not cascade. The reserved-invalid keywords (`fun`/`fn`/`func`) are refused at parse entry with a specific message (condition class `PARSE002` unless the owner directs a dedicated code).
 
+**Amendment (A2-R1, 2026-10-17).** The A2-R1 repair directive (physical-line correctness and recursion-safety validation) reproduced a stack-exhaustion defect in the recursive-descent recogniser and required a bounded guard. Reaching the bound is not a syntax condition about the source language, so it is reported with the additional code `PARSE005` — an **implementation resource limit, not a syntax rule** — minted in `docs/spec/diagnostic-codes.md` §6.3 under §7's **Minor (Additive)** classification for adding a code inside an existing namespace. The four conditions above are unchanged.
+
 ## 9. What this package does not do
 
 * It does **not** change the grammar beyond the owner-authorized S-G1S-1 recognition correction (002-R5 §3), which is verified against the frozen legacy evidence and applied (§3.3). Nothing else in the grammar moves, and no semantics are adopted.
