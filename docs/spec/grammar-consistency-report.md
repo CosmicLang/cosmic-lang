@@ -5,7 +5,7 @@
 | **Status** | **Machine-checked.** Produced by `tools/spec-consistency.py`. |
 | **Directive** | ENGINEERING DIRECTIVE 002-R1 §5 · 002-R2 (post-merge) §3 · 002-R3 §6 · 002-R5 §3–§4 |
 | **Subject** | `docs/spec/grammar.ebnf` (122 productions) and the specification document set |
-| **Checked** | 2026-10-16 |
+| **Checked** | 2026-10-17 |
 | **Result** | **Proposed and machine-checkable** — run the checker for the current result; see §3 for its latest captured output |
 
 > **Path convention.** A path prefixed `cosmcc:` refers to the **legacy repository** `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
@@ -66,10 +66,10 @@ G7 decision records: 18 of 18 (S1..S18)
 G7 register rows: 18
 G8 status vocabulary checked on 18 records
 
-G6 decision-record references: 965 occurrences, all resolve
+G6 decision-record references: 979 occurrences, all resolve
 G9 gate ids: 15 defined across 2 documents, 15 referenced, all known
 G10 internal links: 20 checked, 0 broken
-G11 repository paths: 487 checked, 0 unresolved, 2 legacy-context
+G11 repository paths: 494 checked, 0 unresolved, 2 legacy-context
 
 G12 normative vocabulary: 6 terms defined
 

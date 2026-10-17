@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Living document — Phase 0 |
+| **Status** | Living document — Phase 0 foundation; updated for Phase 2 Stage A (2026-10-17) |
 | **Scope** | Target end-state pipeline, implemented components as of Phase 0, interfaces and invariants |
 | **Related** | `docs/audits/phase-0-baseline.md`, `docs/adr/0001-language-identity.md`, `docs/spec/compatibility-matrix.md` |
 
@@ -12,7 +12,7 @@
 
 ```
 Source Management          cosmic-source        (implemented in Phase 0)
-  → Lexer                  cosmic-lexer         (not started)
+  → Lexer                  cosmic-lexer         (Phase 2 Stage A: implemented — draft PR)
   → Lossless CST           cosmic-syntax        (not started)
   → AST                    cosmic-syntax        (not started)
   → Name Resolution        cosmic-sema          (not started)
@@ -29,10 +29,13 @@ Source Management          cosmic-source        (implemented in Phase 0)
 **Rule for introducing crates:** a component is added to the workspace only
 when it has a concrete contract, tests and a justified responsibility. Empty
 crates are not created to mirror this diagram. As of Phase 0 the workspace
-therefore contains exactly three crates (plus `cosmic-diagnostics`, which sits
-beside the pipeline as a cross-cutting service).
+contains exactly three crates — `cosmic-source`, `cosmic-diagnostics` (which
+sits beside the pipeline as a cross-cutting service) and `cosmic-cli`. Phase 2
+Stage A added the first pipeline crate beyond that foundation, `cosmic-lexer`
+(increment A1, §2.5); every component from `cosmic-syntax` onward remains
+unstarted.
 
-## 2. Implemented in Phase 0
+## 2. Implemented components (Phase 0 foundation; Stage A adds the lexer)
 
 ### 2.1 `cosmic-source` — source management
 
@@ -124,6 +127,23 @@ Deliberate: the CLI does not depend on `cosmic-source`/`cosmic-diagnostics`
 until there is a command that actually uses them (the first will be `check`).
 The crates are not connected just to decorate the dependency graph.
 
+### 2.5 `cosmic-lexer` — lexical frontend (Phase 2 Stage A, increment A1)
+
+**Contract:** total, lossless tokenization under the accepted G1-L lexical
+contract (`docs/spec/g1-l-lexical-decision-package.md`, D-L1–D-L10).
+
+* `lex(&SourceFile) -> LexedFile` — the element stream (`Bom`, `Whitespace`,
+  `LineTerminator`, `LineComment`, `BlockComment`, `Token`, `Error`) partitions
+  the file byte-for-byte; `is_lossless` and `reprint` reproduce the original
+  bytes, and the property tests exercise arbitrary malformed input.
+* Diagnostics are `Diagnostic`s with the minted `LEX001`–`LEX010` codes
+  (`docs/spec/diagnostic-codes.md` §6.2); recovery is local, deterministic and
+  never cascades (one diagnostic per construct).
+* Unicode: scalar-value columns, `char::is_alphabetic`/`is_alphanumeric`
+  identifier classification (the M-7 measurement debt remains recorded), exact
+  byte spans including astral characters.
+* No panics on any input, no `unsafe`, no dependencies.
+
 ## 3. Planned interfaces between phases (informative)
 
 The boundaries below are fixed *semantically* now (typed, no stringly-typed
@@ -160,7 +180,9 @@ coupling), but their exact Rust signatures land with their components:
 
 ## 5. Explicit non-goals of Phase 0
 
-Lexer, parser, name resolution, typing, HIR/MIR, optimizer, code generation
+Lexer (still outside Phase 0; implemented in Phase 2 Stage A — §2.5), parser,
+name resolution, typing, HIR/MIR, optimizer, code generation
 (wasm/native/JVM/JS), runtime, package manager (`Cosmic.toml`/`Cosmic.lock`),
 GC/ownership system, and any language-semantics decision not backed by legacy
-evidence. None of these are stubbed; they do not exist yet.
+evidence. Apart from the Stage A lexer, none of these are stubbed; they do not
+exist yet.

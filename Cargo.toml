@@ -9,6 +9,7 @@ resolver = "3"
 members = [
     "crates/cosmic-cli",
     "crates/cosmic-diagnostics",
+    "crates/cosmic-lexer",
     "crates/cosmic-source",
 ]
 

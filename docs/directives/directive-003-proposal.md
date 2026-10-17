@@ -1,17 +1,23 @@
 # ENGINEERING DIRECTIVE 003 — Proposed Phase 2 Frontend
 
-> **Status: PROPOSED NORMATIVE RULE / NOT AUTHORIZED.** Draft for owner
-> consideration under Directives 002-R1, 002-R2 (post-merge), 002-R3,
+> **Status: PROPOSED NORMATIVE RULE — STAGE A AUTHORIZED BY 003-A; THE
+> PROPOSAL AS A WHOLE NOT AUTHORIZED.** Draft for owner consideration under
+> Directives 002-R1, 002-R2 (post-merge), 002-R3,
 > **revised for staged sequencing and the public-repository reconciliation in
 > 002-R4, reconciled with the verified S-G1S-1 pattern-header correction
 > (002-R5), updated for the owner-accepted G1d risk-acceptance amendment
-> (003-L3), and updated for the authorized Apache-2.0 licensing-package
-> application (003-L4)**. No implementation may begin from this document alone. Historic
-> Directive 002 gate language (G1/G1b/G1c/G1d/G1e) remains an archival record;
-> the revised component gates in `docs/spec/implementation-gates.md` were
-> **accepted by the owner in Directive 002-R3**, which still does not authorize
-> this directive or any Phase 2 work. **Stage A approval must not silently
-> authorize Stage B** (§2).
+> (003-L3), updated for the authorized Apache-2.0 licensing-package
+> application (003-L4), and updated for the G1d transition and the Stage A
+> authorization (003-A, 2026-10-17)**. No implementation may begin from this
+> document alone. Historic Directive 002 gate language (G1/G1b/G1c/G1d/G1e)
+> remains an archival record; the revised component gates in
+> `docs/spec/implementation-gates.md` were **accepted by the owner in Directive
+> 002-R3**, which still does not authorize this directive as a whole. **The
+> owner authorized Stage A only (lexical and syntactic frontend):
+> `cosmic-lexer` and then the CST/parser increments, each through reviewed
+> pull requests. Stage B is NOT AUTHORIZED and needs G1-T entry plus a
+> separate owner directive.** **Stage A approval must not silently authorize
+> Stage B** (§2).
 
 **Role:** Principal Rust Compiler Engineer
 **Repository:** `CosmicLang/cosmic-lang`
@@ -39,7 +45,7 @@ Directive 003 with the following scoped conditions:
 | **G1-S** | Owner approves the concrete parser recognition subset and ambiguous cases (especially lambda lookahead); finding S-G1S-1 is resolved (verified pattern-header correction applied, 002-R5 — `docs/spec/g1-s-syntax-decision-package.md` §3.3). Syntax with no evidenced form is explicitly rejected with PARSE diagnostics, while evidenced syntax with open semantics remains parsable. **Accepted by the owner (003-G1 §4, 2026-10-16); G1-S entered.** |
 | **G1-T** | Before type checker / typed HIR: every implemented semantic operation must have an ACCEPTED NORMATIVE RULE or owner-authorized narrow provisional contract. All others have operation-specific, tested GATE diagnostics. |
 | **G1c** | Owner accepts the identity decision **or explicitly defers** it for frontend-only work — the source extension is already selected (`.cmic`, 2026-10-16, ADR-0002 §4.1). Never hardcode `.cmic` or any extension in the grammar. The Stage A-limited deferral was approved by the owner (003-G1 §5). |
-| **G1d** | Owner licensing decision **and** the public/private development choice: **Option L-A** (public development under an established licensing and contribution policy after legal/provenance review) or **Option L-B** (implementation exclusively in a genuinely private repository or local environment) — see `docs/spec/phase-2-entry-readiness.md` §3. **This repository is public: a branch or PR pushed here publishes source even without a release.** No legacy artifacts imported. Owner selected **L-A** and the outbound licence **Apache-2.0**; the internal G1d procedure was amended by owner risk acceptance (003-L3 §1–§3) and the licensing package was authorized and applied on the draft licensing branch (003-L4 §1–§3) — the internal G1d CLEARED transition is recorded only after integration and validation (`docs/spec/phase-2-entry-readiness.md` §9). |
+| **G1d** | Owner licensing decision **and** the public/private development choice: **Option L-A** (public development under an established licensing and contribution policy after legal/provenance review) or **Option L-B** (implementation exclusively in a genuinely private repository or local environment) — see `docs/spec/phase-2-entry-readiness.md` §3. **This repository is public: a branch or PR pushed here publishes source even without a release.** No legacy artifacts imported. Owner selected **L-A** and the outbound licence **Apache-2.0**; the internal G1d procedure was amended by owner risk acceptance (003-L3 §1–§3), the licensing package was authorized and applied (003-L4 §1–§3) and integrated and validated via PR #7 (merged 2026-10-17T02:23:07Z; post-merge CI green) — the internal **G1d — CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** transition is recorded (`docs/spec/phase-2-entry-readiness.md` §9), an internal governance status, **not** professional legal clearance. Stage A was authorized on that basis (003-A); Stage B remains not authorized. |
 | **G1e** | CI green for exact branch SHA, governance/protection revalidated. |
 | **G0-B** | Remains PARTIAL; documented Phase 0 exception is not reported as a pass. |
 

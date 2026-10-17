@@ -1,0 +1,21 @@
+[package]
+name = "cosmic-lexer"
+description = "Lossless lexer for the Cosmic-Lang compiler (cosmcc-rs): tokens, trivia, error regions, exact byte spans and LEX diagnostics."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cosmic-diagnostics = { path = "../cosmic-diagnostics" }
+cosmic-source = { path = "../cosmic-source" }
+
+[dev-dependencies]
+# Integration tests build real source maps and resolve diagnostic spans
+# directly, so both crates must be reachable from the test targets too.
+cosmic-diagnostics = { path = "../cosmic-diagnostics" }
+cosmic-source = { path = "../cosmic-source" }

@@ -4,11 +4,13 @@ Rust compiler toolchain for **Cosmic-Lang** — the successor toolchain
 (compiler `cosmcc-rs`, executable `cosmic`) to the legacy `CosmicLang/cosmcc`
 Kof compiler.
 
-> **Status: Phase 0 — Foundation.** This repository does not compile programs
-> yet, and it says so everywhere it matters: the `cosmic` CLI implements only
-> `--help` and `--version`; every planned command fails with a clear error and
-> exit code 2. No component reports success without performing its documented
-> operation.
+> **Status: Phase 2 — Stage A (lexical frontend), increment A1.** The
+> repository does not compile programs yet, and it says so everywhere it
+> matters: the `cosmic` CLI implements only `--help` and `--version`; every
+> planned command fails with a clear error and exit code 2. `cosmic-lexer` is
+> implemented and under review as a draft PR; parser, semantics, MIR, backends
+> and runtime remain unimplemented. No component reports success without
+> performing its documented operation.
 
 ## What exists today
 
@@ -16,10 +18,11 @@ Kof compiler.
 |---|---|---|
 | `cosmic-source` | Implemented: source registry, checked byte spans, line/column mapping (Unicode, CRLF, lone CR) | `crates/cosmic-source` + tests |
 | `cosmic-diagnostics` | Implemented: structured diagnostics, human + JSON renderers, no panics on input | `crates/cosmic-diagnostics` + tests |
+| `cosmic-lexer` | Implemented (draft PR under review): lossless tokenization, G1-L D-L1–D-L10 behavior, `LEX001`–`LEX010`, byte-preservation properties | `crates/cosmic-lexer` + tests |
 | `cosmic` CLI | Bootstrap: `--help`, `--version`; planned commands fail loudly | `crates/cosmic-cli` + tests |
 | CI | `cargo fmt` / `clippy -D warnings` / `test` / `doc`, plus the specification consistency checker (`python3 tools/spec-consistency.py`), on every pull request and on every branch push, including `main`; actions pinned to commit SHAs | `.github/workflows/ci.yml` |
 
-Everything else (lexer, parser, semantics, MIR, backends, runtime, package
+Everything else (parser/CST, semantics, MIR, backends, runtime, package
 manager) is **not implemented**. See
 `docs/architecture/compiler-pipeline.md` for the target pipeline and the
 honest current state.
@@ -28,6 +31,7 @@ honest current state.
 
 ```sh
 cargo test --workspace --all-targets     # run all tests
+cargo test -p cosmic-lexer               # the lexer suite (unit + conformance + properties)
 cargo run -p cosmic-cli -- --help        # the cosmic CLI
 cargo run -p cosmic-cli -- --version
 cargo run -p cosmic-diagnostics --example demo   # render a demo diagnostic
@@ -39,6 +43,7 @@ cargo run -p cosmic-diagnostics --example demo   # render a demo diagnostic
 crates/
   cosmic-source/        source registry, spans, line/column mapping
   cosmic-diagnostics/   structured diagnostics + renderers
+  cosmic-lexer/         lossless lexical frontend (tokens, trivia, LEX diagnostics)
   cosmic-cli/           the `cosmic` executable
 docs/
   audits/phase-0-baseline.md                 legacy audit (cosmcc @ 284358f4, v0.6.5)
@@ -70,22 +75,23 @@ docs/
   development/measurement-plan.md            reproducible measurement specifications
   development/test-strategy.md               test ladder + differential harness design
   directives/directive-002-proposal.md       proposed Phase 1 (specification-only)
-  directives/directive-003-proposal.md       proposed Phase 2 frontend, staged (NOT AUTHORISED; revised 002-R4)
+  directives/directive-003-proposal.md       proposed Phase 2 frontend, staged (Stage A AUTHORISED by 003-A; Stage B not authorised)
 ```
 
 ## Phase 1 status (specification)
 
 Phase 1 produced the **language specification, grammar, typing contracts, 18
 semantic decision records and five ADRs** — all **Proposed**. No compiler
-implementation was added: the workspace still contains exactly the three Phase 0
-crates.
+implementation was added: the workspace contained exactly the three Phase 0
+crates until Phase 2 Stage A added `cosmic-lexer` (see below).
 
 The authoritative register is `docs/spec/decisions/README.md`; the component
 entry gates are `docs/spec/implementation-gates.md`. The Stage A gates G1, G1-L
 and G1-S were accepted by the owner and the G1c Stage A-limited deferral
-approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — the Apache-2.0
-licensing and contribution package is authorized and applied; the internal
-CLEARED transition is recorded only after integration and validation**
+approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — CLEARED UNDER
+OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** — the Apache-2.0
+licensing and contribution package was integrated and validated (PR #7, merged
+2026-10-17T02:23:07Z; post-merge CI green)
 (003-L3; owner authorization 003-L4, 2026-10-16 — internal risk-based
 clearance, **not** professional legal clearance). The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
 **PROPOSED NORMATIVE RULE**, **ACCEPTED NORMATIVE RULE**, **OPEN**, **DEFERRED**
@@ -97,14 +103,16 @@ specific `GATE` diagnostic; unrelated syntax remains recognizable when evidenced
 Owner acceptances are recorded at individual-rule granularity in the affected
 records (S5, S8, S13, S14 — 003-G1 updates).
 
-**Phase 2 is not authorised.** The proposed Directive 003 is
-`docs/directives/directive-003-proposal.md` (revised, staged, still NOT
-AUTHORIZED); the entry ledger is `docs/spec/phase-2-entry-readiness.md`, with
+**Phase 2 Stage A is authorised; Stage B is not.** The proposed Directive 003
+is `docs/directives/directive-003-proposal.md` (staged; Stage A authorized by
+003-A, 2026-10-17; Stage B NOT AUTHORIZED); the entry ledger is
+`docs/spec/phase-2-entry-readiness.md`, with
 `docs/spec/g1-l-lexical-decision-package.md` and
-`docs/spec/g1-s-syntax-decision-package.md` now recording the accepted Stage A
-gates. **Stage A implementation remains unauthorised until the licensing
-package is integrated and validated under the amended G1d procedure and a
-separate owner authorization of Directive 003-A is given.**
+`docs/spec/g1-s-syntax-decision-package.md` recording the accepted Stage A
+gates. Increment A1 (`cosmic-lexer`) is implemented on `phase/2-frontend` and
+open for review as a draft PR — **do not merge without separate owner
+approval**. Stage B still requires G1-T entry and a separate owner
+authorization.
 
 ## Phase 0 review status
 
