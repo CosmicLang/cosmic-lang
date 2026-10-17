@@ -1,0 +1,18 @@
+[package]
+name = "cosmic-diff-harness"
+description = "A3 differential and measurement harness for the Cosmic frontend (Phase 2 Stage A). It runs independently authored sources against an externally provided, opt-in legacy oracle and reports explicit skips when no oracle is configured. No legacy material is vendored, copied or redistributed."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+cosmic-diagnostics = { path = "../../crates/cosmic-diagnostics" }
+cosmic-lexer = { path = "../../crates/cosmic-lexer" }
+cosmic-source = { path = "../../crates/cosmic-source" }
+cosmic-syntax = { path = "../../crates/cosmic-syntax" }
+
+[lints]
+workspace = true
