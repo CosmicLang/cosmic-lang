@@ -83,8 +83,9 @@ crates.
 The authoritative register is `docs/spec/decisions/README.md`; the component
 entry gates are `docs/spec/implementation-gates.md`. The Stage A gates G1, G1-L
 and G1-S were accepted by the owner and the G1c Stage A-limited deferral
-approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d remains PENDING** (no
-licence applied, no legal clearance). The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
+approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — amended owner
+risk-acceptance procedure approved; licensing implementation pending** (003-L3;
+no licence applied, no legal clearance). The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
 **PROPOSED NORMATIVE RULE**, **ACCEPTED NORMATIVE RULE**, **OPEN**, **DEFERRED**
 and **NOT VERIFIED**. Their use is per question: a record can contain several.
 The Directive 002-R1 read-only JVM probes (`docs/audits/phase-1-legacy-probes.md`)
@@ -99,8 +100,8 @@ records (S5, S8, S13, S14 — 003-G1 updates).
 AUTHORIZED); the entry ledger is `docs/spec/phase-2-entry-readiness.md`, with
 `docs/spec/g1-l-lexical-decision-package.md` and
 `docs/spec/g1-s-syntax-decision-package.md` now recording the accepted Stage A
-gates. **Stage A implementation remains unauthorised until G1d is cleared and a
-separate directive authorizes it.**
+gates. **Stage A implementation remains unauthorised until the licensing package
+is applied under the amended G1d procedure and a separate directive authorizes it.**
 
 ## Phase 0 review status
 
@@ -141,10 +142,12 @@ macOS assembler). Full details, including licensing observations, are in
 
 ## License
 
-**Intended: Apache-2.0 (conditional — not applied).** The owner selected Apache
-License 2.0 as the intended outbound licence (2026-10-16), conditional on
-copyright-ownership verification and a qualified legal review (G1d, still
-PENDING). **No LICENSE file has been added and no grant is in effect**; until
-the licence is formally authorised and applied, treat all content as "all
-rights reserved". The legacy `cosmcc` is GPL-3.0; this repository contains no
-code translated or copied from it (ADR-0001 §2.5).
+**Intended: Apache-2.0 (not applied).** The owner selected Apache License 2.0 as
+the intended outbound licence (2026-10-16). The internal G1d procedure was
+amended by owner decision (ENGINEERING DIRECTIVE 003-L3, 2026-10-16) to an owner
+risk-acceptance procedure with no qualified-counsel review; **no LICENSE file
+has been added and no grant is in effect** — the licensing implementation is
+pending owner authorization. Until the licence is formally authorised and
+applied, treat all content as "all rights reserved". The legacy `cosmcc` is
+GPL-3.0; this repository contains no code translated or copied from it
+(ADR-0001 §2.5).

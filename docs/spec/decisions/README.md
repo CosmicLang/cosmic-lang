@@ -65,9 +65,11 @@ owner** in Directive 002-R3 (2026-10-16) and replaces the flat `G1b`. Acceptance
 of the framework approves no language rule and does not authorize Phase 2;
 S1–S18 remain individually authoritative. G1, G1-L and G1-S were subsequently
 accepted and the G1c Stage A-limited deferral approved by the owner
-(ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d remains PENDING** and no
-implementation is authorized. Acceptance is recorded at individual-rule
-granularity in the affected records (S5, S8, S13, S14 — 003-G1 updates).
+(ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **the internal G1d procedure was
+amended by owner risk acceptance — licensing implementation pending**
+(ENGINEERING DIRECTIVE 003-L3, 2026-10-16) and no implementation is authorized.
+Acceptance is recorded at individual-rule granularity in the affected records
+(S5, S8, S13, S14 — 003-G1 updates).
 
 
 | Gate | Requirement | Covered by |

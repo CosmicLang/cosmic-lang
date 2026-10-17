@@ -66,10 +66,10 @@ G7 decision records: 18 of 18 (S1..S18)
 G7 register rows: 18
 G8 status vocabulary checked on 18 records
 
-G6 decision-record references: 951 occurrences, all resolve
+G6 decision-record references: 965 occurrences, all resolve
 G9 gate ids: 15 defined across 2 documents, 15 referenced, all known
 G10 internal links: 19 checked, 0 broken
-G11 repository paths: 475 checked, 0 unresolved, 2 legacy-context
+G11 repository paths: 484 checked, 0 unresolved, 2 legacy-context
 
 G12 normative vocabulary: 6 terms defined
 
