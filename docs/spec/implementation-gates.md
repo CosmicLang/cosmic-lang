@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) **Stage A entry gates:** G1, G1-L and G1-S accepted and the G1c Stage A-limited deferral approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — amended owner risk-acceptance procedure approved, licensing implementation pending** (003-L3); gate acceptance does not authorize implementation. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 · 003-G1 §2–§6 · 003-L3 §1–§5 |
+| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) **Stage A entry gates:** G1, G1-L and G1-S accepted and the G1c Stage A-limited deferral approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d — licensing package authorized and applied on the draft licensing branch (owner authorization 003-L4, 2026-10-16); the internal CLEARED transition is recorded only after integration and validation** — an internal risk-based status, not professional legal clearance; gate acceptance does not authorize implementation. |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 · 003-G1 §2–§6 · 003-L3 §1–§5 · 003-L4 §1–§7 |
 | **Supersedes** | the single `G1b` gate defined in `docs/spec/decisions/README.md` and `docs/directives/directive-003-proposal.md` |
 | **Related** | `docs/spec/decisions/` (S1–S18), `docs/audits/phase-1-legacy-probes.md`, `docs/spec/grammar-consistency-report.md`, `docs/directives/directive-003-proposal.md` |
 
@@ -275,6 +275,10 @@ already existed.
 >
 > **G1d status: AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING.** Reserved future result (not assigned): **G1d — CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** — the transition requires the owner-authorized Apache-2.0 licensing and contribution package to be applied and validated, with any unresolved technical or ownership blocker reported. The original qualified-counsel requirement remains preserved in the dated 003-G1 record above and in the 003-L1/003-L2 reports; nothing here claims a legal clearance.
 
+> **003-L4 owner authorization and licensing-package record (2026-10-16).** The owner expressly authorized publication of the Apache-2.0 licensing package on branch `legal/apache-2.0-adoption` (committed, pushed and validated in the public repository; **merging requires a separate owner approval**), approved the **Developer Certificate of Origin (`Signed-off-by`)** as the inbound contribution policy, and approved the public copyright attribution **Copyright 2026 CosmicLang**; the 003-L3 risk acceptance (Option B) was reaffirmed and the provenance restrictions retained (no GPL-3.0 legacy imports or mechanical translation; independently authored implementation and tests; rights to contribute; escalation of suspected provenance violations). The package is applied on the draft licensing PR: root `LICENSE` (complete, unmodified Apache License 2.0 text), `license = "Apache-2.0"` in `[workspace.package]` inherited by the three crates, the README licensing declaration, the `CONTRIBUTING.md` DCO contribution policy with dependency-licence review, and the governance-record updates.
+>
+> **G1d does not transition yet.** The internal result changes to **G1d — CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** only when the package is integrated and validated, with no unresolved technical or ownership blocker reported. That result certifies compliance with the project's amended internal governance procedure only — it is **not** legal advice, **not** professional legal clearance and does **not** eliminate third-party rights, and it must never be represented as any of those. Stage A and every Phase 2 component remain **NOT AUTHORIZED** (003-L4 §4, §6).
+
 ### 5.1 The cycle, resolved
 
 | Gate | Status after Directive 002-R3 |
@@ -285,16 +289,18 @@ already existed.
 | G1-T | **FRAMEWORK ACCEPTED · ENTRY PENDING** — every Tier-T record is closed or gated; the per-operation gates are specified in §4.1; acceptance outstanding |
 | G1-M | **FRAMEWORK ACCEPTED · ENTRY PENDING** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
 | G1-R | **FRAMEWORK ACCEPTED · ENTRY PENDING (OWNER)** — S16/S17 undecided. Does not gate Phase 2 or Phase 3 |
-| G1c / G1d | **G1c SATISFIED via Stage A-limited deferral** (owner, 003-G1 §5) — extension `.cmic`; parser extension-independent; MIME/editor/release-level decisions deferred. **G1d — AMENDED PROCEDURE APPROVED; LICENSING IMPLEMENTATION PENDING** (owner risk acceptance, 003-L3 §1–§3) — L-A selected; intended licence Apache-2.0, **not applied**; mandatory qualified-counsel review replaced by the recorded owner risk acceptance; no licence grant is in effect (`docs/spec/phase-2-entry-readiness.md` §5 item 6, §9) |
+| G1c / G1d | **G1c SATISFIED via Stage A-limited deferral** (owner, 003-G1 §5) — extension `.cmic`; parser extension-independent; MIME/editor/release-level decisions deferred. **G1d — licensing package authorized and applied on the draft licensing branch (owner authorization 003-L4, 2026-10-16)** — L-A selected; the Apache-2.0 licence text, Cargo metadata and inheritance, README declaration, DCO contribution policy and attribution are applied on `legal/apache-2.0-adoption`; the internal **CLEARED UNDER OWNER-ACCEPTED RISK PROCEDURE (NO QUALIFIED-COUNSEL REVIEW)** transition is recorded only after the package is integrated and validated, and that status is **not professional legal clearance** (`docs/spec/phase-2-entry-readiness.md` §5 item 6, §9) |
 | G1e | **PRIOR SHA PASSED** — verify protection details and CI on the final SHA |
 
 **Therefore: the gate framework is accepted (002-R3), and the Stage A entry
 gates G1, G1-L and G1-S are accepted with the G1c deferral approved (003-G1);
 the internal G1d procedure is amended under the owner's risk acceptance
-(003-L3). A component-scoped Phase 2 authorization still requires the
-owner-authorized Apache-2.0 licensing and contribution package to be applied and
-validated under the amended G1d procedure and a separate owner authorization of
-Directive 003-A; Stage B additionally requires G1-T entry.** The dependency chain
+(003-L3) and the authorized licensing package is applied on the draft licensing
+branch (003-L4). A component-scoped Phase 2 authorization still requires the
+owner-authorized Apache-2.0 licensing and contribution package to be integrated
+(merged) and validated under the amended G1d procedure, the resulting internal
+G1d clearance, and a separate owner authorization of Directive 003-A; Stage B
+additionally requires G1-T entry.** The dependency chain
 that made authorization impossible is gone, and it was removed by (a) measuring what
 could be measured, and (b) scoping each gate to the component that consumes the
 decision — not by relaxing any standard.
@@ -310,9 +316,10 @@ decision — not by relaxing any standard.
 * **The owner-blocked decisions are still owner-blocked** (S3, S4, S16, S17,
   the MIME type, the naming) — with completions now recorded: the source
   extension is `.cmic` and the G1c Stage A-limited deferral is approved
-  (003-G1 §5); the licence/publication hold is governed by the amended G1d
-  procedure (owner risk acceptance, 003-L3) — L-A selected; Apache-2.0
-  intended, **not applied**; the licensing package remains unauthorized.
+  (003-G1 §5); the licence/publication hold is resolved on the draft licensing
+  branch under the amended G1d procedure (owner risk acceptance 003-L3; owner
+  authorization 003-L4) — L-A selected; Apache-2.0 applied; the internal G1d
+  CLEARED transition is recorded only after integration and validation.
 * **Phase 3 and Phase 4 remain blocked** on G1-M and G1-R respectively.
 * **G0-B remains PARTIAL.**
 

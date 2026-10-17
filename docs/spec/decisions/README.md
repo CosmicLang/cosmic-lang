@@ -66,8 +66,11 @@ of the framework approves no language rule and does not authorize Phase 2;
 S1–S18 remain individually authoritative. G1, G1-L and G1-S were subsequently
 accepted and the G1c Stage A-limited deferral approved by the owner
 (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **the internal G1d procedure was
-amended by owner risk acceptance — licensing implementation pending**
-(ENGINEERING DIRECTIVE 003-L3, 2026-10-16) and no implementation is authorized.
+amended by owner risk acceptance (ENGINEERING DIRECTIVE 003-L3, 2026-10-16) and
+the Apache-2.0 licensing package was authorized and applied on the draft
+licensing branch — the internal CLEARED transition is recorded only after
+integration and validation (owner authorization 003-L4, 2026-10-16); no
+implementation is authorized.**
 Acceptance is recorded at individual-rule granularity in the affected records
 (S5, S8, S13, S14 — 003-G1 updates).
 
