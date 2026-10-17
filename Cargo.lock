@@ -24,3 +24,12 @@ dependencies = [
 [[package]]
 name = "cosmic-source"
 version = "0.1.0"
+
+[[package]]
+name = "cosmic-syntax"
+version = "0.1.0"
+dependencies = [
+ "cosmic-diagnostics",
+ "cosmic-lexer",
+ "cosmic-source",
+]

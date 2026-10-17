@@ -1,0 +1,24 @@
+[package]
+name = "cosmic-syntax"
+description = "Lossless concrete syntax tree and recovering parser for Cosmic-Lang (cosmcc-rs): CST nodes, PARSE diagnostics and byte-for-byte reconstruction."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+cosmic-diagnostics = { path = "../cosmic-diagnostics" }
+cosmic-lexer = { path = "../cosmic-lexer" }
+cosmic-source = { path = "../cosmic-source" }
+
+[dev-dependencies]
+# Integration tests build real source maps and resolve spans directly, so the
+# foundation crates must be reachable from the test targets too. The lexer is
+# needed to compare CST leaves with the lossless element stream.
+cosmic-diagnostics = { path = "../cosmic-diagnostics" }
+cosmic-lexer = { path = "../cosmic-lexer" }
+cosmic-source = { path = "../cosmic-source" }

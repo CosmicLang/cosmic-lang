@@ -2,9 +2,9 @@
 
 | | |
 |---|---|
-| **Status** | **Registry in force.** Phase 1 draft for the remaining namespaces; the `LEX` namespace is implemented and `LEX001`–`LEX010` are minted with evidence in §6.2 (Phase 2 Stage A, 2026-10-17). |
+| **Status** | **Registry in force.** Phase 1 draft for the remaining namespaces; the `LEX` namespace is implemented and `LEX001`–`LEX010` are minted with evidence in §6.2 (Phase 2 Stage A, 2026-10-17), and the `PARSE` namespace is implemented and `PARSE001`–`PARSE004` are minted with evidence in §6.3 (Phase 2 Stage A2, 2026-10-17). |
 | **Phase** | 1 (registry); used from Phase 2 |
-| **Directive** | ENGINEERING DIRECTIVE 002, deliverable D9 · 003-A (minting of `LEX001`–`LEX010`, 2026-10-17) |
+| **Directive** | ENGINEERING DIRECTIVE 002, deliverable D9 · 003-A (minting of `LEX001`–`LEX010`, 2026-10-17) · 003-A2 (minting of `PARSE001`–`PARSE004`, 2026-10-17) |
 | **Related** | `docs/spec/decisions/S15-feature-gates.md`, `docs/spec/decisions/S18-mir-invariants.md`, `crates/cosmic-diagnostics/src/code.rs`, `docs/spec/compatibility-matrix.md` §4 |
 
 ---
@@ -91,7 +91,7 @@ Two to eight letters, so the namespace is the letter run before the digits.
 |---|---|---|---|
 | `SRC` | `cosmic-source` | File registry, spans, offsets, line/column mapping, size limits, UTF-8 | **Allocated** |
 | `LEX` | `cosmic-lexer` (Phase 2) | Lexical errors: malformed tokens, unterminated literals, invalid escapes, unexpected characters | **Implemented** — `LEX001`–`LEX010` minted (§6.2, Phase 2 Stage A) |
-| `PARSE` | `cosmic-syntax` (Phase 2) | Syntax errors and error recovery | **Allocated** |
+| `PARSE` | `cosmic-syntax` (Phase 2) | Syntax errors and error recovery | **Implemented** — `PARSE001`–`PARSE004` minted (§6.3, Phase 2 Stage A2) |
 | `RES` | `cosmic-sema` (Phase 2) | Name resolution: unresolved names, duplicate declarations, scope errors | **Allocated** |
 | `TYPE` | `cosmic-sema` (Phase 2) | Typing: mismatch, arity, nullability, inference failure, ambiguity | **Allocated** |
 | `OVL` | `cosmic-sema` (Phase 2) | Overload resolution specifically (ambiguity, no applicable candidate) — separated from `TYPE` because S1 treats overload ambiguity as its own contract | **Allocated** |
@@ -164,9 +164,10 @@ compiler itself must uphold (S18 Q4). Rules:
 ## 6. Registry format
 
 This section defines the table that each namespace maintains. Except for the
-minted `LEX` namespace (§6.2 — the first component to emit diagnostics), no
-codes are listed yet, because no other component emits any — listing invented
-codes would create a stability obligation for a meaning nobody has implemented.
+minted `LEX` (§6.2) and `PARSE` (§6.3) namespaces — the components that emit
+diagnostics today — no codes are listed yet, because no other component emits
+any — listing invented codes would create a stability obligation for a meaning
+nobody has implemented.
 
 | Column | Meaning |
 |---|---|
@@ -239,6 +240,37 @@ Notes:
   file `crates/cosmic-lexer/tests/lex_diagnostics.rs` carries one named test per
   code, and `lex_codes_are_stable` asserts that the ten allocations are
   contiguous and that every emitted code is one of the ten.
+
+### 6.3 The second minted namespace: `PARSE` (Phase 2 Stage A2, 2026-10-17)
+
+`cosmic-syntax` is the second component to emit diagnostics: `PARSE001`–`PARSE004`
+are minted with the A2 recogniser. The conditions are the accepted contract of
+`docs/spec/g1-s-syntax-decision-package.md` §4 (refusals) and §6 (recovery);
+all four are `Error` severity, and they are the only codes the recogniser
+emits — `LEX` codes are passed through unremapped (§6.2). `Introduced` is
+`unreleased`: no toolchain release exists yet, so §2.2 pre-release freedom
+applies to rewording and renumbering, while this allocation is frozen for
+review purposes.
+
+| Code | Condition | Severity | Introduced | Retired | Decision record | Evidence |
+|---|---|---|---|---|---|---|
+| `PARSE001` | unsupported syntax family refused (G1-S §4 families 1–7 and 9; the message names the construct, its family and record) | Error | unreleased | — | S9, S10 | `parse001_unsupported_families_are_refused` |
+| `PARSE002` | unexpected token (including the reserved-invalid words `fun`/`fn`/`func`, which carry the specific SG-001 message) | Error | unreleased | — | S10, S15 Q3 | `parse002_unexpected_tokens_are_reported` |
+| `PARSE003` | unexpected end of input: a construct is left unclosed | Error | unreleased | — | S15 Q3 | `parse003_unexpected_end_of_input_is_reported` |
+| `PARSE004` | labelled `break`/`continue` is not supported (G1-S §4 family 8; the grammar derives unlabelled forms only) | Error | unreleased | — | S5 | `parse004_labelled_jumps_are_refused` |
+
+Notes:
+
+* One diagnostic per construct: each refused family produces exactly one
+  `PARSE001`, and each malformed region exactly one `PARSE002`/`PARSE003`.
+  Recovery is bounded and preserves every consumed byte — no fabricated bytes,
+  no silent token loss.
+* The reserved-invalid words share the `PARSE002` code class and add the
+  specific SG-001 message (G1-S §8) rather than a dedicated code.
+* The evidence test names are frozen with the registry: the integration test
+  file `crates/cosmic-syntax/tests/parse_diagnostics.rs` carries one named test
+  per code, and `parse_codes_are_stable` asserts that the four allocations are
+  contiguous and that every emitted code is one of the four.
 
 ---
 
