@@ -365,6 +365,16 @@ target only, and the Phase 0 audit already established that a passing corpus
 does not guarantee cross-target agreement (the shift-semantics divergence). No
 compatibility claim may rest on JVM-only evidence.
 
+**A3 measurement update (2026-10-17).** The Stage A verification increment
+executed the M-7 identifier-class probes against the accepted frontend (34/34
+pass; `docs/audits/phase-2-a3-probes.md`) and recorded cross-authority context
+for M-6 (`docs/audits/phase-2-a3-m6-cross-target.md`) plus reproducible
+frontend measurements (`docs/audits/phase-2-a3-measurements.md`). The legacy
+oracle remained unavailable and was never downloaded or vendored: the M-6
+target re-runs and every legacy-side cross-check of M-1…M-7 are **NOT
+MEASURED**, so M-7 is measured against the accepted authority only and D-L3
+is **not** settled against legacy behaviour. These debt items remain open.
+
 ---
 
 ## 7. Gate observability requirement

@@ -12,6 +12,7 @@ members = [
     "crates/cosmic-lexer",
     "crates/cosmic-source",
     "crates/cosmic-syntax",
+    "tools/diff-harness",
 ]
 
 [workspace.package]
