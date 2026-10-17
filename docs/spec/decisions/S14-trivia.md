@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | **PROPOSED NORMATIVE RULE** — owner acceptance outstanding |
+| **Status** | **ACCEPTED NORMATIVE RULE** for Q1 (D-L10), Q2 with the D-L1 prefix-leaf refinement and Q4 (D-L4) — owner acceptance 003-G1 (2026-10-16, G1-L); Q3 remains a deferred proposal; Q5 (formatter specification) remains future scope |
 | **Owner** | Engineering (analysis); project owner (acceptance) |
 | **Phase** | Phase 1 decision; Phase 2 implementation |
 | **Related** | `docs/spec/language-spec.md` §3, `docs/spec/grammar.ebnf` §2.1, S13, S15 |
@@ -102,3 +102,25 @@
 * Phase 0's `cosmic-source` does not yet preserve terminator form; that is a
   Phase 2 concern for the CST, not a defect in `cosmic-source` (which serves
   line/column mapping, not round-tripping).
+
+---
+
+## 003-G1 update (2026-10-16)
+
+The owner accepted the G1-L lexical contract (ENGINEERING DIRECTIVE 003-G1 §3),
+which decides this record's Q1, Q2 and Q4 at individual-rule granularity:
+
+* **Q1 → D-L10 — accepted as proposed.** The lexer's stream partitions every
+  byte exactly once; reprint is the identity for every accepted input (any file
+  that passed UTF-8 validation), including malformed language syntax.
+* **Q2 → D-L1 — accepted with the recorded refinement.** Normalisation remains
+  limited to the leading BOM; the BOM is consumed as a code character and
+  preserved as a **prefix leaf** (three-byte span, no language token), not as
+  ordinary trivia.
+* **Q4 → D-L4 item 4 — accepted as proposed.** `\n`, `\r\n` and lone `\r` are
+  preserved as distinct trivia; the grammar remains terminator-agnostic.
+* **Unchanged.** Q3's optional interior-`/*` warning is explicitly not required
+  at G1-L entry and remains a deferred proposal; Q5's formatter specification
+  remains future scope (the accepted CST guarantees are its precondition).
+
+No other status changes.

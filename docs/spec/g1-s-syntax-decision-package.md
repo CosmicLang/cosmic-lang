@@ -2,13 +2,15 @@
 
 | | |
 |---|---|
-| **Status** | **READY FOR OWNER DECISION — G1-S is NOT entered.** This document accepts nothing; it proposes the parser-recognition contract whose owner acceptance is the G1-S entry condition. |
-| **Directive** | ENGINEERING DIRECTIVE 002-R4 §6 · 002-R5 §3–§4, §7 |
+| **Status** | **ACCEPTED by the owner — G1-S ENTERED** for Stage A syntactic readiness (ENGINEERING DIRECTIVE 003-G1 §4, 2026-10-16). The recognition subset, refusal contract, lambda rules, recovery and CST obligations and the PARSE allocation were accepted as proposed; semantic adoption remains out of scope (§9). |
+| **Directive** | ENGINEERING DIRECTIVE 002-R4 §6 · 002-R5 §3–§4, §7 · 003-G1 §4 |
 | **Basis** | `docs/spec/grammar.ebnf` (122 productions, corrected F1/F2/F4/F5) and `docs/spec/grammar-evidence-map.md` (122/122, machine-checked) |
 | **Scope** | Recognition only: the recognized syntax subset, unsupported families, disambiguation, recovery and CST obligations for `cosmic-syntax`. Semantic adoption is explicitly out of scope (see §9). |
 | **Related** | `docs/spec/implementation-gates.md` §5 (G1-S) and §7 · `docs/spec/grammar-consistency-report.md` · `docs/spec/decisions/S15-feature-gates.md` · `docs/spec/decisions/S5-pattern-matching.md` · `docs/spec/g1-l-lexical-decision-package.md` · `docs/spec/phase-2-entry-readiness.md` |
 
 > **Path convention.** A path prefixed `cosmcc:` refers to the legacy repository `CosmicLang/cosmcc` at the frozen SHA — it does not exist in this repository. Unprefixed paths are relative to this repository.
+
+> **Owner acceptance (ENGINEERING DIRECTIVE 003-G1 §4, 2026-10-16).** G1-S is entered for Stage A syntactic readiness. Explicitly included: corrected function parameters and default-value syntax; unlabelled `break`/`continue`; separate colon statement-switch and arrow expression-switch arms; verified binding/destructuring pattern-header syntax; the documented lambda/parenthesis lookahead; the evidence-backed generic/comparison disambiguation; the trailing-lambda same-line rule; lossless CST construction; recovery, deterministic diagnostics, termination and no-panics; refusals for the nine unsupported families; and the PARSE allocation plan. **Pattern recognition is not pattern-semantic approval** — typed HIR, overload resolution, conversions, evaluation order and runtime behaviour are not approved.
 
 ---
 
@@ -125,11 +127,11 @@ Everything else in the provisional classification parses and is semantically gat
 
 `primary` includes both a parenthesised expression and a lambda that may begin with `(`; they are **not disjoint on the first terminal**. The legacy parser resolves this with unbounded lookahead (`ExpressionParser.parsePrimary`, `LambdaParser`); the grammar does not encode it (report §5.3, "the single most important parser-design constraint this report surfaces").
 
-**Required disambiguation (PROPOSED).**
+**Required disambiguation (accepted as proposed — 003-G1 §4).**
 
 1. The parser must **not** assume LL(1) at `(`.
 2. On `(`, scan the parenthesised region; if the matching `)` is followed by `->`, parse the region as lambda parameters; otherwise as a parenthesised expression. The scan is deterministic and bounded by the region.
-3. The trailing-lambda same-line rule is applied as recorded: a `{` starting on the same line as the preceding expression attaches as a trailing lambda block (grammar §6.1 note; PROPOSED NORMATIVE RULE — its adoption is part of this acceptance).
+3. The trailing-lambda same-line rule is applied as recorded: a `{` starting on the same line as the preceding expression attaches as a trailing lambda block (grammar §6.1 note; the rule is adopted by this acceptance — 003-G1 §4).
 4. Differential cases owed before the rule is treated as settled: `(x) -> x` (untyped single parameter), `(x: Int) -> x` (executed form), `()` empty parameters, `(a + b)` expression, nested parentheses, and `(` immediately before a line boundary.
 
 ### 5.2 Generics versus comparison
@@ -182,17 +184,17 @@ Requirements: each refusal names the construct, the family and the decision reco
 
 * It does **not** change the grammar beyond the owner-authorized S-G1S-1 recognition correction (002-R5 §3), which is verified against the frozen legacy evidence and applied (§3.3). Nothing else in the grammar moves, and no semantics are adopted.
 * It does **not** adopt semantics: exhaustiveness, fallthrough, guards, destructuring/binding meaning, evaluation order, overloads, equality, concurrency — every Tier-T/M question stays exactly where S1–S18 put it (OPEN or GATED).
-* It does **not** enter G1-S, authorize Stage A, or authorize implementations. **Recognition acceptance is a separate owner action from semantic acceptance**, per `docs/spec/implementation-gates.md` §3.1 and the acceptance record in §5 of that document.
+* G1-S **is entered** (003-G1 §4), but that does **not** authorize Stage A or any implementation. **Recognition acceptance remains a separate owner action from semantic acceptance**, per `docs/spec/implementation-gates.md` §3.1 and the acceptance record in §5 of that document.
 
-## 10. Owner action checklist
+## 10. Owner action — completed (003-G1, 2026-10-16)
 
-| # | Decision | ☐ Accept as proposed | ☐ Amend (state) | ☐ Decline (keep gated) |
-|---|---|---|---|---|
-| 1 | Recognized subset: all 111 `RECOGNISED` productions parse; semantics gated downstream (§3.1–3.2) | ☐ | ☐ | ☐ |
-| 2 | S-G1S-1 — **resolved**: correction verified and applied under 002-R5 §3 (§3.3); no further decision open | — | — | — |
-| 3 | Refusal contract for the nine unsupported families incl. labelled break/continue (§4) | ☐ | ☐ | ☐ |
-| 4 | Lambda lookahead rule + trailing-lambda same-line rule (§5.1) | ☐ | ☐ | ☐ |
-| 5 | Recovery obligations (§6) and CST round-trip invariants (§7) | ☐ | ☐ | ☐ |
-| 6 | PARSE allocation plan (§8) | ☐ | ☐ | ☐ |
+| # | Decision | Owner decision |
+|---|---|---|
+| 1 | Recognized subset: all 111 `RECOGNISED` productions parse; semantics gated downstream (§3.1–3.2) | **ACCEPTED as proposed** |
+| 2 | S-G1S-1 — **resolved**: correction verified and applied under 002-R5 §3 (§3.3) | **RESOLVED (no decision open)** |
+| 3 | Refusal contract for the nine unsupported families incl. labelled break/continue (§4) | **ACCEPTED as proposed** |
+| 4 | Lambda lookahead rule + trailing-lambda same-line rule (§5.1) | **ACCEPTED as proposed** |
+| 5 | Recovery obligations (§6) and CST round-trip invariants (§7) | **ACCEPTED as proposed** |
+| 6 | PARSE allocation plan (§8) | **ACCEPTED as proposed** |
 
-**G1-S is entered only when the remaining rows (1, 3–6) are decided; S-G1S-1 is already resolved (correction verified and applied, 002-R5 §3).** This document does not enter it; no directive authorizes any compiler implementation.
+**G1-S was entered on 2026-10-16** — the remaining rows were decided and S-G1S-1 was already resolved (003-G1 §4). Entry does not by itself authorize implementation: Stage A additionally requires G1d clearance and a separate owner authorization of Directive 003-A (`docs/spec/phase-2-entry-readiness.md` §5).

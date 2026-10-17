@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) |
-| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 |
+| **Status** | **Accepted by the owner** (ENGINEERING DIRECTIVE 002-R3, 2026-10-16). The component-scoped model replaces the flat `G1b` and is the project's implementation-readiness model. Acceptance covers the **framework**, not individual language rules (S1–S18 remain individually authoritative) and is **not** Phase 2 authorization. (`.cmic` selection: ADR-0002 §4.1.) **Stage A entry gates:** G1, G1-L and G1-S accepted and the G1c Stage A-limited deferral approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d remains PENDING**; gate acceptance does not authorize implementation. |
+| **Directive** | ENGINEERING DIRECTIVE 002-R1 §3 · 002-R2 (post-merge) §5 · 002-R3 §7 · 003-G1 §2–§6 |
 | **Supersedes** | the single `G1b` gate defined in `docs/spec/decisions/README.md` and `docs/directives/directive-003-proposal.md` |
 | **Related** | `docs/spec/decisions/` (S1–S18), `docs/audits/phase-1-legacy-probes.md`, `docs/spec/grammar-consistency-report.md`, `docs/directives/directive-003-proposal.md` |
 
@@ -165,6 +165,9 @@ contract. No unspecified behavior may be silently chosen.
 A GATED operation is a correct *non-implementation*, provided that a gate hit
 names the precise operation, emits a stable diagnostic and produces no artifact.
 Recognition of the same syntactic category for other operations remains valid.
+Once the owner accepts a rule, the affected row of §4.1 is marked **ACCEPTED**
+with the accepting directive — an owner-action marker, not another planning
+label; the rule's normative status lives in its decision record.
 
 ---
 
@@ -191,16 +194,16 @@ consumers; those are split explicitly.
 | S2 nullability | S (syntax), T (conversions) | **S: EVIDENCED · T: GATED** | `?` suffix syntax verified; "soft cast" now defined (§8 of the probe record); conversion rules beyond `T → T?` gated |
 | S3 PortuKof | O | **OWNER** | Scope decision. `.ptkf` is refused loudly meanwhile |
 | S4 KofScript | O | **OWNER** | Scope decision. `.ks` is refused loudly meanwhile |
-| S5 pattern matching | S (patterns/guards), T (exhaustiveness/fallthrough) | **S: EVIDENCED · T: GATED** | Pattern and guard **syntax** is parser-evidenced; exhaustiveness and fallthrough are gated |
+| S5 pattern matching | S (patterns/guards), T (exhaustiveness/fallthrough) | **S: ACCEPTED (recognition, 003-G1) · T: GATED** | Pattern and guard **syntax** is parser-evidenced and now inside the accepted recognition subset; exhaustiveness and fallthrough remain gated; recognition is not semantic adoption |
 | S6 concurrency | T (typing), R (capability) | **T: GATED · R: DEFERRED** | `spawn`/`await` typing gated; the capability table belongs to Phase 4 |
 | S7 numeric semantics | T | **GATED** | Wrapping and formatting are verified; literal promotion, division-by-zero and the Bool/Int inconsistency are gated |
-| S8 string semantics | L | **EVIDENCED (Q1, Q4) · GATED (Q2)** | Triple-quote rejection and raw newlines verified; unknown escapes are refused rather than silently reinterpreted |
+| S8 string semantics | L | **ACCEPTED (G1-L: Q1, Q2, Q4, Q5 — 003-G1)** | Triple-quote rejection, raw newlines and the strict unknown-escape error verified/probed; unknown escapes are refused with LEX008 (corpus impact measurement owed) |
 | S9 stdlib boundary | S (module forms), T (member kinds) | **S: EVIDENCED · T: GATED** | `package`/`import` forms are parser-evidenced; property-versus-method classification is gated |
 | S10 reserved keywords / annotations / FFI | S | **EVIDENCED (recognition) · GATED (semantics)** | All reserved words and contextual declarations are **parsed**; every unsupported construct is refused with a specific diagnostic |
 | S11 evaluation order and binding | T (scope), M (order) | **EVIDENCED** | JVM behavior observed for seven questions; closure-capture intent remains OPEN (§2 of the probe record) |
 | S12 equality | T | **EVIDENCED (strings, records, classes, float corners) · OPEN (enum Q6, Q7)** | JVM string/record/class/float probes are measured; enum identity and map-key/set contract remain NOT VERIFIED; gate only unsupported equality operations |
-| S13 Unicode | L | **EVIDENCED (Q1, Q4) · GATED (Q3)** | Identifier classes verified; the column divergence is measured and documented; the confusable-identifier warning is off by default |
-| S14 trivia | L | **EVIDENCED** | Lossless preservation and non-nesting are proposed and evidence-backed |
+| S13 Unicode | L | **ACCEPTED (G1-L: Q1, Q4, Q5, Q6 — 003-G1) · Q3 deferred** | Identifier classes verified; the column divergence is measured and documented; M-7 classification cases owed; the confusable-identifier warning is off by default |
+| S14 trivia | L | **ACCEPTED (G1-L: Q1, Q2, Q4 — 003-G1)** | Lossless preservation, exact terminator forms and the BOM-prefix refinement are evidence-backed and accepted |
 | S15 feature gates | S | **EVIDENCED** | The vocabulary in this document *is* the answer |
 | S16 memory strategy | R | **DEFERRED** | Owner decision; no component before Phase 4 needs it |
 | S17 ABI versioning | R | **DEFERRED** | Owner decision; blocked only on S16 |
@@ -258,22 +261,34 @@ already existed.
 > now state the two owner options (L-A/L-B); the licence itself remains
 > undecided.
 
+> **003-G1 owner acceptance record (2026-10-16).** The owner accepted the Stage A entry gates and recorded the G1d hold:
+>
+> 1. **G1 — ACCEPTED**, limited to the corrected Phase 1 recognition basis: the 122-production grammar and the machine-checked 122/122 evidence map; 111 `RECOGNISED` / 10 `UNSUPPORTED` / 1 `REJECTED`; corrections F1/F2/F4/F5 recognized. Unsupported syntax must produce explicit diagnostics; an OPEN semantic rule is not silently adopted by recognition; the language specification is not globally frozen.
+> 2. **G1-L — ACCEPTED, ENTERED** for Stage A lexical readiness: D-L1…D-L10 and the LEX001–LEX010 allocation plan (`docs/spec/g1-l-lexical-decision-package.md`). The strict unknown-escape and lone-surrogate rules are accepted intentional compatibility divergences whose corpus impact must still be measured; Unicode classification edge cases (M-7) remain measurement obligations.
+> 3. **G1-S — ACCEPTED, ENTERED** for Stage A syntactic readiness: the recognition subset, the nine-family refusal contract, the lambda/parenthesis and trailing-lambda rules, the recovery obligations and CST round-trip invariants, and the PARSE allocation plan (`docs/spec/g1-s-syntax-decision-package.md`). Pattern recognition is not pattern-semantic approval; typed HIR, overload resolution, conversions, evaluation order and runtime behaviour are not approved.
+> 4. **G1c — SATISFIED** through an explicit Stage A-limited deferral: `.cmic` remains the binding extension decision; the parser stays extension-independent; MIME registration, editor/LSP publication and release-level naming/compatibility decisions are deferred; releases and distribution-policy changes are not authorized.
+> 5. **G1d — remains PENDING**: the owner selected **L-A** (public development) and the intended outbound licence **Apache-2.0**, conditional on rights verification and qualified legal review; the licence has not been applied or granted and no legal clearance has been obtained (conditions: `docs/spec/phase-2-entry-readiness.md` §5 item 6).
+>
+> **None of these acceptances authorizes implementation.** Stage A additionally requires this gate-acceptance record on `main` (merged via its reviewed PR, post-merge CI green), **G1d clearance**, and a separate owner authorization of the Stage A scope; Stage B remains separate and requires G1-T.
+
 ### 5.1 The cycle, resolved
 
 | Gate | Status after Directive 002-R3 |
 |---|---|
-| G1 | **PARTIAL** — F1/F2/F4 recognition corrections applied under owner authorization, and F5 (S-G1S-1) verified and applied (002-R5); explicit recognition-subset and exclusion approval still outstanding |
-| **G1-L** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — technical evidence: S8, S13, S14 are closed or gated on executed evidence; the owner has not yet accepted the lexical contract |
-| **G1-S** | **FRAMEWORK ACCEPTED · ENTRY PENDING** — no Tier-S question is measurement-blocked; S1 and S11 (the two blocked records) are both Tier-T/M, **not** Tier-S; F1/F2/F4 corrections applied and S-G1S-1 (F5) verified and applied (002-R5; `docs/spec/g1-s-syntax-decision-package.md` §3.3); explicit recognized-subset acceptance outstanding |
+| G1 | **ACCEPTED** (owner, 003-G1 §2, 2026-10-16) — corrected 122-production grammar + machine-checked 122/122 map; 111/10/1 classification; F1/F2/F4/F5 recognized; unsupported syntax refused with explicit diagnostics; recognition does not adopt open semantics |
+| **G1-L** | **ACCEPTED · ENTERED** (owner, 003-G1 §3, 2026-10-16) — D-L1…D-L10 and the LEX001–LEX010 allocation accepted; corpus-impact and M-7 measurements remain owed |
+| **G1-S** | **ACCEPTED · ENTERED** (owner, 003-G1 §4, 2026-10-16) — recognition subset, nine-family refusals, lambda/trailing-lambda rules, recovery and CST invariants, PARSE allocation; S-G1S-1 resolved (F5; `docs/spec/g1-s-syntax-decision-package.md` §3.3); semantics stay per the S records |
 | G1-T | **FRAMEWORK ACCEPTED · ENTRY PENDING** — every Tier-T record is closed or gated; the per-operation gates are specified in §4.1; acceptance outstanding |
 | G1-M | **FRAMEWORK ACCEPTED · ENTRY PENDING** — S11 JVM behavior is measured; S18 invariant proposals still require acceptance |
 | G1-R | **FRAMEWORK ACCEPTED · ENTRY PENDING (OWNER)** — S16/S17 undecided. Does not gate Phase 2 or Phase 3 |
-| G1c / G1d | **PENDING OWNER** (extension part decided: `.cmic`) — a limited-scope deferral for identity/compatibility, and the G1d public/private development choice (L-A/L-B, `docs/spec/phase-2-entry-readiness.md` §3), are still required before any frontend implementation |
+| G1c / G1d | **G1c SATISFIED via Stage A-limited deferral** (owner, 003-G1 §5) — extension `.cmic`; parser extension-independent; MIME/editor/release-level decisions deferred. **G1d PENDING** — L-A selected; intended licence Apache-2.0, conditional and not applied; rights verification and qualified legal review outstanding (`docs/spec/phase-2-entry-readiness.md` §5 item 6) |
 | G1e | **PRIOR SHA PASSED** — verify protection details and CI on the final SHA |
 
-**Therefore: the gate framework is accepted (002-R3); a component-scoped Phase 2
-authorization still requires the owner to approve the relevant component's entry
-conditions and to authorize Directive 003.** The dependency chain
+**Therefore: the gate framework is accepted (002-R3), and the Stage A entry
+gates G1, G1-L and G1-S are accepted with the G1c deferral approved (003-G1); a
+component-scoped Phase 2 authorization still requires G1d clearance and a
+separate owner authorization of Directive 003-A, and Stage B additionally
+requires G1-T entry.** The dependency chain
 that made authorization impossible is gone, and it was removed by (a) measuring what
 could be measured, and (b) scoping each gate to the component that consumes the
 decision — not by relaxing any standard.
@@ -283,10 +298,14 @@ decision — not by relaxing any standard.
 * **Every open question is still open** unless the probe record closed it. The
   gate change moves no decision.
 * **No `GATED` record is decided.** A gate is a refusal, not a rule.
-* **The owner-blocked decisions are still owner-blocked** (S3, S4, S16, S17, the
-  licence and the public/private development choice, the MIME type, the naming)
-  — with one completion: the source extension has been selected by the owner
-  (`.cmic`, 2026-10-16).
+* **No S1–S18 semantic question moved.** The 003-G1 acceptances are lexical and
+  recognition-layer decisions; S5's pattern semantics, every Tier-T/M/R
+  disposition and every measurement debt keep their recorded state.
+* **The owner-blocked decisions are still owner-blocked** (S3, S4, S16, S17,
+  the MIME type, the naming) — with completions now recorded: the source
+  extension is `.cmic` and the G1c Stage A-limited deferral is approved
+  (003-G1 §5); the licence/publication hold remains under G1d (L-A selected;
+  Apache-2.0 intended conditionally, not applied).
 * **Phase 3 and Phase 4 remain blocked** on G1-M and G1-R respectively.
 * **G0-B remains PARTIAL.**
 

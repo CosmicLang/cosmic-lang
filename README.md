@@ -57,8 +57,8 @@ docs/
   spec/grammar.ebnf                          formal grammar (block-level evidence)
   spec/grammar-consistency-report.md         machine-checked consistency report (G0-G13)
   spec/grammar-evidence-map.md               per-production evidence map (122/122, machine-checked)
-  spec/g1-l-lexical-decision-package.md      G1-L lexical entry decision package (READY FOR OWNER DECISION)
-  spec/g1-s-syntax-decision-package.md       G1-S syntax entry decision package (READY FOR OWNER DECISION)
+  spec/g1-l-lexical-decision-package.md      G1-L lexical entry decision package (ACCEPTED — 003-G1)
+  spec/g1-s-syntax-decision-package.md       G1-S syntax entry decision package (ACCEPTED — 003-G1)
   spec/phase-2-entry-readiness.md            Phase 2 entry readiness + owner decision matrix
   spec/typing-contracts.md                   type-system contracts
   spec/diagnostic-codes.md                   diagnostic code registry + stability policy
@@ -81,22 +81,26 @@ implementation was added: the workspace still contains exactly the three Phase 0
 crates.
 
 The authoritative register is `docs/spec/decisions/README.md`; the component
-entry gates are `docs/spec/implementation-gates.md`, both pending owner
-acceptance. The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
+entry gates are `docs/spec/implementation-gates.md`. The Stage A gates G1, G1-L
+and G1-S were accepted by the owner and the G1c Stage A-limited deferral
+approved (ENGINEERING DIRECTIVE 003-G1, 2026-10-16); **G1d remains PENDING** (no
+licence applied, no legal clearance). The six normative statuses distinguish **VERIFIED LEGACY BEHAVIOR**,
 **PROPOSED NORMATIVE RULE**, **ACCEPTED NORMATIVE RULE**, **OPEN**, **DEFERRED**
 and **NOT VERIFIED**. Their use is per question: a record can contain several.
 The Directive 002-R1 read-only JVM probes (`docs/audits/phase-1-legacy-probes.md`)
 resolved some evidence gaps but do not establish cross-target compatibility or
 approve semantics. Unsupported semantic operations must be refused by their
 specific `GATE` diagnostic; unrelated syntax remains recognizable when evidenced.
-**No record claims owner acceptance.**
+Owner acceptances are recorded at individual-rule granularity in the affected
+records (S5, S8, S13, S14 — 003-G1 updates).
 
 **Phase 2 is not authorised.** The proposed Directive 003 is
-`docs/directives/directive-003-proposal.md` (revised, staged); the
-owner-reviewable entry package is `docs/spec/phase-2-entry-readiness.md`, with
+`docs/directives/directive-003-proposal.md` (revised, staged, still NOT
+AUTHORIZED); the entry ledger is `docs/spec/phase-2-entry-readiness.md`, with
 `docs/spec/g1-l-lexical-decision-package.md` and
-`docs/spec/g1-s-syntax-decision-package.md`. **Nothing in those documents is
-approved.**
+`docs/spec/g1-s-syntax-decision-package.md` now recording the accepted Stage A
+gates. **Stage A implementation remains unauthorised until G1d is cleared and a
+separate directive authorizes it.**
 
 ## Phase 0 review status
 
@@ -137,7 +141,10 @@ macOS assembler). Full details, including licensing observations, are in
 
 ## License
 
-**Not yet chosen.** The legacy `cosmcc` is GPL-3.0; this repository contains
-no code translated or copied from it, and no LICENSE file will be added until
-the owner decides (ADR-0001 §2.5). Until then, treat all content as
-"all rights reserved".
+**Intended: Apache-2.0 (conditional — not applied).** The owner selected Apache
+License 2.0 as the intended outbound licence (2026-10-16), conditional on
+copyright-ownership verification and a qualified legal review (G1d, still
+PENDING). **No LICENSE file has been added and no grant is in effect**; until
+the licence is formally authorised and applied, treat all content as "all
+rights reserved". The legacy `cosmcc` is GPL-3.0; this repository contains no
+code translated or copied from it (ADR-0001 §2.5).
